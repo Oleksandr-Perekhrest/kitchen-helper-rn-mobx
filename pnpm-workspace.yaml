@@ -1,4 +1,6 @@
 nodeLinker: hoisted
 engineStrict: true
 allowBuilds:
-  lefthook: true
+  # binary comes from optionalDependencies; postinstall only runs
+  # "lefthook install", which the "prepare" script already does
+  lefthook: false
