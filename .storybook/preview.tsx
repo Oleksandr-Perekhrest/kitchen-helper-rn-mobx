@@ -4,7 +4,6 @@ import { View, StyleSheet } from "react-native";
 import type { Preview, Decorator } from "@storybook/react-native-web-vite";
 
 // local dependencies
-import type { ThemePreference } from "../src/theme";
 import { useTheme, ThemeProvider } from "../src/theme";
 
 const styles = StyleSheet.create({
@@ -24,7 +23,7 @@ function ThemedCanvas({ children }: { children: ReactNode }) {
 }
 
 const withTheme: Decorator = (Story, context) => {
-    const preference = (context.globals.theme ?? "light") as ThemePreference;
+    const preference = context.globals.theme === "dark" ? "dark" : "light";
     return (
         <ThemeProvider preference={preference}>
             <ThemedCanvas>
@@ -48,6 +47,9 @@ const preview: Preview = {
     },
     initialGlobals: {
         theme: "light",
+    },
+    parameters: {
+        layout: "fullscreen",
     },
     decorators: [withTheme],
     tags: ["autodocs"],
