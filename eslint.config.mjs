@@ -13,7 +13,6 @@ export default [
             "coverage/**",
             "dist/**",
             "build/**",
-            "jest.setup.js",
         ],
     },
 
