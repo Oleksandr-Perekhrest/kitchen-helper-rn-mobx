@@ -85,6 +85,7 @@ const styles = StyleSheet.create({
     input: {
         minHeight: 48,
         borderRadius: 12,
+        outlineWidth: 0,
         ...typography.body,
     },
     inputMultiline: {
