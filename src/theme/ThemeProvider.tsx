@@ -4,6 +4,7 @@ import { useColorScheme } from "react-native";
 import { useMemo, useContext, createContext } from "react";
 
 // local dependencies
+import { typography } from "./typography";
 import type { ThemeColors } from "./tokens";
 import { radii, spacing, darkColors, lightColors } from "./tokens";
 
@@ -15,6 +16,7 @@ export type Theme = {
     colors: ThemeColors;
     spacing: typeof spacing;
     radii: typeof radii;
+    typography: typeof typography;
 };
 
 const ThemeContext = createContext<Theme | null>(null);
@@ -42,6 +44,7 @@ export function ThemeProvider({
             colors: scheme === "dark" ? darkColors : lightColors,
             spacing,
             radii,
+            typography,
         }),
         [scheme],
     );
