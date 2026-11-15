@@ -6,9 +6,16 @@ import type { Meta, StoryObj } from "@storybook/react-native-web-vite";
 
 // local dependencies
 import { TimerPill } from "../../src/ui";
+import { lightColors } from "../../src/theme";
 import type { TimerKind } from "../../src/theme";
 
-const TIMER_KINDS: TimerKind[] = ["boil", "fry", "stew", "bake", "other"];
+function timerKindKeys<T extends Record<TimerKind, unknown>>(
+    obj: T,
+): TimerKind[] {
+    return Object.keys(obj) as TimerKind[];
+}
+
+const TIMER_KINDS = timerKindKeys(lightColors.timer);
 
 const meta = {
     title: "UI/TimerPill",
@@ -56,7 +63,8 @@ export const Expanded: Story = {
 export const Finished: Story = {
     args: {
         timeText: "0:00",
-        finished: true,
+        finished: false,
+        expanded: true,
     },
 };
 
