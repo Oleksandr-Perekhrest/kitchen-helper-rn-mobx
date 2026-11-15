@@ -1,22 +1,23 @@
 // outsource dependencies
-import { View } from "react-native";
 import type { ReactNode } from "react";
+import { View, StyleSheet } from "react-native";
 import type { Preview, Decorator } from "@storybook/react-native-web-vite";
 
 // local dependencies
 import type { ThemePreference } from "../src/theme";
 import { useTheme, ThemeProvider } from "../src/theme";
 
+const styles = StyleSheet.create({
+    canvas: {
+        flex: 1,
+        padding: 16,
+    },
+});
+
 function ThemedCanvas({ children }: { children: ReactNode }) {
     const { colors } = useTheme();
     return (
-        <View
-            style={{
-                flex: 1,
-                padding: 16,
-                backgroundColor: colors.background,
-            }}
-        >
+        <View style={[styles.canvas, { backgroundColor: colors.background }]}>
             {children}
         </View>
     );

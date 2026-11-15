@@ -1,5 +1,5 @@
 // outsource dependencies
-import { View } from "react-native";
+import { View, StyleSheet } from "react-native";
 import type { Meta, StoryObj } from "@storybook/react-native-web-vite";
 
 // local dependencies
@@ -9,25 +9,19 @@ import type { TypographyVariant } from "../../src/theme";
 
 const SAMPLE = "Рецепти / Recipes";
 
-const variantOrder: TypographyVariant[] = [
-    "display",
-    "step",
-    "title",
-    "headline",
-    "timer",
-    "body",
-    "label",
-    "caption",
-];
+const styles = StyleSheet.create({
+    scale: { gap: 24 },
+    row: { gap: 4 },
+});
 
 function TypographyScale() {
     return (
-        <View style={{ gap: 24 }}>
-            {variantOrder.map((variant) => {
+        <View style={styles.scale}>
+            {(Object.keys(typography) as TypographyVariant[]).map((variant) => {
                 const token = typography[variant];
                 const label = `${variant} · ${token.fontSize}/${token.fontWeight}`;
                 return (
-                    <View key={variant} style={{ gap: 4 }}>
+                    <View key={variant} style={styles.row}>
                         <Text variant="caption" tone="textMuted">
                             {label}
                         </Text>
