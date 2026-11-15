@@ -24,6 +24,8 @@ pnpm format:check   # Prettier check (CI)
 
 **Checks before finishing any task:** `pnpm format:check && pnpm lint && pnpm typecheck && pnpm test` (skip a script that does not exist yet and say so in the report).
 
+Git hooks (lefthook): pre-commit runs ESLint + Prettier on staged files; pre-push runs the full check suite above.
+
 iOS CocoaPods deps are installed automatically by `pnpm ios`. Manual install only if needed:
 
 ```sh
