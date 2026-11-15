@@ -6,7 +6,7 @@ import { useMemo, useContext, createContext } from "react";
 // local dependencies
 import { typography } from "./typography";
 import type { ThemeColors } from "./tokens";
-import { radii, spacing, darkColors, lightColors } from "./tokens";
+import { radii, spacing, shadows, darkColors, lightColors } from "./tokens";
 
 export type ThemePreference = "system" | "light" | "dark";
 export type ColorScheme = "light" | "dark";
@@ -16,6 +16,7 @@ export type Theme = {
     colors: ThemeColors;
     spacing: typeof spacing;
     radii: typeof radii;
+    shadows: typeof shadows;
     typography: typeof typography;
 };
 
@@ -44,6 +45,7 @@ export function ThemeProvider({
             colors: scheme === "dark" ? darkColors : lightColors,
             spacing,
             radii,
+            shadows,
             typography,
         }),
         [scheme],

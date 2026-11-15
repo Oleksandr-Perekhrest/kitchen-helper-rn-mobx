@@ -70,3 +70,7 @@ export const radii = {
     lg: 18,
     full: 28,
 } as const;
+
+export const shadows = {
+    raised: "0px 2px 8px rgba(30, 42, 35, 0.15)",
+} as const;

@@ -4,3 +4,7 @@ export type { IconProps } from "./Icon";
 export { Icon } from "./Icon";
 export type { ButtonProps, ButtonVariant } from "./Button";
 export { Button, BUTTON_VARIANTS } from "./Button";
+export type { IconButtonProps, IconButtonVariant } from "./IconButton";
+export { IconButton, ICON_BUTTON_VARIANTS } from "./IconButton";
+export type { ChipProps, InfoChipProps, InfoChipVariant } from "./Chip";
+export { Chip, InfoChip, INFO_CHIP_VARIANTS } from "./Chip";
