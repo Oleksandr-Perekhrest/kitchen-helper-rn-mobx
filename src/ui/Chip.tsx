@@ -53,8 +53,10 @@ export function Chip({
         <Pressable
             disabled={disabled}
             onPress={onPress}
-            accessibilityRole="button"
-            accessibilityState={{ selected, disabled }}
+            role="button"
+            aria-label={label}
+            aria-selected={selected}
+            aria-disabled={disabled}
             style={({ pressed }) => [
                 styles.chip,
                 { backgroundColor, borderColor },

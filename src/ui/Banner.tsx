@@ -40,7 +40,7 @@ export function Banner({
 
     return (
         <View
-            accessibilityRole={isWarning ? "alert" : "none"}
+            role={isWarning ? "alert" : "none"}
             style={[styles.container, { backgroundColor, borderColor }]}
         >
             <BannerIcon

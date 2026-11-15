@@ -86,6 +86,8 @@ Never add `eslint-disable` comments or loosen types to silence an error — use 
 
 **Components:** function components and hooks only.
 
+**Accessibility props:** use the React Native ARIA props — `role`, `aria-label`, `aria-checked`, `aria-selected`, `aria-disabled`, `aria-busy`, `aria-expanded`, `aria-valuemin` / `aria-valuemax` / `aria-valuenow` / `aria-valuetext` — instead of the legacy `accessibilityRole`, `accessibilityState`, `accessibilityValue` and `accessibilityLabel`. They work on iOS and Android and react-native-web maps them 1:1 to the DOM, while the legacy props lose state on the web (e.g. no `aria-checked` on a switch). Check every story's Accessibility tab: 0 violations.
+
 ## Testing
 
 **Stack:** Jest + React Native Testing Library. Tests live in the root `__tests__/` folder mirroring the source structure (e.g. `__tests__/features/timers/remaining.test.ts` for `src/features/timers/remaining.ts`).
@@ -126,3 +128,31 @@ Workflows live in `.github/workflows/`.
 - Do not run `nvm use` — the shell already has the correct Node version.
 - Do not edit `android/` or `ios/` unless the task explicitly asks.
 - Do not run native builds (`pnpm android`, `pnpm ios`, `gradlew`, `xcodebuild`, `pod install`) unless the task asks; they are slow.
+
+## Storybook stories
+
+- Stories live in `stories/`, mirroring `src/` (`stories/ui/Button.stories.tsx` for `src/ui/Button.tsx`). Import `Meta` and `StoryObj` from `@storybook/react-native-web-vite`.
+- `meta.args` holds a valid value for **every required prop**; callbacks use `fn()` from `storybook/test`. Stories override only what differs: `export const Disabled: Story = { args: { disabled: true } };`
+- Prefer args-only stories. Use `render` only when the story needs extra layout around the component or interactive state, and always pass `args` through to the component — never ignore them.
+- Controlled components (`value` + `onChange`): keep the state in Storybook args with `useArgs`, not in a local `useState`, so the canvas and the Controls panel stay in sync. Call the original callback too, so the Actions panel logs it:
+
+```tsx
+import { useArgs } from "storybook/preview-api";
+
+export const Interactive: Story = {
+  render: function Render(args) {
+    const [, updateArgs] = useArgs<typeof args>();
+    return (
+      <Stepper
+        {...args}
+        onChange={(value) => {
+          args.onChange(value);
+          updateArgs({ value });
+        }}
+      />
+    );
+  },
+};
+```
+
+- `render` is a named function (`function Render`) so hooks inside it satisfy the rules of hooks.

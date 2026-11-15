@@ -38,8 +38,8 @@ export function Card({
         return (
             <Pressable
                 onPress={onPress}
-                accessibilityRole="button"
-                accessibilityLabel={accessibilityLabel}
+                role="button"
+                aria-label={accessibilityLabel}
                 style={({ pressed }) => [
                     ...baseStyle,
                     pressed && styles.pressed,

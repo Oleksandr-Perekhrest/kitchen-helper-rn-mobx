@@ -96,8 +96,9 @@ export function Button({
         <Pressable
             disabled={disabled}
             onPress={onPress}
-            accessibilityRole="button"
-            accessibilityState={{ disabled }}
+            role="button"
+            aria-label={label}
+            aria-disabled={disabled}
             style={({ pressed }) => [
                 styles.base,
                 isLg ? styles.sizeLg : styles.sizeMd,

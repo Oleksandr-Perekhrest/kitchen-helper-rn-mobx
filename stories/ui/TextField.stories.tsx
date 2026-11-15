@@ -1,5 +1,6 @@
 // outsource dependencies
-import { useState } from "react";
+import { fn } from "storybook/test";
+import { useArgs } from "storybook/preview-api";
 import { View, StyleSheet } from "react-native";
 import type { Meta, StoryObj } from "@storybook/react-native-web-vite";
 
@@ -9,94 +10,104 @@ import { TextField } from "../../src/ui";
 const meta = {
     title: "UI/TextField",
     component: TextField,
+    args: {
+        value: "",
+        onChangeText: fn(),
+    },
 } satisfies Meta<typeof TextField>;
 
 export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-function DefaultStory() {
-    const [value, setValue] = useState("");
-    return (
-        <View style={styles.container}>
-            <TextField
-                label="Назва рецепта"
-                placeholder="Наприклад, борщ"
-                value={value}
-                onChangeText={setValue}
-            />
-        </View>
-    );
-}
-
 export const Default: Story = {
-    render: () => <DefaultStory />,
+    args: { label: "Назва рецепта", placeholder: "Наприклад, борщ" },
+    render: function Render(args) {
+        const [, updateArgs] = useArgs<typeof args>();
+        return (
+            <View style={styles.container}>
+                <TextField
+                    {...args}
+                    onChangeText={(text) => {
+                        args.onChangeText?.(text);
+                        updateArgs({ value: text });
+                    }}
+                />
+            </View>
+        );
+    },
 };
-
-function FilledStory() {
-    const [value, setValue] = useState("Борщ український");
-    return (
-        <View style={styles.container}>
-            <TextField value={value} onChangeText={setValue} />
-        </View>
-    );
-}
 
 export const Filled: Story = {
-    render: () => <FilledStory />,
+    args: { value: "Борщ український" },
+    render: function Render(args) {
+        const [, updateArgs] = useArgs<typeof args>();
+        return (
+            <View style={styles.container}>
+                <TextField
+                    {...args}
+                    onChangeText={(text) => {
+                        args.onChangeText?.(text);
+                        updateArgs({ value: text });
+                    }}
+                />
+            </View>
+        );
+    },
 };
-
-function WithErrorStory() {
-    const [value, setValue] = useState("");
-    return (
-        <View style={styles.container}>
-            <TextField
-                label="Продукт"
-                error="Вкажи назву продукту"
-                value={value}
-                onChangeText={setValue}
-            />
-        </View>
-    );
-}
 
 export const WithError: Story = {
-    render: () => <WithErrorStory />,
+    args: { label: "Продукт", error: "Вкажи назву продукту" },
+    render: function Render(args) {
+        const [, updateArgs] = useArgs<typeof args>();
+        return (
+            <View style={styles.container}>
+                <TextField
+                    {...args}
+                    onChangeText={(text) => {
+                        args.onChangeText?.(text);
+                        updateArgs({ value: text });
+                    }}
+                />
+            </View>
+        );
+    },
 };
-
-function MultilineStory() {
-    const [value, setValue] = useState("");
-    return (
-        <View style={styles.container}>
-            <TextField
-                label="Крок"
-                multiline
-                value={value}
-                onChangeText={setValue}
-            />
-        </View>
-    );
-}
 
 export const Multiline: Story = {
-    render: () => <MultilineStory />,
+    args: { label: "Крок", multiline: true },
+    render: function Render(args) {
+        const [, updateArgs] = useArgs<typeof args>();
+        return (
+            <View style={styles.container}>
+                <TextField
+                    {...args}
+                    onChangeText={(text) => {
+                        args.onChangeText?.(text);
+                        updateArgs({ value: text });
+                    }}
+                />
+            </View>
+        );
+    },
 };
 
-function NumericStory() {
-    const [value, setValue] = useState("");
-    return (
-        <View style={styles.numeric}>
-            <TextField
-                keyboardType="numeric"
-                value={value}
-                onChangeText={setValue}
-            />
-        </View>
-    );
-}
-
 export const Numeric: Story = {
-    render: () => <NumericStory />,
+    args: { keyboardType: "numeric" },
+    render: function Render(args) {
+        const [, updateArgs] = useArgs<typeof args>();
+        return (
+            <View style={styles.numeric}>
+                <TextField
+                    {...args}
+                    onChangeText={(text) => {
+                        args.onChangeText?.(text);
+                        updateArgs({ value: text });
+                    }}
+                />
+            </View>
+        );
+    },
 };
 
 const styles = StyleSheet.create({

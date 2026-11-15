@@ -81,9 +81,9 @@ export function IconButton({
         <Pressable
             disabled={disabled}
             onPress={onPress}
-            accessibilityRole="button"
-            accessibilityLabel={a11yLabel}
-            accessibilityState={{ disabled }}
+            role="button"
+            aria-label={a11yLabel}
+            aria-disabled={disabled}
             style={({ pressed }) => [
                 styles.base,
                 isLg ? styles.sizeLg : styles.sizeMd,
