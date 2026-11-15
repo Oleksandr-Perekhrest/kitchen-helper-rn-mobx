@@ -1,4 +1,5 @@
 // outsource dependencies
+import type { ReactNode } from "react";
 import { useColorScheme } from "react-native";
 import { useMemo, useContext, createContext } from "react";
 
@@ -16,13 +17,11 @@ export type Theme = {
     radii: typeof radii;
 };
 
-type ThemeContextValue = Theme;
-
-const ThemeContext = createContext<ThemeContextValue | null>(null);
+const ThemeContext = createContext<Theme | null>(null);
 
 type ThemeProviderProps = {
     preference?: ThemePreference;
-    children: React.ReactNode;
+    children: ReactNode;
 };
 
 export function ThemeProvider({
@@ -30,15 +29,12 @@ export function ThemeProvider({
     children,
 }: ThemeProviderProps) {
     const systemScheme = useColorScheme();
-
-    const scheme: ColorScheme = useMemo(() => {
-        if (preference === "light") return "light";
-        if (preference === "dark") return "dark";
-        if (systemScheme === "dark") {
-            return "dark";
-        }
-        return "light";
-    }, [preference, systemScheme]);
+    const scheme: ColorScheme =
+        preference === "system"
+            ? systemScheme === "dark"
+                ? "dark"
+                : "light"
+            : preference;
 
     const value = useMemo<Theme>(
         () => ({
