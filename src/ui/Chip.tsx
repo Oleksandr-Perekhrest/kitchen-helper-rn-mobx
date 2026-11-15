@@ -47,7 +47,7 @@ export function Chip({
     const LeadingIcon: LucideIcon | null = icon ?? (selected ? Check : null);
     const tone: TextTone = selected ? "onPrimary" : "text";
     const backgroundColor = selected ? colors.primary : "transparent";
-    const borderColor = selected ? "transparent" : colors.border;
+    const borderColor = selected ? "transparent" : colors.borderStrong;
 
     return (
         <Pressable
