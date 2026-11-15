@@ -135,19 +135,20 @@ export function TimerPill({
                     color={timerColor}
                     strokeWidth={2}
                 />
-                <Text variant="buttonSm" tone="text" style={styles.timeText}>
+                <Text
+                    variant="buttonSm"
+                    tone="text"
+                    numberOfLines={1}
+                    style={styles.timeText}
+                >
                     {timeText}
+                    {expanded && label !== undefined && (
+                        <Text variant="label" tone="text">
+                            {" "}
+                            {label}
+                        </Text>
+                    )}
                 </Text>
-                {expanded && label !== undefined && (
-                    <Text
-                        tone="text"
-                        variant="label"
-                        numberOfLines={1}
-                        style={styles.label}
-                    >
-                        {label}
-                    </Text>
-                )}
             </Pressable>
         </Animated.View>
     );
@@ -171,8 +172,6 @@ const styles = StyleSheet.create({
     timeText: {
         fontSize: 17,
         fontVariant: ["tabular-nums"],
-    },
-    label: {
         flexShrink: 1,
     },
     pressed: {
