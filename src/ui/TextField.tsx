@@ -86,6 +86,7 @@ const styles = StyleSheet.create({
         minHeight: 48,
         borderRadius: 12,
         outlineWidth: 0,
+        outlineStyle: "solid",
         ...typography.body,
     },
     inputMultiline: {
