@@ -14,6 +14,8 @@ export type IconProps = {
     tone?: TextTone;
     /** Stroke width. Defaults to 2. */
     strokeWidth?: number;
+    /** Explicit color string — overrides `tone` when provided. */
+    color?: string;
 };
 
 export function Icon({
@@ -21,12 +23,13 @@ export function Icon({
     size = 20,
     tone = "text",
     strokeWidth = 2,
+    color,
 }: IconProps) {
     const { colors } = useTheme();
     return (
         <LucideIconComponent
             size={size}
-            color={colors[tone]}
+            color={color ?? colors[tone]}
             strokeWidth={strokeWidth}
             accessible={false}
             importantForAccessibility="no-hide-descendants"

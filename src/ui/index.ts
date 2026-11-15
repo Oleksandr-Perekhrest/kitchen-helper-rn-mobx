@@ -20,3 +20,6 @@ export type { SegmentedControlProps } from "./SegmentedControl";
 export { SegmentedControl } from "./SegmentedControl";
 export type { StepperProps } from "./Stepper";
 export { Stepper } from "./Stepper";
+export type { TimerPillProps } from "./TimerPill";
+export { TimerPill } from "./TimerPill";
+export { TIMER_ICONS } from "./timerIcons";
