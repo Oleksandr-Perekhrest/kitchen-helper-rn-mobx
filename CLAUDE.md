@@ -52,19 +52,28 @@ Entry point: `index.js` → `App.tsx`. iOS bundle target: `Cookalong` (`ios/Cook
 
 **Indentation:** 4 spaces in `.ts` / `.tsx` / `.js`; 2 spaces in JSON, YAML, and Markdown.
 
-**Imports:** two groups separated by one blank line, each preceded by a comment:
+**Imports** are enforced by `eslint-plugin-perfectionist` (`sort-imports` and `sort-named-imports`, type `line-length`). Write them correctly the first time:
+
+1. Two groups in this order, each preceded by its comment, one blank line between them:
+   - `// outsource dependencies`: packages (`react`, `react-native`, any npm package), including `import type` from packages.
+   - `// local dependencies`: relative paths (`./`, `../`), including `import type`.
+2. Inside a group, sort import statements by the length of the **whole line**, shortest first. Not alphabetically and not by package name: `react-native` goes before `react` when its line is shorter. `import type` lines are sorted together with value imports by the same rule.
+3. Inside braces, sort named imports by their own length, shortest first: `{ useMemo, useContext, createContext }`.
+4. Side-effect imports (`import "./polyfills";`) go first in the local group; ESLint does not check their position.
+5. Equal lengths may stay in any order.
 
 ```ts
 // outsource dependencies
-import { useEffect } from "react";
-import { StyleSheet } from "react-native";
-import { observer } from "mobx-react-lite";
+import { useColorScheme } from "react-native";
+import { useMemo, useContext, createContext } from "react";
 
 // local dependencies
 import "./polyfills";
-import { theme } from "../theme";
-import { RecipeCard } from "./RecipeCard";
+import type { ThemeColors } from "./tokens";
+import { radii, spacing, darkColors, lightColors } from "./tokens";
 ```
+
+After writing or editing files, run `pnpm exec eslint --fix <changed files>` and then `pnpm format` before the full check. Both perfectionist rules are autofixable. Do not read `eslint.config.mjs` to work out the order by hand.
 
 Within each group sort lines by length, shortest first. Side-effect imports go first in the local group. Named imports inside braces are also sorted by length.
 
