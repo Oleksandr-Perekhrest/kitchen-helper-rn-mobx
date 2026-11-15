@@ -38,6 +38,18 @@ export const typography = {
         fontWeight: "600",
         lineHeight: 18,
     },
+    button: {
+        fontFamily: "Manrope",
+        fontSize: 17,
+        fontWeight: "800",
+        lineHeight: 22,
+    },
+    buttonSm: {
+        fontFamily: "Manrope",
+        fontSize: 15,
+        fontWeight: "800",
+        lineHeight: 20,
+    },
     step: {
         fontFamily: "Manrope",
         fontSize: 28,
