@@ -2,23 +2,11 @@
 import type { TextStyle } from "react-native";
 
 export const typography = {
-    body: {
+    display: {
         fontFamily: "Manrope",
-        fontSize: 16,
-        fontWeight: "400",
-        lineHeight: 24,
-    },
-    step: {
-        fontFamily: "Manrope",
-        fontSize: 28,
-        fontWeight: "600",
+        fontSize: 30,
+        fontWeight: "800",
         lineHeight: 36,
-    },
-    label: {
-        fontFamily: "Manrope",
-        fontSize: 14,
-        fontWeight: "600",
-        lineHeight: 20,
     },
     title: {
         fontFamily: "Manrope",
@@ -26,11 +14,23 @@ export const typography = {
         fontWeight: "700",
         lineHeight: 28,
     },
-    display: {
+    headline: {
         fontFamily: "Manrope",
-        fontSize: 30,
-        fontWeight: "800",
-        lineHeight: 36,
+        fontSize: 18,
+        fontWeight: "700",
+        lineHeight: 24,
+    },
+    body: {
+        fontFamily: "Manrope",
+        fontSize: 16,
+        fontWeight: "400",
+        lineHeight: 24,
+    },
+    label: {
+        fontFamily: "Manrope",
+        fontSize: 14,
+        fontWeight: "600",
+        lineHeight: 20,
     },
     caption: {
         fontFamily: "Manrope",
@@ -38,11 +38,11 @@ export const typography = {
         fontWeight: "600",
         lineHeight: 18,
     },
-    headline: {
+    step: {
         fontFamily: "Manrope",
-        fontSize: 18,
-        fontWeight: "700",
-        lineHeight: 24,
+        fontSize: 28,
+        fontWeight: "600",
+        lineHeight: 36,
     },
     timer: {
         fontFamily: "Manrope",

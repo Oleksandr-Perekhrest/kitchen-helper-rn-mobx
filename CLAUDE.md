@@ -61,6 +61,7 @@ Entry point: `index.js` → `App.tsx`. iOS bundle target: `Cookalong` (`ios/Cook
 3. Inside braces, sort named imports by their own length, shortest first: `{ useMemo, useContext, createContext }`.
 4. Side-effect imports (`import "./polyfills";`) go first in the local group; ESLint does not check their position.
 5. Equal lengths may stay in any order.
+6. Length ordering applies **only** to imports. Object keys, JSX props, union members and token scales keep a meaningful order (e.g. a type scale from largest to smallest).
 
 ```ts
 // outsource dependencies
