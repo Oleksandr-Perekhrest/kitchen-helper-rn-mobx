@@ -98,6 +98,14 @@ Never add `eslint-disable` comments or loosen types to silence an error — use 
 
 Do not write tests for anything outside the critical list unless the task explicitly asks.
 
+## CI
+
+Workflows live in `.github/workflows/`.
+
+- **`checks`** job (`ci.yml`, 15 min) — `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm test`. Runs on `pull_request` and push to `main`.
+- **`android`** job (`ci.yml`, 45 min) — builds a release APK for `arm64-v8a` and `x86_64`. Signed with the template debug keystore (demo only, not for production). Uploaded as a GitHub Actions artifact named `cookalong-release-<short-sha>` with 14-day retention.
+- **`PR title`** job (`pr-title.yml`) — enforces Conventional Commits format on PR titles via `amannn/action-semantic-pull-request`.
+
 ## Rules for the agent
 
 - Do **not** commit, push, create branches, or run any git command that changes state — the user does all git operations.
