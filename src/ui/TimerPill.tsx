@@ -22,7 +22,12 @@ export type TimerPillProps = {
     expanded?: boolean;
     finished?: boolean;
     onPress: () => void;
-    accessibilityLabel: string;
+    /**
+     * Localized name of the timer kind (e.g. "Смажити"). The component
+     * composes `aria-label` as `"${kindLabel}: ${timeText}"`, appending
+     * `", ${label}"` when the pill is expanded and a label is provided.
+     */
+    kindLabel: string;
 };
 
 export function TimerPill({
@@ -32,7 +37,7 @@ export function TimerPill({
     expanded = false,
     finished = false,
     onPress,
-    accessibilityLabel,
+    kindLabel,
 }: TimerPillProps) {
     const { colors, scheme } = useTheme();
     const timerColor = colors.timer[kind];
@@ -104,12 +109,17 @@ export function TimerPill({
     const bgColor = withAlpha(timerColor, scheme === "dark" ? 0.24 : 0.14);
     const showBorder = finished && reduceMotion.current;
 
+    const ariaLabel =
+        expanded && label !== undefined
+            ? `${kindLabel}: ${timeText}, ${label}`
+            : `${kindLabel}: ${timeText}`;
+
     return (
         <Animated.View style={[styles.wrapper, { opacity }]}>
             <Pressable
                 onPress={onPress}
                 role="button"
-                aria-label={accessibilityLabel}
+                aria-label={ariaLabel}
                 aria-expanded={expanded}
                 style={({ pressed }) => [
                     styles.pill,

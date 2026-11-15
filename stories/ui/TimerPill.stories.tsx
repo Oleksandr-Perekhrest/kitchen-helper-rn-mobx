@@ -16,7 +16,7 @@ const meta = {
     args: {
         kind: "fry",
         timeText: "4:10",
-        accessibilityLabel: "Смажити: 4:10",
+        kindLabel: "Смажити",
         onPress: fn(),
     },
     argTypes: {
@@ -63,8 +63,17 @@ export const Finished: Story = {
 export const Long: Story = {
     args: {
         kind: "boil",
+        kindLabel: "Варити",
         timeText: "1:12:40",
     },
+};
+
+const KIND_LABELS: Record<TimerKind, string> = {
+    boil: "Варити",
+    fry: "Смажити",
+    stew: "Тушкувати",
+    bake: "Запікати",
+    other: "Інше",
 };
 
 export const AllKinds: Story = {
@@ -76,7 +85,7 @@ export const AllKinds: Story = {
                         key={kind}
                         {...args}
                         kind={kind}
-                        accessibilityLabel={`${kind}: ${args.timeText}`}
+                        kindLabel={KIND_LABELS[kind]}
                     />
                 ))}
             </View>
