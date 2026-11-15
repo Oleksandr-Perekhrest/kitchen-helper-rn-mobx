@@ -140,8 +140,8 @@ export function TimerPill({
                 </Text>
                 {expanded && label !== undefined && (
                     <Text
+                        tone="text"
                         variant="label"
-                        tone="textMuted"
                         numberOfLines={1}
                         style={styles.label}
                     >
