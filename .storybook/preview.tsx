@@ -1,6 +1,7 @@
 // outsource dependencies
 import type { ReactNode } from "react";
 import { View, StyleSheet } from "react-native";
+import { INITIAL_VIEWPORTS } from "storybook/viewport";
 import type { Preview, Decorator } from "@storybook/react-native-web-vite";
 
 // local dependencies
@@ -47,9 +48,20 @@ const preview: Preview = {
     },
     initialGlobals: {
         theme: "light",
+        viewport: { value: "cookalong", isRotated: false },
     },
     parameters: {
         layout: "fullscreen",
+        viewport: {
+            options: {
+                ...INITIAL_VIEWPORTS,
+                cookalong: {
+                    name: "Cookalong · 390×844",
+                    styles: { width: "390px", height: "844px" },
+                    type: "mobile",
+                },
+            },
+        },
     },
     decorators: [withTheme],
     tags: ["autodocs"],

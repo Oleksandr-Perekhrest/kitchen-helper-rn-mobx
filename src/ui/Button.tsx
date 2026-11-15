@@ -36,20 +36,11 @@ export type ButtonProps = {
     style?: StyleProp<ViewStyle>;
 };
 
-const TONE_MAP: Record<ButtonVariant, TextTone> = {
-    primary: "onPrimary",
-    secondary: "primary",
-    soft: "primary",
-    neutral: "text",
-    danger: "danger",
-};
-
-const BORDER_WIDTH: Record<ButtonVariant, number> = {
-    primary: 0,
-    secondary: 2,
-    soft: 0,
-    neutral: 1,
-    danger: 1,
+type VariantStyle = {
+    backgroundColor: string;
+    borderColor?: string;
+    borderWidth: number;
+    tone: TextTone;
 };
 
 export function Button({
@@ -63,39 +54,54 @@ export function Button({
 }: ButtonProps) {
     const { colors } = useTheme();
 
+    const variantMap: Record<ButtonVariant, VariantStyle> = {
+        primary: {
+            backgroundColor: colors.primary,
+            borderWidth: 0,
+            tone: "onPrimary",
+        },
+        secondary: {
+            backgroundColor: "transparent",
+            borderColor: colors.primary,
+            borderWidth: 2,
+            tone: "primary",
+        },
+        soft: {
+            backgroundColor: colors.primarySoft,
+            borderWidth: 0,
+            tone: "primary",
+        },
+        neutral: {
+            backgroundColor: colors.surface,
+            borderColor: colors.border,
+            borderWidth: 1,
+            tone: "text",
+        },
+        danger: {
+            backgroundColor: colors.surface,
+            borderColor: colors.border,
+            borderWidth: 1,
+            tone: "danger",
+        },
+    };
+
+    const { backgroundColor, borderColor, borderWidth, tone } =
+        variantMap[variant];
+
     const isLg = size === "lg";
     const iconSize = isLg ? 22 : 18;
     const textVariant = isLg ? "button" : "buttonSm";
-    const tone = TONE_MAP[variant];
-    const borderWidth = BORDER_WIDTH[variant];
-
-    const bgColor =
-        variant === "primary"
-            ? colors.primary
-            : variant === "soft"
-              ? colors.primarySoft
-              : variant === "neutral" || variant === "danger"
-                ? colors.surface
-                : "transparent";
-
-    const borderColor =
-        variant === "secondary"
-            ? colors.primary
-            : variant === "neutral"
-              ? colors.border
-              : variant === "danger"
-                ? colors.border
-                : undefined;
 
     return (
         <Pressable
-            onPress={disabled ? undefined : onPress}
+            disabled={disabled}
+            onPress={onPress}
             accessibilityRole="button"
             accessibilityState={{ disabled }}
             style={({ pressed }) => [
                 styles.base,
                 isLg ? styles.sizeLg : styles.sizeMd,
-                { backgroundColor: bgColor, borderColor, borderWidth },
+                { backgroundColor, borderColor, borderWidth },
                 pressed && !disabled && styles.pressed,
                 disabled && styles.disabled,
                 style,
