@@ -25,6 +25,7 @@ pnpm format:check   # Prettier check (CI)
 **Checks before finishing any task:** `pnpm format:check && pnpm lint && pnpm typecheck && pnpm test` (skip a script that does not exist yet and say so in the report).
 
 iOS CocoaPods deps are installed automatically by `pnpm ios`. Manual install only if needed:
+
 ```sh
 cd ios && bundle exec pod install
 ```
@@ -54,14 +55,14 @@ Entry point: `index.js` → `App.tsx`. iOS bundle target: `Cookalong` (`ios/Cook
 
 ```ts
 // outsource dependencies
-import { useEffect } from 'react';
-import { StyleSheet } from 'react-native';
-import { observer } from 'mobx-react-lite';
+import { useEffect } from "react";
+import { StyleSheet } from "react-native";
+import { observer } from "mobx-react-lite";
 
 // local dependencies
-import './polyfills';
-import { theme } from '../theme';
-import { RecipeCard } from './RecipeCard';
+import "./polyfills";
+import { theme } from "../theme";
+import { RecipeCard } from "./RecipeCard";
 ```
 
 Within each group sort lines by length, shortest first. Side-effect imports go first in the local group. Named imports inside braces are also sorted by length.
