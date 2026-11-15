@@ -3,14 +3,15 @@
  */
 
 // outsource dependencies
-import React from "react";
-import ReactTestRenderer from "react-test-renderer";
+import { it, expect, describe } from "@jest/globals";
+import { render, screen } from "@testing-library/react-native";
 
 // local dependencies
 import App from "../App";
 
-test("renders correctly", async () => {
-    await ReactTestRenderer.act(() => {
-        ReactTestRenderer.create(<App />);
+describe("App", () => {
+    it("renders the welcome screen heading", async () => {
+        await render(<App />);
+        expect(screen.getByText("Welcome to React Native")).toBeTruthy();
     });
 });

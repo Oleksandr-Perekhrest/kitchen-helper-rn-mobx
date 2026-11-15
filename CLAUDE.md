@@ -43,7 +43,6 @@ Planned — **do not add any of these until a task explicitly asks**:
 - i18next (EN + UK locales)
 - StyleSheet with own design tokens and light/dark theme
 - Storybook (on-device + web)
-- Jest + React Native Testing Library
 - react-native-notify-kit
 - expo-speech-recognition (Expo used only as a module provider)
 
@@ -74,6 +73,30 @@ Within each group sort lines by length, shortest first. Side-effect imports go f
 Never add `eslint-disable` comments or loosen types to silence an error — use the solution recommended by the library documentation, or stop and report.
 
 **Components:** function components and hooks only.
+
+## Testing
+
+**Stack:** Jest + React Native Testing Library. Tests live in the root `__tests__/` folder mirroring the source structure (e.g. `__tests__/features/timers/remaining.test.ts` for `src/features/timers/remaining.ts`).
+
+**Style:** import `describe`, `it`, `expect` from `@jest/globals` explicitly; use RNTL `screen` queries (`getByText`, `getByRole`, etc.); no snapshot tests; no global coverage threshold.
+
+**What is tested (critical modules only):**
+
+- Portion scaling — fractions without rounding (e.g. 1.5 eggs)
+- Timers — remaining time from timestamps, restore after app restart
+- `matchCommand(text, locale)` — voice command matching in EN and UK
+- Recipe zod schemas — form wizard step validation
+- MobX ↔ MMKV persistence — serialization and demo-data format migration
+- Language selection — system language default, saved choice wins
+- Key UI flows via RNTL — cooking mode next/back; saving a recipe from the wizard
+
+**What is not unit-tested:**
+
+- Presentational components (Storybook covers them)
+- Styles
+- Thin wrappers over native libraries (covered by E2E later)
+
+Do not write tests for anything outside the critical list unless the task explicitly asks.
 
 ## Rules for the agent
 
