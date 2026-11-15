@@ -20,6 +20,8 @@ pnpm lint           # ESLint
 pnpm typecheck      # TypeScript type-check (tsc --noEmit)
 pnpm format         # Prettier write
 pnpm format:check   # Prettier check (CI)
+pnpm storybook      # Storybook dev server (web, port 6006)
+pnpm build-storybook # Storybook static build → storybook-static/
 ```
 
 **Checks before finishing any task:** `pnpm format:check && pnpm lint && pnpm typecheck && pnpm test` (skip a script that does not exist yet and say so in the report).

@@ -13,6 +13,7 @@ export default [
             "coverage/**",
             "dist/**",
             "build/**",
+            "storybook-static/**",
         ],
     },
 

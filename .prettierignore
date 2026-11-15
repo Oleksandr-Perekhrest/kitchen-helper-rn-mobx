@@ -4,3 +4,4 @@ ios
 vendor
 coverage
 pnpm-lock.yaml
+storybook-static
