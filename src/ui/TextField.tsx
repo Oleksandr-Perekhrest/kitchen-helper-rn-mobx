@@ -44,7 +44,7 @@ export function TextField({
             {label !== undefined && <Text variant="label">{label}</Text>}
             <TextInput
                 multiline={multiline}
-                accessibilityLabel={label}
+                aria-label={label}
                 accessibilityHint={hasError ? error : undefined}
                 placeholderTextColor={colors.textMuted}
                 onFocus={(e) => {

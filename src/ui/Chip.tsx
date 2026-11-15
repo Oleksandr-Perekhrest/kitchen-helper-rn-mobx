@@ -53,9 +53,9 @@ export function Chip({
         <Pressable
             disabled={disabled}
             onPress={onPress}
-            role="button"
+            role="checkbox"
             aria-label={label}
-            aria-selected={selected}
+            aria-checked={selected}
             aria-disabled={disabled}
             style={({ pressed }) => [
                 styles.chip,

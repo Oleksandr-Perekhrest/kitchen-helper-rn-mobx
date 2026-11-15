@@ -10,7 +10,7 @@ export type CardProps = {
     /** Card contents. */
     children: ReactNode;
     /**
-     * When provided, the card is tappable with accessibilityRole "button".
+     * When provided, the card is tappable with role "button".
      * Always supply an `accessibilityLabel` so screen readers can describe the action.
      */
     onPress?: () => void;
