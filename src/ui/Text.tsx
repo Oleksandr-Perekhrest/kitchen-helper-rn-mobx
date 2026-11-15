@@ -6,11 +6,21 @@ import { StyleSheet, Text as RNText } from "react-native";
 import { useTheme, typography } from "../theme";
 import type { TypographyVariant } from "../theme";
 
-type Tone = "text" | "textMuted" | "primary" | "onPrimary" | "danger";
+export const TEXT_TONES = [
+    "text",
+    "textMuted",
+    "primary",
+    "onPrimary",
+    "danger",
+] as const;
+
+export type TextTone = (typeof TEXT_TONES)[number];
 
 export type TextComponentProps = TextProps & {
+    /** Typography variant that maps to a type-scale token. Defaults to `"body"`. */
     variant?: TypographyVariant;
-    tone?: Tone;
+    /** Semantic color role for the text. Defaults to `"text"`. */
+    tone?: TextTone;
 };
 
 const styles = StyleSheet.create(typography);

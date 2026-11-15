@@ -1,2 +1,2 @@
-export type { TextComponentProps } from "./Text";
-export { Text } from "./Text";
+export type { TextComponentProps, TextTone } from "./Text";
+export { Text, TEXT_TONES } from "./Text";

@@ -13,7 +13,7 @@ const styles = StyleSheet.create({
     root: { gap: 24 },
     section: { gap: 12 },
     swatches: { flexDirection: "row", flexWrap: "wrap", gap: 16 },
-    swatch: { gap: 4 },
+    swatch: { gap: 4, width: 104 },
     square: { width: 64, height: 64, borderRadius: radii.md, borderWidth: 1 },
 });
 
