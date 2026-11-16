@@ -1,7 +1,7 @@
 // outsource dependencies
-import { useState } from "react";
 import { StatusBar } from "react-native";
 import { observer } from "mobx-react-lite";
+import { useState, useEffect } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
@@ -11,6 +11,7 @@ import { createRootStore } from "./src/stores/RootStore";
 import { createMmkvStorage } from "./src/storage/mmkvStorage";
 import { RootNavigator } from "./src/navigation/RootNavigator";
 import { useStores, StoreProvider } from "./src/stores/StoreProvider";
+import { applyNativeColorScheme } from "./src/theme/nativeColorScheme";
 import { useNavigationTheme } from "./src/navigation/useNavigationTheme";
 
 function AppShell() {
@@ -18,6 +19,7 @@ function AppShell() {
     const navTheme = useNavigationTheme();
     return (
         <>
+            {/* Matters on Android; on iOS the status bar follows the native color scheme. */}
             <StatusBar
                 barStyle={scheme === "dark" ? "light-content" : "dark-content"}
             />
@@ -30,6 +32,9 @@ function AppShell() {
 
 const ThemedApp = observer(function ThemedAppComponent() {
     const { settings } = useStores();
+    useEffect(() => {
+        applyNativeColorScheme(settings.themePreference);
+    }, [settings.themePreference]);
     return (
         <ThemeProvider preference={settings.themePreference}>
             <SafeAreaProvider>
