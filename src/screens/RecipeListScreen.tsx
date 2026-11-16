@@ -12,9 +12,9 @@ import { TAGS } from "../domain/recipe";
 import type { Tag } from "../domain/recipe";
 import { spacing, useTheme } from "../theme";
 import type { Recipe } from "../domain/recipe";
-import { splitMinutes } from "../domain/duration";
 import { useStores } from "../stores/StoreProvider";
 import { filterRecipes } from "../domain/recipeFilter";
+import { formatDuration } from "../i18n/formatDuration";
 import type { RootStackScreenProps } from "../navigation/types";
 import { Chip, Button, TextField, RecipeCard, EmptyState } from "../ui";
 
@@ -53,17 +53,10 @@ export const RecipeListScreen = observer(function RecipeListScreenComponent({
     const cardWidth = (screenWidth - HORIZONTAL_PAD * 2 - CARD_GAP) / 2;
 
     function renderItem({ item }: { item: Recipe }) {
-        let duration: string | undefined;
-        if (item.totalMinutes !== undefined) {
-            const { hours, minutes } = splitMinutes(item.totalMinutes);
-            if (hours > 0 && minutes > 0) {
-                duration = t("duration.hoursMinutes", { hours, minutes });
-            } else if (hours > 0) {
-                duration = t("duration.hours", { hours });
-            } else {
-                duration = t("duration.minutes", { minutes });
-            }
-        }
+        const duration =
+            item.totalMinutes !== undefined
+                ? formatDuration(t, item.totalMinutes)
+                : undefined;
         const servings = t("recipe.servings", { count: item.servings });
         const favLabel = t("recipeList.favoriteBadge");
         const a11yParts = [item.title, servings];

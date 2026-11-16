@@ -30,12 +30,27 @@
   },
   "recipe": {
     "title": "Рецепт",
-    "edit": "Редагувати",
     "startCooking": "Почати готувати",
     "servings_one": "{{count}} порція",
     "servings_few": "{{count}} порції",
     "servings_many": "{{count}} порцій",
-    "servings_other": "{{count}} порції"
+    "servings_other": "{{count}} порції",
+    "notFound": {
+      "title": "Рецепт не знайдено",
+      "description": "Можливо, його видалили",
+      "action": "Назад"
+    },
+    "addFavorite": "Додати в обрані",
+    "removeFavorite": "Прибрати з обраних",
+    "editRecipe": "Редагувати рецепт",
+    "ingredients": "Інгредієнти",
+    "stepsTitle": "Кроки",
+    "servingsLabel": "Порції",
+    "steps_one": "{{count}} крок",
+    "steps_few": "{{count}} кроки",
+    "steps_many": "{{count}} кроків",
+    "steps_other": "{{count}} кроку",
+    "calories": "{{count}} ккал / порц."
   },
   "duration": {
     "hours": "{{hours}} год",

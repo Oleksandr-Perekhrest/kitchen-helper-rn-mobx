@@ -30,10 +30,23 @@
   },
   "recipe": {
     "title": "Recipe",
-    "edit": "Edit",
     "startCooking": "Start cooking",
     "servings_one": "{{count}} serving",
-    "servings_other": "{{count}} servings"
+    "servings_other": "{{count}} servings",
+    "notFound": {
+      "title": "Recipe not found",
+      "description": "It may have been deleted",
+      "action": "Back"
+    },
+    "addFavorite": "Add to favorites",
+    "removeFavorite": "Remove from favorites",
+    "editRecipe": "Edit recipe",
+    "ingredients": "Ingredients",
+    "stepsTitle": "Steps",
+    "servingsLabel": "Servings",
+    "steps_one": "{{count}} step",
+    "steps_other": "{{count}} steps",
+    "calories": "{{count}} kcal / serving"
   },
   "duration": {
     "hours": "{{hours}} h",
