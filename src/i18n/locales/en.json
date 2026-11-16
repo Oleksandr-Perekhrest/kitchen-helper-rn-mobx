@@ -1,0 +1,75 @@
+{
+  "common": {
+    "appName": "Cookalong"
+  },
+  "recipeList": {
+    "title": "Recipes",
+    "openDemoRecipe": "Open demo recipe",
+    "newRecipe": "New recipe"
+  },
+  "recipe": {
+    "title": "Recipe",
+    "edit": "Edit",
+    "startCooking": "Start cooking"
+  },
+  "recipeForm": {
+    "titleNew": "New recipe",
+    "titleEdit": "Edit recipe"
+  },
+  "cookingMode": {
+    "title": "Cooking"
+  },
+  "timers": {
+    "title": "Timers"
+  },
+  "settings": {
+    "title": "Settings",
+    "theme": {
+      "label": "Theme",
+      "system": "System",
+      "light": "Light",
+      "dark": "Dark"
+    },
+    "language": {
+      "label": "Language",
+      "system": "System"
+    },
+    "voice": {
+      "label": "Voice assistant",
+      "description": "Voice commands in cooking mode: next, back, repeat, timer."
+    }
+  },
+  "navigation": {
+    "timersButton": "Timers",
+    "settingsButton": "Settings"
+  },
+  "units": {
+    "g": "g",
+    "kg": "kg",
+    "ml": "ml",
+    "l": "l",
+    "tsp": "tsp",
+    "tbsp": "tbsp",
+    "pcs": "pcs",
+    "cup_one": "cup",
+    "cup_other": "cups",
+    "clove_one": "clove",
+    "clove_other": "cloves",
+    "bunch_one": "bunch",
+    "bunch_other": "bunches",
+    "pinch_one": "pinch",
+    "pinch_other": "pinches",
+    "toTaste": "to taste"
+  },
+  "tags": {
+    "breakfast": "Breakfast",
+    "soup": "Soups",
+    "main": "Main dishes",
+    "salad": "Salads",
+    "dessert": "Desserts",
+    "baking": "Baking",
+    "meat": "Meat",
+    "fish": "Fish",
+    "vegetarian": "Vegetarian"
+  }
+}

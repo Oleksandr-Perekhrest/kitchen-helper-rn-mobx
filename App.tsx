@@ -1,53 +1,68 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
 // outsource dependencies
-import { NewAppScreen } from "@react-native/new-app-screen";
-import { View, StatusBar, StyleSheet, useColorScheme } from "react-native";
-import {
-    SafeAreaProvider,
-    useSafeAreaInsets,
-} from "react-native-safe-area-context";
+import { StatusBar } from "react-native";
+import { observer } from "mobx-react-lite";
+import { useState, useEffect } from "react";
+import { NavigationContainer } from "@react-navigation/native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 // local dependencies
-import { ThemeProvider } from "./src/theme";
+import { useTheme, ThemeProvider } from "./src/theme";
+import { createRootStore } from "./src/stores/RootStore";
+import { resolveLanguage } from "./src/i18n/resolveLanguage";
+import { createMmkvStorage } from "./src/storage/mmkvStorage";
+import { RootNavigator } from "./src/navigation/RootNavigator";
+import { i18n, initI18n, getDeviceLanguages } from "./src/i18n";
+import { useStores, StoreProvider } from "./src/stores/StoreProvider";
+import { applyNativeColorScheme } from "./src/theme/nativeColorScheme";
+import { useNavigationTheme } from "./src/navigation/useNavigationTheme";
 
-function App() {
-    const isDarkMode = useColorScheme() === "dark";
-
+function AppShell() {
+    const { scheme } = useTheme();
+    const navTheme = useNavigationTheme();
     return (
-        <ThemeProvider>
+        <>
+            {/* Matters on Android; on iOS the status bar follows the native color scheme. */}
+            <StatusBar
+                barStyle={scheme === "dark" ? "light-content" : "dark-content"}
+            />
+            <NavigationContainer theme={navTheme}>
+                <RootNavigator />
+            </NavigationContainer>
+        </>
+    );
+}
+
+const ThemedApp = observer(function ThemedAppComponent() {
+    const { settings } = useStores();
+    useEffect(() => {
+        applyNativeColorScheme(settings.themePreference);
+    }, [settings.themePreference]);
+    useEffect(() => {
+        i18n.changeLanguage(
+            resolveLanguage(settings.language, getDeviceLanguages()),
+        );
+    }, [settings.language]);
+    return (
+        <ThemeProvider preference={settings.themePreference}>
             <SafeAreaProvider>
-                <StatusBar
-                    barStyle={isDarkMode ? "light-content" : "dark-content"}
-                />
-                <AppContent />
+                <AppShell />
             </SafeAreaProvider>
         </ThemeProvider>
     );
-}
+});
 
-function AppContent() {
-    const safeAreaInsets = useSafeAreaInsets();
-
+function App() {
+    const [store] = useState(() => {
+        const deviceLanguages = getDeviceLanguages();
+        const s = createRootStore(createMmkvStorage(), { deviceLanguages });
+        initI18n(resolveLanguage(s.settings.language, deviceLanguages));
+        return s;
+    });
     return (
-        <View style={styles.container}>
-            <NewAppScreen
-                templateFileName="App.tsx"
-                safeAreaInsets={safeAreaInsets}
-            />
-        </View>
+        <StoreProvider store={store}>
+            <ThemedApp />
+        </StoreProvider>
     );
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-    },
-});
 
 export default App;

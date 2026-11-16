@@ -1,0 +1,83 @@
+{
+  "common": {
+    "appName": "Готуємо"
+  },
+  "recipeList": {
+    "title": "Рецепти",
+    "openDemoRecipe": "Відкрити демо-рецепт",
+    "newRecipe": "Новий рецепт"
+  },
+  "recipe": {
+    "title": "Рецепт",
+    "edit": "Редагувати",
+    "startCooking": "Почати готувати"
+  },
+  "recipeForm": {
+    "titleNew": "Новий рецепт",
+    "titleEdit": "Редагувати рецепт"
+  },
+  "cookingMode": {
+    "title": "Готування"
+  },
+  "timers": {
+    "title": "Таймери"
+  },
+  "settings": {
+    "title": "Налаштування",
+    "theme": {
+      "label": "Тема",
+      "system": "Системна",
+      "light": "Світла",
+      "dark": "Темна"
+    },
+    "language": {
+      "label": "Мова",
+      "system": "Системна"
+    },
+    "voice": {
+      "label": "Голосовий помічник",
+      "description": "Голосові команди в режимі готування: далі, назад, повтори, таймер."
+    }
+  },
+  "navigation": {
+    "timersButton": "Таймери",
+    "settingsButton": "Налаштування"
+  },
+  "units": {
+    "g": "г",
+    "kg": "кг",
+    "ml": "мл",
+    "l": "л",
+    "tsp": "ч. л.",
+    "tbsp": "ст. л.",
+    "pcs": "шт.",
+    "cup_one": "склянка",
+    "cup_few": "склянки",
+    "cup_many": "склянок",
+    "cup_other": "склянки",
+    "clove_one": "зубчик",
+    "clove_few": "зубчики",
+    "clove_many": "зубчиків",
+    "clove_other": "зубчика",
+    "bunch_one": "пучок",
+    "bunch_few": "пучки",
+    "bunch_many": "пучків",
+    "bunch_other": "пучка",
+    "pinch_one": "дрібка",
+    "pinch_few": "дрібки",
+    "pinch_many": "дрібок",
+    "pinch_other": "дрібки",
+    "toTaste": "за смаком"
+  },
+  "tags": {
+    "breakfast": "Сніданок",
+    "soup": "Супи",
+    "main": "Основні страви",
+    "salad": "Салати",
+    "dessert": "Десерти",
+    "baking": "Випічка",
+    "meat": "М'ясо",
+    "fish": "Риба",
+    "vegetarian": "Вегетаріанське"
+  }
+}

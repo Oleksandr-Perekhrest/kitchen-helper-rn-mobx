@@ -42,15 +42,16 @@ cd ios && bundle exec pod install
 - StyleSheet with own design tokens and light/dark theme (`src/theme`: tokens, typography, shadows, ThemeProvider with a controlled `preference` prop)
 - Manrope font linked natively with @callstack/react-native-asset (`assets/fonts`, `react-native.config.js`; `fontFamily "Manrope"` + `fontWeight` on both platforms)
 - react-native-svg + lucide-react-native for icons
+- React Navigation (native stack) with react-native-screens + react-native-safe-area-context (`src/navigation`: RootNavigator, route types, navigation theme hook)
+- MobX 7 + mobx-react-lite — observable settings and recipes stores; `persist` helper with versioned `{ version, data }` envelope
+- react-native-mmkv 4 (Nitro-based) — synchronous key-value storage backing the settings and recipes stores
+- zod 4 — data model schemas in `src/domain`; persisted data is validated with these schemas on read (invalid records are dropped, not rejected wholesale)
 - web-only Storybook 10 with @storybook/react-native-web-vite (`stories/`, addons Docs and a11y, default viewport "Cookalong · 390×844")
+- i18next 26 + react-i18next + react-native-localize — EN and UK locales bundled as JSON resources; `resolveLanguage` resolves `LanguagePreference` → `AppLanguage`; typed keys via `src/i18n/i18next.d.ts` augmentation
 
 **Planned — do not add any of these until a task explicitly asks:**
 
-- MobX
-- React Navigation (native stack)
-- react-native-mmkv
-- React Hook Form + zod
-- i18next (EN + UK locales)
+- React Hook Form
 - react-native-notify-kit
 - expo-speech-recognition (Expo used only as a module provider)
 
@@ -61,6 +62,13 @@ Entry point: `index.js` → `App.tsx`. iOS bundle target: `Cookalong` (`ios/Cook
 - `src/theme` — tokens and theme
 - `src/ui` — presentational UI components (no stores or navigation inside)
 - `src/hooks` — shared hooks
+- `src/navigation` — navigator (`RootNavigator`), route types (`types.ts`), navigation theme hook (`useNavigationTheme.ts`)
+- `src/screens` — one file per screen; screens may use stores and navigation, `src/ui` may not
+- `src/domain` — data model and zod schemas (no React, no MobX); `recipe.ts` exports `RecipeSchema`, `UNITS`, `TAGS`, and inferred types
+- `src/storage` — `KeyValueStorage` interface, MMKV adapter (`mmkvStorage.ts`), in-memory adapter for tests (`memoryStorage.ts`)
+- `src/i18n` — i18next setup: `index.ts` (init + `getDeviceLanguages`), `resolveLanguage.ts`, `i18next.d.ts` (typed keys), `locales/en.json` and `locales/uk.json`
+- `src/stores` — MobX stores (`SettingsStore`, `RecipesStore`, `RootStore`), `persist` helper, `StoreProvider` context
+- `src/dev` — dev-only screens and tools; reachable only when `__DEV__` is true; English literals allowed, no i18n required
 - `stories/` — Storybook stories mirroring `src/`
 - `__tests__/` — tests mirroring `src/`
 - `assets/fonts` — font files; `assets/licenses` for their licenses
@@ -127,6 +135,8 @@ Never add `eslint-disable` comments or loosen types to silence an error — use 
 
 Do not write tests for anything outside the critical list unless the task explicitly asks.
 
+**Jest vs Metro divergence:** Jest resolves the CommonJS build of a package while Metro uses its ESM build. A green test run does not prove the app bundles. After adding a JS dependency that ships an ESM entry point, verify that `pnpm start` (Metro) bundles without errors before closing the task.
+
 ## CI
 
 Workflows live in `.github/workflows/`.
@@ -139,6 +149,7 @@ Workflows live in `.github/workflows/`.
 
 ## Rules for the agent
 
+- Stores depend on `KeyValueStorage` (from `src/storage/types.ts`), never on MMKV directly — this keeps stores testable with `createMemoryStorage`.
 - Do **not** commit, push, create branches, or run any git command that changes state — the user does all git operations.
 - Do not add dependencies the task does not ask for; if one seems necessary, stop and ask.
 - Use **pnpm** only; never npm or yarn.
@@ -146,6 +157,8 @@ Workflows live in `.github/workflows/`.
 - Do not edit `android/` or `ios/` unless the task explicitly asks.
 - Do not run native builds (`pnpm android`, `pnpm ios`, `gradlew`, `xcodebuild`, `pod install`) unless the task asks; they are slow.
 - After adding a native dependency, running `cd ios && bundle exec pod install` is the user's job — say in the report that pods must be installed; `pnpm ios` does not always install new pods.
+- No hard-coded user-visible strings in `src/screens` or `src/navigation` — always use `t()` from `useTranslation()`. `src/ui` components receive text via props. Exception: `src/dev` files are developer-facing and may use English string literals directly.
+- Every new i18n key must be added to both `src/i18n/locales/en.json` and `src/i18n/locales/uk.json`.
 
 ## Storybook stories
 
