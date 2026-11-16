@@ -8,6 +8,7 @@ export type RootStackParamList = {
     CookingMode: { recipeId: string };
     Timers: undefined;
     Settings: undefined;
+    UiGallery: undefined;
 };
 
 export type RootStackScreenProps<T extends keyof RootStackParamList> =

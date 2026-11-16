@@ -1,6 +1,7 @@
 // outsource dependencies
 import { observer } from "mobx-react-lite";
 import { useTranslation } from "react-i18next";
+import { useNavigation } from "@react-navigation/native";
 import { View, ScrollView, StyleSheet } from "react-native";
 
 // local dependencies
@@ -8,7 +9,7 @@ import { useTheme } from "../theme";
 import type { ThemePreference } from "../theme";
 import { LANGUAGE_NATIVE_NAMES } from "../i18n";
 import { useStores } from "../stores/StoreProvider";
-import { Text, Switch, SegmentedControl } from "../ui";
+import { Text, Button, Switch, SegmentedControl } from "../ui";
 import type { RootStackScreenProps } from "../navigation/types";
 import type { LanguagePreference } from "../stores/SettingsStore";
 
@@ -18,6 +19,7 @@ export const SettingsScreen = observer(function SettingsScreenComponent(
     _props: Props,
 ) {
     const { t } = useTranslation();
+    const navigation = useNavigation();
     const { colors, spacing } = useTheme();
     const { settings } = useStores();
 
@@ -42,7 +44,7 @@ export const SettingsScreen = observer(function SettingsScreenComponent(
     return (
         <ScrollView
             style={[styles.scroll, { backgroundColor: colors.background }]}
-            contentContainerStyle={[styles.content, { padding: spacing[16] }]}
+            contentContainerStyle={{ padding: spacing[16] }}
         >
             <Text variant="headline">{t("settings.title")}</Text>
             <View style={styles.section}>
@@ -78,13 +80,21 @@ export const SettingsScreen = observer(function SettingsScreenComponent(
                     {t("settings.voice.description")}
                 </Text>
             </View>
+            {__DEV__ && (
+                <View style={styles.section}>
+                    <Button
+                        label="UI gallery"
+                        variant="neutral"
+                        onPress={() => navigation.navigate("UiGallery")}
+                    />
+                </View>
+            )}
         </ScrollView>
     );
 });
 
 const styles = StyleSheet.create({
     scroll: { flex: 1 },
-    content: {},
     section: { gap: 8, marginTop: 16 },
     voiceRow: {
         flexDirection: "row",

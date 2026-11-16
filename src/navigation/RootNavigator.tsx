@@ -10,6 +10,7 @@ import { IconButton } from "../ui";
 import type { RootStackParamList } from "./types";
 import { RecipeScreen } from "../screens/RecipeScreen";
 import { TimersScreen } from "../screens/TimersScreen";
+import { UiGalleryScreen } from "../dev/UiGalleryScreen";
 import { SettingsScreen } from "../screens/SettingsScreen";
 import { RecipeListScreen } from "../screens/RecipeListScreen";
 import { RecipeFormScreen } from "../screens/RecipeFormScreen";
@@ -80,6 +81,13 @@ export function RootNavigator() {
                 component={SettingsScreen}
                 options={{ title: t("settings.title") }}
             />
+            {__DEV__ && (
+                <Stack.Screen
+                    name="UiGallery"
+                    component={UiGalleryScreen}
+                    options={{ title: "UI gallery" }}
+                />
+            )}
         </Stack.Navigator>
     );
 }

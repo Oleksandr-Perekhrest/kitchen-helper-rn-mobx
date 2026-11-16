@@ -68,6 +68,7 @@ Entry point: `index.js` → `App.tsx`. iOS bundle target: `Cookalong` (`ios/Cook
 - `src/storage` — `KeyValueStorage` interface, MMKV adapter (`mmkvStorage.ts`), in-memory adapter for tests (`memoryStorage.ts`)
 - `src/i18n` — i18next setup: `index.ts` (init + `getDeviceLanguages`), `resolveLanguage.ts`, `i18next.d.ts` (typed keys), `locales/en.json` and `locales/uk.json`
 - `src/stores` — MobX stores (`SettingsStore`, `RecipesStore`, `RootStore`), `persist` helper, `StoreProvider` context
+- `src/dev` — dev-only screens and tools; reachable only when `__DEV__` is true; English literals allowed, no i18n required
 - `stories/` — Storybook stories mirroring `src/`
 - `__tests__/` — tests mirroring `src/`
 - `assets/fonts` — font files; `assets/licenses` for their licenses
@@ -156,7 +157,7 @@ Workflows live in `.github/workflows/`.
 - Do not edit `android/` or `ios/` unless the task explicitly asks.
 - Do not run native builds (`pnpm android`, `pnpm ios`, `gradlew`, `xcodebuild`, `pod install`) unless the task asks; they are slow.
 - After adding a native dependency, running `cd ios && bundle exec pod install` is the user's job — say in the report that pods must be installed; `pnpm ios` does not always install new pods.
-- No hard-coded user-visible strings in `src/screens` or `src/navigation` — always use `t()` from `useTranslation()`. `src/ui` components receive text via props.
+- No hard-coded user-visible strings in `src/screens` or `src/navigation` — always use `t()` from `useTranslation()`. `src/ui` components receive text via props. Exception: `src/dev` files are developer-facing and may use English string literals directly.
 - Every new i18n key must be added to both `src/i18n/locales/en.json` and `src/i18n/locales/uk.json`.
 
 ## Storybook stories
