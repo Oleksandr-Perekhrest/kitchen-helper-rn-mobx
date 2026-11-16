@@ -1,6 +1,12 @@
 // local dependencies
 import { persist } from "./persist";
 import type { KeyValueStorage } from "../storage/types";
+import { RECIPE_SCHEMA_VERSION } from "../domain/recipe";
+import {
+    RecipesStore,
+    parseRecipes,
+    RECIPES_STORAGE_KEY,
+} from "./RecipesStore";
 import {
     SettingsStore,
     parseSettings,
@@ -10,11 +16,13 @@ import {
 
 export type RootStore = {
     settings: SettingsStore;
+    recipes: RecipesStore;
     dispose: () => void;
 };
 
 export function createRootStore(storage: KeyValueStorage): RootStore {
     const settings = new SettingsStore();
+    const recipes = new RecipesStore();
 
     const disposeSettings = persist({
         storage,
@@ -33,8 +41,21 @@ export function createRootStore(storage: KeyValueStorage): RootStore {
         parse: parseSettings,
     });
 
+    const disposeRecipes = persist({
+        storage,
+        key: RECIPES_STORAGE_KEY,
+        version: RECIPE_SCHEMA_VERSION,
+        snapshot: () => recipes.recipes,
+        apply: (data) => recipes.replaceAll(data),
+        parse: parseRecipes,
+    });
+
     return {
         settings,
-        dispose: disposeSettings,
+        recipes,
+        dispose: () => {
+            disposeSettings();
+            disposeRecipes();
+        },
     };
 }

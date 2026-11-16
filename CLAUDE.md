@@ -43,14 +43,15 @@ cd ios && bundle exec pod install
 - Manrope font linked natively with @callstack/react-native-asset (`assets/fonts`, `react-native.config.js`; `fontFamily "Manrope"` + `fontWeight` on both platforms)
 - react-native-svg + lucide-react-native for icons
 - React Navigation (native stack) with react-native-screens + react-native-safe-area-context (`src/navigation`: RootNavigator, route types, navigation theme hook)
-- MobX 7 + mobx-react-lite — observable settings store; `persist` helper with versioned `{ version, data }` envelope
-- react-native-mmkv 4 (Nitro-based) — synchronous key-value storage backing the settings store
+- MobX 7 + mobx-react-lite — observable settings and recipes stores; `persist` helper with versioned `{ version, data }` envelope
+- react-native-mmkv 4 (Nitro-based) — synchronous key-value storage backing the settings and recipes stores
+- zod 4 — data model schemas in `src/domain`; persisted data is validated with these schemas on read (invalid records are dropped, not rejected wholesale)
 - web-only Storybook 10 with @storybook/react-native-web-vite (`stories/`, addons Docs and a11y, default viewport "Cookalong · 390×844")
 - i18next 26 + react-i18next + react-native-localize — EN and UK locales bundled as JSON resources; `resolveLanguage` resolves `LanguagePreference` → `AppLanguage`; typed keys via `src/i18n/i18next.d.ts` augmentation
 
 **Planned — do not add any of these until a task explicitly asks:**
 
-- React Hook Form + zod
+- React Hook Form
 - react-native-notify-kit
 - expo-speech-recognition (Expo used only as a module provider)
 
@@ -63,9 +64,10 @@ Entry point: `index.js` → `App.tsx`. iOS bundle target: `Cookalong` (`ios/Cook
 - `src/hooks` — shared hooks
 - `src/navigation` — navigator (`RootNavigator`), route types (`types.ts`), navigation theme hook (`useNavigationTheme.ts`)
 - `src/screens` — one file per screen; screens may use stores and navigation, `src/ui` may not
+- `src/domain` — data model and zod schemas (no React, no MobX); `recipe.ts` exports `RecipeSchema`, `UNITS`, `TAGS`, and inferred types
 - `src/storage` — `KeyValueStorage` interface, MMKV adapter (`mmkvStorage.ts`), in-memory adapter for tests (`memoryStorage.ts`)
 - `src/i18n` — i18next setup: `index.ts` (init + `getDeviceLanguages`), `resolveLanguage.ts`, `i18next.d.ts` (typed keys), `locales/en.json` and `locales/uk.json`
-- `src/stores` — MobX stores (`SettingsStore`, `RootStore`), `persist` helper, `StoreProvider` context
+- `src/stores` — MobX stores (`SettingsStore`, `RecipesStore`, `RootStore`), `persist` helper, `StoreProvider` context
 - `stories/` — Storybook stories mirroring `src/`
 - `__tests__/` — tests mirroring `src/`
 - `assets/fonts` — font files; `assets/licenses` for their licenses
