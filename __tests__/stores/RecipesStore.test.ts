@@ -3,8 +3,10 @@ import { it, jest, expect, describe } from "@jest/globals";
 
 // local dependencies
 import type { Recipe } from "../../src/domain/recipe";
-import { parseRecipes } from "../../src/stores/RecipesStore";
+import { createRootStore } from "../../src/stores/RootStore";
 import { RECIPE_SCHEMA_VERSION } from "../../src/domain/recipe";
+import { createMemoryStorage } from "../../src/storage/memoryStorage";
+import { RecipesStore, parseRecipes } from "../../src/stores/RecipesStore";
 
 // ─── fixture ──────────────────────────────────────────────────────────────────
 
@@ -90,5 +92,63 @@ describe("parseRecipes", () => {
     it("unknown version returns null", () => {
         expect(parseRecipes([VALID_RECIPE], 0)).toBeNull();
         expect(parseRecipes([VALID_RECIPE], 2)).toBeNull();
+    });
+});
+
+// ─── RecipesStore.toggleFavorite ─────────────────────────────────────────────
+
+describe("RecipesStore.toggleFavorite", () => {
+    it("flips favorite from false to true", () => {
+        const store = new RecipesStore();
+        store.add(VALID_RECIPE);
+        store.toggleFavorite(VALID_RECIPE.id);
+        expect(store.recipes[0]?.favorite).toBe(true);
+    });
+
+    it("does not change updatedAt", () => {
+        const store = new RecipesStore();
+        store.add(VALID_RECIPE);
+        store.toggleFavorite(VALID_RECIPE.id);
+        expect(store.recipes[0]?.updatedAt).toBe(NOW);
+    });
+
+    it("toggling twice restores the original favorite value", () => {
+        const store = new RecipesStore();
+        store.add(VALID_RECIPE); // favorite: false
+        store.toggleFavorite(VALID_RECIPE.id);
+        expect(store.recipes[0]?.favorite).toBe(true);
+        store.toggleFavorite(VALID_RECIPE.id);
+        expect(store.recipes[0]?.favorite).toBe(false);
+    });
+});
+
+// ─── toggleFavorite persistence ──────────────────────────────────────────────
+
+const NOW_DATE = new Date("2026-11-16T10:00:00.000Z");
+const NOW_FN = () => NOW_DATE;
+
+describe("toggleFavorite persistence", () => {
+    it("favorite set via toggleFavorite survives a simulated app restart", () => {
+        const storage = createMemoryStorage();
+        const store1 = createRootStore(storage, {
+            deviceLanguages: ["en"],
+            now: NOW_FN,
+        });
+
+        const recipe = store1.recipes.recipes[0];
+        if (recipe === undefined) throw new Error("no demo recipes seeded");
+
+        expect(recipe.favorite).toBe(false);
+        store1.recipes.toggleFavorite(recipe.id);
+        expect(store1.recipes.recipes[0]?.favorite).toBe(true);
+        store1.dispose();
+
+        const store2 = createRootStore(storage, {
+            deviceLanguages: ["en"],
+            now: NOW_FN,
+        });
+        const restored = store2.recipes.recipes.find((r) => r.id === recipe.id);
+        expect(restored?.favorite).toBe(true);
+        store2.dispose();
     });
 });

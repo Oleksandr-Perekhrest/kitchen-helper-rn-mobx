@@ -1,4 +1,6 @@
 // outsource dependencies
+// Hermes lacks Intl.PluralRules; the polyfill only installs itself when it is missing.
+import "intl-pluralrules";
 import i18next from "i18next";
 import { initReactI18next } from "react-i18next";
 import { getLocales } from "react-native-localize";

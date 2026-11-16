@@ -20,6 +20,8 @@ export type ChipProps = {
     icon?: LucideIcon;
     /** Whether the chip is disabled. */
     disabled?: boolean;
+    /** ARIA role for the pressable. Defaults to "checkbox". */
+    role?: "checkbox" | "radio";
 };
 
 export const INFO_CHIP_VARIANTS = ["filled", "outline"] as const;
@@ -41,6 +43,7 @@ export function Chip({
     onPress,
     icon,
     disabled = false,
+    role = "checkbox",
 }: ChipProps) {
     const { colors } = useTheme();
 
@@ -53,7 +56,7 @@ export function Chip({
         <Pressable
             disabled={disabled}
             onPress={onPress}
-            role="checkbox"
+            role={role}
             aria-label={label}
             aria-checked={selected}
             aria-disabled={disabled}

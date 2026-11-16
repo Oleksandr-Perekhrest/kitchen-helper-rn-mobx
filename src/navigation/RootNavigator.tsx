@@ -42,7 +42,13 @@ function RecipeListHeaderRight() {
 export function RootNavigator() {
     const { t } = useTranslation();
     return (
-        <Stack.Navigator initialRouteName="RecipeList">
+        <Stack.Navigator
+            initialRouteName="RecipeList"
+            screenOptions={{
+                headerTitleStyle: { fontFamily: "Manrope", fontWeight: "700" },
+                headerBackButtonDisplayMode: "minimal",
+            }}
+        >
             <Stack.Screen
                 name="RecipeList"
                 component={RecipeListScreen}

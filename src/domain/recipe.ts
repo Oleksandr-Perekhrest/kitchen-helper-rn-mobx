@@ -91,6 +91,8 @@ export const RecipeSchema = z
         id: z.uuid(),
         title: z.string().trim().min(1),
         servings: z.number().int().min(1),
+        // optional — stored data without this field remains valid; no version bump needed
+        totalMinutes: z.number().int().positive().optional(),
         caloriesPerServing: z.number().int().positive().optional(),
         tags: z.array(z.enum(TAGS)),
         favorite: z.boolean(),

@@ -25,6 +25,7 @@ type RecipeDef = {
     id: string;
     title: Bilingual;
     servings: number;
+    totalMinutes?: number;
     caloriesPerServing?: number;
     tags: Tag[];
     favorite: boolean;
@@ -117,6 +118,7 @@ const RECIPES: RecipeDef[] = [
         id: B_ID,
         title: { en: "Borscht", uk: "Борщ" },
         servings: 6,
+        totalMinutes: 140,
         caloriesPerServing: 180,
         tags: ["soup", "meat"],
         favorite: false,
@@ -247,6 +249,7 @@ const RECIPES: RecipeDef[] = [
             uk: "Сирники",
         },
         servings: 2,
+        totalMinutes: 20,
         caloriesPerServing: 320,
         tags: ["breakfast", "vegetarian"],
         favorite: false,
@@ -338,6 +341,7 @@ const RECIPES: RecipeDef[] = [
             uk: "Запечений лосось з овочами",
         },
         servings: 2,
+        totalMinutes: 35,
         caloriesPerServing: 420,
         tags: ["fish", "main"],
         favorite: true,
@@ -527,6 +531,7 @@ const RECIPES: RecipeDef[] = [
         id: CH_ID,
         title: { en: "Apple Charlotte", uk: "Шарлотка" },
         servings: 8,
+        totalMinutes: 60,
         caloriesPerServing: 290,
         tags: ["dessert", "baking"],
         favorite: false,
@@ -635,6 +640,7 @@ function buildRecipes(
         id: def.id,
         title: def.title[language],
         servings: def.servings,
+        totalMinutes: def.totalMinutes,
         caloriesPerServing: def.caloriesPerServing,
         tags: def.tags,
         favorite: def.favorite,

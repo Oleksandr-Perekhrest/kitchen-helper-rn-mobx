@@ -4,13 +4,58 @@
   },
   "recipeList": {
     "title": "Рецепти",
-    "openDemoRecipe": "Відкрити демо-рецепт",
-    "newRecipe": "Новий рецепт"
+    "newRecipe": "Новий рецепт",
+    "search": "Пошук рецептів",
+    "all": "Усі · {{count}}",
+    "favorites": "Обрані · {{count}}",
+    "filterLabel": "Фільтр рецептів",
+    "tagGroupLabel": "Фільтр за тегом",
+    "favoriteBadge": "В обраному",
+    "empty": {
+      "noRecipes": {
+        "title": "Поки що немає рецептів",
+        "description": "Додайте перший — він з'явиться тут"
+      },
+      "noFavorites": {
+        "title": "Немає обраних",
+        "description": "Позначте рецепт зірочкою на його сторінці",
+        "action": "Показати всі"
+      },
+      "noResults": {
+        "title": "Нічого не знайдено",
+        "description": "Спробуйте інший запит або скиньте фільтри",
+        "action": "Скинути фільтри"
+      }
+    }
   },
   "recipe": {
     "title": "Рецепт",
-    "edit": "Редагувати",
-    "startCooking": "Почати готувати"
+    "startCooking": "Почати готувати",
+    "servings_one": "{{count}} порція",
+    "servings_few": "{{count}} порції",
+    "servings_many": "{{count}} порцій",
+    "servings_other": "{{count}} порції",
+    "notFound": {
+      "title": "Рецепт не знайдено",
+      "description": "Можливо, його видалили",
+      "action": "Назад"
+    },
+    "addFavorite": "Додати в обрані",
+    "removeFavorite": "Прибрати з обраних",
+    "editRecipe": "Редагувати рецепт",
+    "ingredients": "Інгредієнти",
+    "stepsTitle": "Кроки",
+    "servingsLabel": "Порції",
+    "steps_one": "{{count}} крок",
+    "steps_few": "{{count}} кроки",
+    "steps_many": "{{count}} кроків",
+    "steps_other": "{{count}} кроку",
+    "calories": "{{count}} ккал / порц."
+  },
+  "duration": {
+    "hours": "{{hours}} год",
+    "minutes": "{{minutes}} хв",
+    "hoursMinutes": "{{hours}} год {{minutes}} хв"
   },
   "recipeForm": {
     "titleNew": "Новий рецепт",

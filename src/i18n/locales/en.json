@@ -4,13 +4,54 @@
   },
   "recipeList": {
     "title": "Recipes",
-    "openDemoRecipe": "Open demo recipe",
-    "newRecipe": "New recipe"
+    "newRecipe": "New recipe",
+    "search": "Search recipes",
+    "all": "All · {{count}}",
+    "favorites": "Favorites · {{count}}",
+    "filterLabel": "Recipe filter",
+    "tagGroupLabel": "Filter by tag",
+    "favoriteBadge": "Favorite",
+    "empty": {
+      "noRecipes": {
+        "title": "No recipes yet",
+        "description": "Add your first one and it will show up here"
+      },
+      "noFavorites": {
+        "title": "No favorites",
+        "description": "Mark a recipe with a star on its page",
+        "action": "Show all"
+      },
+      "noResults": {
+        "title": "Nothing found",
+        "description": "Try another search or reset the filters",
+        "action": "Reset filters"
+      }
+    }
   },
   "recipe": {
     "title": "Recipe",
-    "edit": "Edit",
-    "startCooking": "Start cooking"
+    "startCooking": "Start cooking",
+    "servings_one": "{{count}} serving",
+    "servings_other": "{{count}} servings",
+    "notFound": {
+      "title": "Recipe not found",
+      "description": "It may have been deleted",
+      "action": "Back"
+    },
+    "addFavorite": "Add to favorites",
+    "removeFavorite": "Remove from favorites",
+    "editRecipe": "Edit recipe",
+    "ingredients": "Ingredients",
+    "stepsTitle": "Steps",
+    "servingsLabel": "Servings",
+    "steps_one": "{{count}} step",
+    "steps_other": "{{count}} steps",
+    "calories": "{{count}} kcal / serving"
+  },
+  "duration": {
+    "hours": "{{hours}} h",
+    "minutes": "{{minutes}} min",
+    "hoursMinutes": "{{hours}} h {{minutes}} min"
   },
   "recipeForm": {
     "titleNew": "New recipe",
