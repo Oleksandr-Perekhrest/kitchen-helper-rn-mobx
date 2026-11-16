@@ -4,3 +4,6 @@ allowBuilds:
   # binary comes from optionalDependencies; postinstall only runs
   # "lefthook install", which the "prepare" script already does
   lefthook: false
+  # binary comes from optionalDependencies (@esbuild/<platform>);
+  # postinstall only verifies it, checked with "esbuild --version"
+  esbuild: false

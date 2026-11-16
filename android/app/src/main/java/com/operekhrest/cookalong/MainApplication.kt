@@ -1,5 +1,7 @@
 package com.operekhrest.cookalong
 
+import com.facebook.react.views.text.ReactFontManager
+
 import android.app.Application
 import com.facebook.react.PackageList
 import com.facebook.react.ReactApplication
@@ -22,6 +24,7 @@ class MainApplication : Application(), ReactApplication {
 
   override fun onCreate() {
     super.onCreate()
+    ReactFontManager.getInstance().addCustomFont(this, "Manrope", R.font.manrope)
     loadReactNative(this)
   }
 }
