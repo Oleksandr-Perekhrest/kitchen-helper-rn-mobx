@@ -76,6 +76,29 @@ export const Info: Story = {
     ),
 };
 
+const RADIO_OPTIONS = ["Сніданок", "Вечеря"] as const;
+
+function RadioGroupStory() {
+    const [selected, setSelected] = useState<string>(RADIO_OPTIONS[0]);
+    return (
+        <View role="radiogroup" style={styles.row}>
+            {RADIO_OPTIONS.map((label) => (
+                <Chip
+                    key={label}
+                    label={label}
+                    role="radio"
+                    selected={selected === label}
+                    onPress={() => setSelected(label)}
+                />
+            ))}
+        </View>
+    );
+}
+
+export const RadioGroup: Story = {
+    render: () => <RadioGroupStory />,
+};
+
 const styles = StyleSheet.create({
     tagGroup: {
         flexDirection: "row",
@@ -83,6 +106,10 @@ const styles = StyleSheet.create({
         gap: 8,
     },
     infoRow: {
+        flexDirection: "row",
+        gap: 8,
+    },
+    row: {
         flexDirection: "row",
         gap: 8,
     },

@@ -1,5 +1,6 @@
 // outsource dependencies
 import { fn } from "storybook/test";
+import { Search } from "lucide-react-native";
 import { useArgs } from "storybook/preview-api";
 import { View, StyleSheet } from "react-native";
 import type { Meta, StoryObj } from "@storybook/react-native-web-vite";
@@ -98,6 +99,24 @@ export const Numeric: Story = {
         const [, updateArgs] = useArgs<typeof args>();
         return (
             <View style={styles.numeric}>
+                <TextField
+                    {...args}
+                    onChangeText={(text) => {
+                        args.onChangeText?.(text);
+                        updateArgs({ value: text });
+                    }}
+                />
+            </View>
+        );
+    },
+};
+
+export const WithIcon: Story = {
+    args: { label: "Пошук", placeholder: "Пошук рецептів", icon: Search },
+    render: function Render(args) {
+        const [, updateArgs] = useArgs<typeof args>();
+        return (
+            <View style={styles.container}>
                 <TextField
                     {...args}
                     onChangeText={(text) => {
