@@ -4,8 +4,13 @@
   },
   "recipeList": {
     "title": "Рецепти",
-    "openDemoRecipe": "Відкрити демо-рецепт",
-    "newRecipe": "Новий рецепт"
+    "newRecipe": "Новий рецепт",
+    "search": "Пошук рецептів",
+    "all": "Усі · {{count}}",
+    "favorites": "Обрані · {{count}}",
+    "filterLabel": "Фільтр рецептів",
+    "tagGroupLabel": "Фільтр за тегом",
+    "favoriteBadge": "В обраному"
   },
   "recipe": {
     "title": "Рецепт",

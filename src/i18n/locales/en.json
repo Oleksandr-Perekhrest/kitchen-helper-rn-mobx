@@ -4,8 +4,13 @@
   },
   "recipeList": {
     "title": "Recipes",
-    "openDemoRecipe": "Open demo recipe",
-    "newRecipe": "New recipe"
+    "newRecipe": "New recipe",
+    "search": "Search recipes",
+    "all": "All · {{count}}",
+    "favorites": "Favorites · {{count}}",
+    "filterLabel": "Recipe filter",
+    "tagGroupLabel": "Filter by tag",
+    "favoriteBadge": "Favorite"
   },
   "recipe": {
     "title": "Recipe",

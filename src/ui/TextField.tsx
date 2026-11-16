@@ -1,10 +1,12 @@
 // outsource dependencies
 import { useState } from "react";
 import type { TextInputProps } from "react-native";
+import type { LucideIcon } from "lucide-react-native";
 import type { StyleProp, ViewStyle } from "react-native";
 import { View, TextInput, StyleSheet } from "react-native";
 
 // local dependencies
+import { Icon } from "./Icon";
 import { Text } from "./Text";
 import { useTheme, typography } from "../theme";
 
@@ -15,12 +17,15 @@ export type TextFieldProps = Omit<TextInputProps, "style"> & {
     error?: string;
     /** Additional styles for the outer container. */
     style?: StyleProp<ViewStyle>;
+    /** Optional leading icon rendered at 20 px in textMuted tone. */
+    icon?: LucideIcon;
 };
 
 export function TextField({
     label,
     error,
     style,
+    icon,
     multiline = false,
     onFocus,
     onBlur,
@@ -42,33 +47,48 @@ export function TextField({
     return (
         <View style={[styles.container, style]}>
             {label !== undefined && <Text variant="label">{label}</Text>}
-            <TextInput
-                multiline={multiline}
-                aria-label={label}
-                accessibilityHint={hasError ? error : undefined}
-                placeholderTextColor={colors.textMuted}
-                onFocus={(e) => {
-                    setFocused(true);
-                    onFocus?.(e);
-                }}
-                onBlur={(e) => {
-                    setFocused(false);
-                    onBlur?.(e);
-                }}
+            <View
                 style={[
-                    styles.input,
-                    multiline && styles.inputMultiline,
+                    styles.fieldRow,
+                    multiline && styles.fieldRowMultiline,
                     {
                         borderWidth,
                         borderColor,
                         paddingHorizontal,
                         backgroundColor: colors.surface,
-                        color: colors.text,
                     },
                     multiline && { paddingVertical: 11 - borderWidth },
                 ]}
-                {...rest}
-            />
+            >
+                {icon !== undefined && (
+                    <Icon
+                        icon={icon}
+                        size={20}
+                        tone="textMuted"
+                        strokeWidth={2}
+                    />
+                )}
+                <TextInput
+                    multiline={multiline}
+                    aria-label={label}
+                    accessibilityHint={hasError ? error : undefined}
+                    placeholderTextColor={colors.textMuted}
+                    onFocus={(e) => {
+                        setFocused(true);
+                        onFocus?.(e);
+                    }}
+                    onBlur={(e) => {
+                        setFocused(false);
+                        onBlur?.(e);
+                    }}
+                    style={[
+                        styles.input,
+                        multiline && styles.inputMultiline,
+                        { color: colors.text },
+                    ]}
+                    {...rest}
+                />
+            </View>
             {hasError && (
                 <Text variant="caption" tone="danger">
                     {error}
@@ -82,9 +102,19 @@ const styles = StyleSheet.create({
     container: {
         gap: 6,
     },
-    input: {
+    fieldRow: {
+        flexDirection: "row",
+        alignItems: "center",
         minHeight: 48,
         borderRadius: 12,
+        gap: 8,
+    },
+    fieldRowMultiline: {
+        alignItems: "flex-start",
+        minHeight: 96,
+    },
+    input: {
+        flex: 1,
         outlineWidth: 0,
         outlineStyle: "solid",
         ...typography.body,
