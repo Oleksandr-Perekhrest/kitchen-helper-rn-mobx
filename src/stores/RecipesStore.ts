@@ -70,9 +70,10 @@ export class RecipesStore {
     }
 
     toggleFavorite(id: string) {
-        const recipe = this.byId.get(id);
-        if (recipe !== undefined) {
-            this.update({ ...recipe, favorite: !recipe.favorite });
+        const idx = this.recipes.findIndex((r) => r.id === id);
+        const recipe = this.recipes[idx];
+        if (idx !== -1 && recipe !== undefined) {
+            this.recipes[idx] = { ...recipe, favorite: !recipe.favorite };
         }
     }
 }
