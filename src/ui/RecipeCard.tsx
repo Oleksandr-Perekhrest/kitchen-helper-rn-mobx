@@ -1,7 +1,6 @@
 // outsource dependencies
-import type { LucideIcon } from "lucide-react-native";
-import { Star, UtensilsCrossed } from "lucide-react-native";
 import { View, Image, Pressable, StyleSheet } from "react-native";
+import { Star, Clock, Users, UtensilsCrossed } from "lucide-react-native";
 
 // local dependencies
 import { Icon } from "./Icon";
@@ -10,20 +9,18 @@ import { radii, useTheme, typography } from "../theme";
 
 export type RecipeCardProps = {
     title: string;
-    meta: string;
-    metaIcon?: LucideIcon;
+    duration?: string;
+    servings: string;
     photoUri?: string;
     favorite: boolean;
-    /** Accessibility text for the favorite badge; included in the card's accessibilityLabel. */
-    favoriteLabel: string;
     onPress: () => void;
     accessibilityLabel: string;
 };
 
 export function RecipeCard({
     title,
-    meta,
-    metaIcon,
+    duration,
+    servings,
     photoUri,
     favorite,
     onPress,
@@ -64,6 +61,26 @@ export function RecipeCard({
                         strokeWidth={2}
                     />
                 )}
+                {duration !== undefined && (
+                    <View
+                        style={[
+                            styles.durationPill,
+                            { backgroundColor: colors.surface },
+                        ]}
+                        accessible={false}
+                        importantForAccessibility="no-hide-descendants"
+                    >
+                        <Icon
+                            icon={Clock}
+                            size={14}
+                            tone="textMuted"
+                            strokeWidth={2}
+                        />
+                        <Text variant="caption" tone="textMuted">
+                            {duration}
+                        </Text>
+                    </View>
+                )}
                 {favorite && (
                     <View
                         style={[
@@ -94,21 +111,19 @@ export function RecipeCard({
                     {title}
                 </Text>
                 <View style={styles.metaRow}>
-                    {metaIcon !== undefined && (
-                        <Icon
-                            icon={metaIcon}
-                            size={13}
-                            tone="textMuted"
-                            strokeWidth={2}
-                        />
-                    )}
+                    <Icon
+                        icon={Users}
+                        size={13}
+                        tone="textMuted"
+                        strokeWidth={2}
+                    />
                     <Text
                         variant="caption"
                         tone="textMuted"
                         numberOfLines={1}
                         ellipsizeMode="tail"
                     >
-                        {meta}
+                        {servings}
                     </Text>
                 </View>
             </View>
@@ -136,6 +151,17 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
         bottom: 0,
+    },
+    durationPill: {
+        position: "absolute",
+        bottom: 8,
+        left: 8,
+        height: 28,
+        paddingHorizontal: 8,
+        borderRadius: radii.full,
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 4,
     },
     favBadge: {
         position: "absolute",

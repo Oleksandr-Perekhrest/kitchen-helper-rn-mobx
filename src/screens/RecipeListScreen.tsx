@@ -3,14 +3,14 @@ import { useState } from "react";
 import { observer } from "mobx-react-lite";
 import { useTranslation } from "react-i18next";
 import { useWindowDimensions } from "react-native";
+import { Plus, Star, Search } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { View, FlatList, ScrollView, StyleSheet } from "react-native";
-import { Plus, Star, Clock, Users, Search } from "lucide-react-native";
 
 // local dependencies
-import { useTheme } from "../theme";
 import { TAGS } from "../domain/recipe";
 import type { Tag } from "../domain/recipe";
+import { spacing, useTheme } from "../theme";
 import type { Recipe } from "../domain/recipe";
 import { splitMinutes } from "../domain/duration";
 import { useStores } from "../stores/StoreProvider";
@@ -22,12 +22,18 @@ type Props = RootStackScreenProps<"RecipeList">;
 
 const HORIZONTAL_PAD = 16;
 const CARD_GAP = 12;
+// FAB height (56) + its spacing[16] bottom inset + spacing[16] gap above it
+const LIST_BOTTOM_PAD = 56 + spacing[16] + spacing[16];
+
+function ItemSeparator() {
+    return <View style={styles.rowGap} />;
+}
 
 export const RecipeListScreen = observer(function RecipeListScreenComponent({
     navigation,
 }: Props) {
     const { t } = useTranslation();
-    const { colors, spacing } = useTheme();
+    const { colors } = useTheme();
     const { recipes } = useStores();
     const insets = useSafeAreaInsets();
     const { width: screenWidth } = useWindowDimensions();
@@ -46,44 +52,31 @@ export const RecipeListScreen = observer(function RecipeListScreenComponent({
 
     const cardWidth = (screenWidth - HORIZONTAL_PAD * 2 - CARD_GAP) / 2;
 
-    function formatMeta(recipe: Recipe): {
-        text: string;
-        icon: typeof Clock | typeof Users;
-    } {
-        if (recipe.totalMinutes !== undefined) {
-            const { hours, minutes } = splitMinutes(recipe.totalMinutes);
-            let text: string;
-            if (hours > 0 && minutes > 0) {
-                text = t("duration.hoursMinutes", { hours, minutes });
-            } else if (hours > 0) {
-                text = t("duration.hours", { hours });
-            } else {
-                text = t("duration.minutes", { minutes });
-            }
-            return { text, icon: Clock };
-        }
-        return {
-            text: t("recipe.servings", { count: recipe.servings }),
-            icon: Users,
-        };
-    }
-
     function renderItem({ item }: { item: Recipe }) {
-        const { text: metaText, icon: metaIcon } = formatMeta(item);
-        const favLabel = t("recipeList.favoriteBadge");
-        const a11yParts = [item.title, metaText];
-        if (item.favorite) {
-            a11yParts.push(favLabel);
+        let duration: string | undefined;
+        if (item.totalMinutes !== undefined) {
+            const { hours, minutes } = splitMinutes(item.totalMinutes);
+            if (hours > 0 && minutes > 0) {
+                duration = t("duration.hoursMinutes", { hours, minutes });
+            } else if (hours > 0) {
+                duration = t("duration.hours", { hours });
+            } else {
+                duration = t("duration.minutes", { minutes });
+            }
         }
+        const servings = t("recipe.servings", { count: item.servings });
+        const favLabel = t("recipeList.favoriteBadge");
+        const a11yParts = [item.title, servings];
+        if (duration !== undefined) a11yParts.push(duration);
+        if (item.favorite) a11yParts.push(favLabel);
         return (
             <View style={{ width: cardWidth }}>
                 <RecipeCard
                     title={item.title}
-                    meta={metaText}
-                    metaIcon={metaIcon}
+                    duration={duration}
+                    servings={servings}
                     photoUri={item.photoUri}
                     favorite={item.favorite}
-                    favoriteLabel={favLabel}
                     accessibilityLabel={a11yParts.join(", ")}
                     onPress={() =>
                         navigation.navigate("Recipe", { recipeId: item.id })
@@ -175,12 +168,12 @@ export const RecipeListScreen = observer(function RecipeListScreenComponent({
                 renderItem={renderItem}
                 ListHeaderComponent={listHeader}
                 columnWrapperStyle={styles.columnWrapper}
-                ItemSeparatorComponent={() => <View style={styles.rowGap} />}
+                ItemSeparatorComponent={ItemSeparator}
                 keyboardShouldPersistTaps="handled"
                 keyboardDismissMode="on-drag"
                 contentContainerStyle={[
                     styles.listContent,
-                    { paddingBottom: insets.bottom + 88 },
+                    { paddingBottom: insets.bottom + LIST_BOTTOM_PAD },
                 ]}
             />
             <View
