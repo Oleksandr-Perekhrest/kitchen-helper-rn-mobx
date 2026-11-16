@@ -1,11 +1,11 @@
 // outsource dependencies
-import { useState } from "react";
+import React, { useState } from "react";
 import { observer } from "mobx-react-lite";
 import { useTranslation } from "react-i18next";
 import { useWindowDimensions } from "react-native";
-import { Plus, Star, Search } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { View, FlatList, ScrollView, StyleSheet } from "react-native";
+import { Star, Plus, Search, SearchX, BookOpen } from "lucide-react-native";
 
 // local dependencies
 import { TAGS } from "../domain/recipe";
@@ -15,8 +15,8 @@ import type { Recipe } from "../domain/recipe";
 import { splitMinutes } from "../domain/duration";
 import { useStores } from "../stores/StoreProvider";
 import { filterRecipes } from "../domain/recipeFilter";
-import { Chip, Button, TextField, RecipeCard } from "../ui";
 import type { RootStackScreenProps } from "../navigation/types";
+import { Chip, Button, TextField, RecipeCard, EmptyState } from "../ui";
 
 type Props = RootStackScreenProps<"RecipeList">;
 
@@ -83,6 +83,41 @@ export const RecipeListScreen = observer(function RecipeListScreenComponent({
                     }
                 />
             </View>
+        );
+    }
+
+    let listEmpty: React.ReactElement;
+    if (totalCount === 0) {
+        listEmpty = (
+            <EmptyState
+                icon={BookOpen}
+                title={t("recipeList.empty.noRecipes.title")}
+                description={t("recipeList.empty.noRecipes.description")}
+            />
+        );
+    } else if (favoritesOnly && favoritesCount === 0) {
+        listEmpty = (
+            <EmptyState
+                icon={Star}
+                title={t("recipeList.empty.noFavorites.title")}
+                description={t("recipeList.empty.noFavorites.description")}
+                actionLabel={t("recipeList.empty.noFavorites.action")}
+                onAction={() => setFavoritesOnly(false)}
+            />
+        );
+    } else {
+        listEmpty = (
+            <EmptyState
+                icon={SearchX}
+                title={t("recipeList.empty.noResults.title")}
+                description={t("recipeList.empty.noResults.description")}
+                actionLabel={t("recipeList.empty.noResults.action")}
+                onAction={() => {
+                    setQuery("");
+                    setTag(null);
+                    setFavoritesOnly(false);
+                }}
+            />
         );
     }
 
@@ -167,6 +202,7 @@ export const RecipeListScreen = observer(function RecipeListScreenComponent({
                 keyExtractor={(item) => item.id}
                 renderItem={renderItem}
                 ListHeaderComponent={listHeader}
+                ListEmptyComponent={listEmpty}
                 columnWrapperStyle={styles.columnWrapper}
                 ItemSeparatorComponent={ItemSeparator}
                 keyboardShouldPersistTaps="handled"

@@ -10,7 +10,23 @@
     "favorites": "Обрані · {{count}}",
     "filterLabel": "Фільтр рецептів",
     "tagGroupLabel": "Фільтр за тегом",
-    "favoriteBadge": "В обраному"
+    "favoriteBadge": "В обраному",
+    "empty": {
+      "noRecipes": {
+        "title": "Поки що немає рецептів",
+        "description": "Додайте перший — він з'явиться тут"
+      },
+      "noFavorites": {
+        "title": "Немає обраних",
+        "description": "Позначте рецепт зірочкою на його сторінці",
+        "action": "Показати всі"
+      },
+      "noResults": {
+        "title": "Нічого не знайдено",
+        "description": "Спробуйте інший запит або скиньте фільтри",
+        "action": "Скинути фільтри"
+      }
+    }
   },
   "recipe": {
     "title": "Рецепт",

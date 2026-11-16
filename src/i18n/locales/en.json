@@ -10,7 +10,23 @@
     "favorites": "Favorites · {{count}}",
     "filterLabel": "Recipe filter",
     "tagGroupLabel": "Filter by tag",
-    "favoriteBadge": "Favorite"
+    "favoriteBadge": "Favorite",
+    "empty": {
+      "noRecipes": {
+        "title": "No recipes yet",
+        "description": "Add your first one and it will show up here"
+      },
+      "noFavorites": {
+        "title": "No favorites",
+        "description": "Mark a recipe with a star on its page",
+        "action": "Show all"
+      },
+      "noResults": {
+        "title": "Nothing found",
+        "description": "Try another search or reset the filters",
+        "action": "Reset filters"
+      }
+    }
   },
   "recipe": {
     "title": "Recipe",
