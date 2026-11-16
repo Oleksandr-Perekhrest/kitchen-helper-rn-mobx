@@ -1,4 +1,5 @@
-export type TimerKind = "boil" | "fry" | "stew" | "bake" | "other";
+export const TIMER_KINDS = ["boil", "fry", "stew", "bake", "other"] as const;
+export type TimerKind = (typeof TIMER_KINDS)[number];
 
 export type ThemeColors = {
     background: string;

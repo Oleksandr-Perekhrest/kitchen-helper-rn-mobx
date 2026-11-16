@@ -36,19 +36,34 @@ cd ios && bundle exec pod install
 
 ## Stack
 
-Planned — **do not add any of these until a task explicitly asks**:
+**In use:**
+
+- React Native 0.88 (bare, New Architecture)
+- StyleSheet with own design tokens and light/dark theme (`src/theme`: tokens, typography, shadows, ThemeProvider with a controlled `preference` prop)
+- Manrope font linked natively with @callstack/react-native-asset (`assets/fonts`, `react-native.config.js`; `fontFamily "Manrope"` + `fontWeight` on both platforms)
+- react-native-svg + lucide-react-native for icons
+- web-only Storybook 10 with @storybook/react-native-web-vite (`stories/`, addons Docs and a11y, default viewport "Cookalong · 390×844")
+
+**Planned — do not add any of these until a task explicitly asks:**
 
 - MobX
 - React Navigation (native stack)
 - react-native-mmkv
 - React Hook Form + zod
 - i18next (EN + UK locales)
-- StyleSheet with own design tokens and light/dark theme
-- Storybook (on-device + web)
 - react-native-notify-kit
 - expo-speech-recognition (Expo used only as a module provider)
 
 Entry point: `index.js` → `App.tsx`. iOS bundle target: `Cookalong` (`ios/Cookalong/`). Android package: `com.operekhrest.cookalong`.
+
+## Structure
+
+- `src/theme` — tokens and theme
+- `src/ui` — presentational UI components (no stores or navigation inside)
+- `src/hooks` — shared hooks
+- `stories/` — Storybook stories mirroring `src/`
+- `__tests__/` — tests mirroring `src/`
+- `assets/fonts` — font files; `assets/licenses` for their licenses
 
 ## Conventions
 
@@ -130,6 +145,7 @@ Workflows live in `.github/workflows/`.
 - Do not run `nvm use` — the shell already has the correct Node version.
 - Do not edit `android/` or `ios/` unless the task explicitly asks.
 - Do not run native builds (`pnpm android`, `pnpm ios`, `gradlew`, `xcodebuild`, `pod install`) unless the task asks; they are slow.
+- After adding a native dependency, running `cd ios && bundle exec pod install` is the user's job — say in the report that pods must be installed; `pnpm ios` does not always install new pods.
 
 ## Storybook stories
 
