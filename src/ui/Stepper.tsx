@@ -79,7 +79,11 @@ export function Stepper({
                 >
                     <Icon icon={Minus} tone="primary" />
                 </Pressable>
-                <Text variant="label" style={styles.valueText}>
+                <Text
+                    variant="label"
+                    numberOfLines={1}
+                    style={styles.valueText}
+                >
                     {formatValue(value)}
                 </Text>
                 <Pressable
@@ -116,8 +120,8 @@ const styles = StyleSheet.create({
         opacity: 0.4,
     },
     valueText: {
-        flex: 1,
         textAlign: "center",
         minWidth: 48,
+        paddingHorizontal: 8,
     },
 });
