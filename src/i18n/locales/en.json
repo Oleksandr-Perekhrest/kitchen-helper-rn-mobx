@@ -33,6 +33,10 @@
     "language": {
       "label": "Language",
       "system": "System"
+    },
+    "voice": {
+      "label": "Voice assistant",
+      "description": "Voice commands in cooking mode: next, back, repeat, timer."
     }
   },
   "navigation": {

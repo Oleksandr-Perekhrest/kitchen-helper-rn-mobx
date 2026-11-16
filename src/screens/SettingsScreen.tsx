@@ -1,14 +1,14 @@
 // outsource dependencies
 import { observer } from "mobx-react-lite";
 import { useTranslation } from "react-i18next";
-import { View, StyleSheet } from "react-native";
+import { View, ScrollView, StyleSheet } from "react-native";
 
 // local dependencies
 import { useTheme } from "../theme";
-import { Text, SegmentedControl } from "../ui";
 import type { ThemePreference } from "../theme";
 import { LANGUAGE_NATIVE_NAMES } from "../i18n";
 import { useStores } from "../stores/StoreProvider";
+import { Text, Switch, SegmentedControl } from "../ui";
 import type { RootStackScreenProps } from "../navigation/types";
 import type { LanguagePreference } from "../stores/SettingsStore";
 
@@ -40,11 +40,9 @@ export const SettingsScreen = observer(function SettingsScreenComponent(
     ];
 
     return (
-        <View
-            style={[
-                styles.container,
-                { backgroundColor: colors.background, padding: spacing[16] },
-            ]}
+        <ScrollView
+            style={[styles.scroll, { backgroundColor: colors.background }]}
+            contentContainerStyle={[styles.content, { padding: spacing[16] }]}
         >
             <Text variant="headline">{t("settings.title")}</Text>
             <View style={styles.section}>
@@ -65,11 +63,32 @@ export const SettingsScreen = observer(function SettingsScreenComponent(
                     accessibilityLabel={t("settings.language.label")}
                 />
             </View>
-        </View>
+            <View style={styles.section}>
+                <View style={styles.voiceRow}>
+                    <Text variant="label">{t("settings.voice.label")}</Text>
+                    <Switch
+                        value={settings.voiceEnabled}
+                        onValueChange={(value) =>
+                            settings.setVoiceEnabled(value)
+                        }
+                        accessibilityLabel={t("settings.voice.label")}
+                    />
+                </View>
+                <Text variant="caption" tone="textMuted">
+                    {t("settings.voice.description")}
+                </Text>
+            </View>
+        </ScrollView>
     );
 });
 
 const styles = StyleSheet.create({
-    container: { flex: 1 },
+    scroll: { flex: 1 },
+    content: {},
     section: { gap: 8, marginTop: 16 },
+    voiceRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+    },
 });
