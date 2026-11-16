@@ -6,7 +6,7 @@ import { View, Image, Pressable, StyleSheet } from "react-native";
 // local dependencies
 import { Icon } from "./Icon";
 import { Text } from "./Text";
-import { radii, useTheme } from "../theme";
+import { radii, useTheme, typography } from "../theme";
 
 export type RecipeCardProps = {
     title: string;
@@ -85,7 +85,12 @@ export function RecipeCard({
                 )}
             </View>
             <View style={styles.info}>
-                <Text variant="buttonSm" numberOfLines={2}>
+                <Text
+                    variant="buttonSm"
+                    numberOfLines={2}
+                    ellipsizeMode="tail"
+                    style={styles.titleText}
+                >
                     {title}
                 </Text>
                 <View style={styles.metaRow}>
@@ -97,7 +102,12 @@ export function RecipeCard({
                             strokeWidth={2}
                         />
                     )}
-                    <Text variant="caption" tone="textMuted" numberOfLines={1}>
+                    <Text
+                        variant="caption"
+                        tone="textMuted"
+                        numberOfLines={1}
+                        ellipsizeMode="tail"
+                    >
                         {meta}
                     </Text>
                 </View>
@@ -142,6 +152,9 @@ const styles = StyleSheet.create({
         paddingHorizontal: 12,
         paddingBottom: 12,
         gap: 4,
+    },
+    titleText: {
+        minHeight: typography.buttonSm.lineHeight * 2,
     },
     metaRow: {
         flexDirection: "row",

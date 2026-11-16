@@ -15,8 +15,8 @@ import type { Recipe } from "../domain/recipe";
 import { splitMinutes } from "../domain/duration";
 import { useStores } from "../stores/StoreProvider";
 import { filterRecipes } from "../domain/recipeFilter";
+import { Chip, Button, TextField, RecipeCard } from "../ui";
 import type { RootStackScreenProps } from "../navigation/types";
-import { Text, Chip, Button, TextField, RecipeCard } from "../ui";
 
 type Props = RootStackScreenProps<"RecipeList">;
 
@@ -105,7 +105,6 @@ export const RecipeListScreen = observer(function RecipeListScreenComponent({
                     },
                 ]}
             >
-                <Text variant="title">{t("recipeList.title")}</Text>
                 <TextField
                     icon={Search}
                     value={query}
@@ -203,7 +202,7 @@ export const RecipeListScreen = observer(function RecipeListScreenComponent({
 
 const styles = StyleSheet.create({
     container: { flex: 1 },
-    headerSection: { gap: 12 },
+    headerSection: {},
     filterRow: { flexDirection: "row", gap: 8 },
     tagScroll: {
         gap: 8,
