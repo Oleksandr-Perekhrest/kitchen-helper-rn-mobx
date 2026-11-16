@@ -134,6 +134,8 @@ Never add `eslint-disable` comments or loosen types to silence an error — use 
 
 Do not write tests for anything outside the critical list unless the task explicitly asks.
 
+**Jest vs Metro divergence:** Jest resolves the CommonJS build of a package while Metro uses its ESM build. A green test run does not prove the app bundles. After adding a JS dependency that ships an ESM entry point, verify that `pnpm start` (Metro) bundles without errors before closing the task.
+
 ## CI
 
 Workflows live in `.github/workflows/`.

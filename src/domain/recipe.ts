@@ -37,8 +37,8 @@ export type Tag = (typeof TAGS)[number];
 
 const IngredientSchema = z
     .object({
-        id: z.string().uuid(),
-        name: z.string().min(1).trim(),
+        id: z.uuid(),
+        name: z.string().trim().min(1),
         amount: z.number().positive().optional(),
         unit: z.enum(UNITS),
     })
@@ -72,8 +72,8 @@ const StepTimerSchema = z.object({
 export type StepTimer = z.infer<typeof StepTimerSchema>;
 
 const StepSchema = z.object({
-    id: z.string().uuid(),
-    text: z.string().min(1),
+    id: z.uuid(),
+    text: z.string().trim().min(1),
     ingredientIds: z.array(z.string()),
     timer: StepTimerSchema.optional(),
 });
@@ -88,8 +88,8 @@ export const RECIPE_SCHEMA_VERSION = 1;
  */
 export const RecipeSchema = z
     .object({
-        id: z.string().uuid(),
-        title: z.string().min(1),
+        id: z.uuid(),
+        title: z.string().trim().min(1),
         servings: z.number().int().min(1),
         caloriesPerServing: z.number().int().positive().optional(),
         tags: z.array(z.enum(TAGS)),
