@@ -4,7 +4,7 @@
   },
   "recipeList": {
     "title": "Рецепти",
-    "openDemoRecipe": "Відкрити демо рецепт",
+    "openDemoRecipe": "Відкрити демо-рецепт",
     "newRecipe": "Новий рецепт"
   },
   "recipe": {
@@ -29,6 +29,10 @@
       "system": "Системна",
       "light": "Світла",
       "dark": "Темна"
+    },
+    "language": {
+      "label": "Мова",
+      "system": "Системна"
     }
   },
   "navigation": {
