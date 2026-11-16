@@ -42,12 +42,12 @@ cd ios && bundle exec pod install
 - StyleSheet with own design tokens and light/dark theme (`src/theme`: tokens, typography, shadows, ThemeProvider with a controlled `preference` prop)
 - Manrope font linked natively with @callstack/react-native-asset (`assets/fonts`, `react-native.config.js`; `fontFamily "Manrope"` + `fontWeight` on both platforms)
 - react-native-svg + lucide-react-native for icons
+- React Navigation (native stack) with react-native-screens + react-native-safe-area-context (`src/navigation`: RootNavigator, route types, navigation theme hook)
 - web-only Storybook 10 with @storybook/react-native-web-vite (`stories/`, addons Docs and a11y, default viewport "Cookalong · 390×844")
 
 **Planned — do not add any of these until a task explicitly asks:**
 
 - MobX
-- React Navigation (native stack)
 - react-native-mmkv
 - React Hook Form + zod
 - i18next (EN + UK locales)
@@ -61,6 +61,8 @@ Entry point: `index.js` → `App.tsx`. iOS bundle target: `Cookalong` (`ios/Cook
 - `src/theme` — tokens and theme
 - `src/ui` — presentational UI components (no stores or navigation inside)
 - `src/hooks` — shared hooks
+- `src/navigation` — navigator (`RootNavigator`), route types (`types.ts`), navigation theme hook (`useNavigationTheme.ts`)
+- `src/screens` — one file per screen; screens may use stores and navigation, `src/ui` may not
 - `stories/` — Storybook stories mirroring `src/`
 - `__tests__/` — tests mirroring `src/`
 - `assets/fonts` — font files; `assets/licenses` for their licenses
