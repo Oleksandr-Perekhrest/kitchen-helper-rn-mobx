@@ -117,8 +117,10 @@ Do not write tests for anything outside the critical list unless the task explic
 Workflows live in `.github/workflows/`.
 
 - **`checks`** job (`ci.yml`, 15 min) — `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm test`. Runs on `pull_request` and push to `main`.
+- **`storybook`** job (`ci.yml`, 15 min) — `pnpm build-storybook`. Verifies the static build on every PR and push to `main`.
 - **`android`** job (`ci.yml`, 45 min) — builds a release APK for `arm64-v8a` and `x86_64`. Signed with the template debug keystore (demo only, not for production). Uploaded as a GitHub Actions artifact named `cookalong-release-<short-sha>` with 14-day retention.
 - **`PR title`** job (`pr-title.yml`) — enforces Conventional Commits format on PR titles via `amannn/action-semantic-pull-request`.
+- **Vercel** (`vercel.json`) — static Storybook deployment; preview per PR, production from `main`.
 
 ## Rules for the agent
 

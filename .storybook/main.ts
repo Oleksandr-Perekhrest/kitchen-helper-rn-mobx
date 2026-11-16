@@ -35,6 +35,13 @@ const config: StorybookConfig = {
         name: "@storybook/react-native-web-vite",
         options: {},
     },
+    core: {
+        disableWhatsNewNotifications: true,
+    },
+    features: {
+        sidebarOnboardingChecklist: false,
+        menuOnboardingChecklist: false,
+    },
     staticDirs: [{ from: "../assets/fonts", to: "/fonts" }],
     async viteFinal(viteConfig) {
         viteConfig.optimizeDeps ??= {};
