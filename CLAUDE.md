@@ -43,12 +43,12 @@ cd ios && bundle exec pod install
 - Manrope font linked natively with @callstack/react-native-asset (`assets/fonts`, `react-native.config.js`; `fontFamily "Manrope"` + `fontWeight` on both platforms)
 - react-native-svg + lucide-react-native for icons
 - React Navigation (native stack) with react-native-screens + react-native-safe-area-context (`src/navigation`: RootNavigator, route types, navigation theme hook)
+- MobX 7 + mobx-react-lite — observable settings store; `persist` helper with versioned `{ version, data }` envelope
+- react-native-mmkv 4 (Nitro-based) — synchronous key-value storage backing the settings store
 - web-only Storybook 10 with @storybook/react-native-web-vite (`stories/`, addons Docs and a11y, default viewport "Cookalong · 390×844")
 
 **Planned — do not add any of these until a task explicitly asks:**
 
-- MobX
-- react-native-mmkv
 - React Hook Form + zod
 - i18next (EN + UK locales)
 - react-native-notify-kit
@@ -63,6 +63,8 @@ Entry point: `index.js` → `App.tsx`. iOS bundle target: `Cookalong` (`ios/Cook
 - `src/hooks` — shared hooks
 - `src/navigation` — navigator (`RootNavigator`), route types (`types.ts`), navigation theme hook (`useNavigationTheme.ts`)
 - `src/screens` — one file per screen; screens may use stores and navigation, `src/ui` may not
+- `src/storage` — `KeyValueStorage` interface, MMKV adapter (`mmkvStorage.ts`), in-memory adapter for tests (`memoryStorage.ts`)
+- `src/stores` — MobX stores (`SettingsStore`, `RootStore`), `persist` helper, `StoreProvider` context
 - `stories/` — Storybook stories mirroring `src/`
 - `__tests__/` — tests mirroring `src/`
 - `assets/fonts` — font files; `assets/licenses` for their licenses
@@ -141,6 +143,7 @@ Workflows live in `.github/workflows/`.
 
 ## Rules for the agent
 
+- Stores depend on `KeyValueStorage` (from `src/storage/types.ts`), never on MMKV directly — this keeps stores testable with `createMemoryStorage`.
 - Do **not** commit, push, create branches, or run any git command that changes state — the user does all git operations.
 - Do not add dependencies the task does not ask for; if one seems necessary, stop and ask.
 - Use **pnpm** only; never npm or yarn.
