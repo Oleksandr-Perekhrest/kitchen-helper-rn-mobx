@@ -1,4 +1,5 @@
 // outsource dependencies
+import { useTranslation } from "react-i18next";
 import { View, StyleSheet } from "react-native";
 
 // local dependencies
@@ -9,6 +10,7 @@ import type { RootStackScreenProps } from "../navigation/types";
 type Props = RootStackScreenProps<"RecipeForm">;
 
 export function RecipeFormScreen({ route }: Props) {
+    const { t } = useTranslation();
     const { colors, spacing } = useTheme();
     const { recipeId } = route.params;
     return (
@@ -19,7 +21,9 @@ export function RecipeFormScreen({ route }: Props) {
             ]}
         >
             <Text variant="headline">
-                {recipeId !== undefined ? "Edit recipe" : "New recipe"}
+                {recipeId !== undefined
+                    ? t("recipeForm.titleEdit")
+                    : t("recipeForm.titleNew")}
             </Text>
             {recipeId !== undefined && (
                 <Text variant="body">ID: {recipeId}</Text>

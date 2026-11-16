@@ -1,0 +1,38 @@
+{
+  "common": {
+    "appName": "Готуємо"
+  },
+  "recipeList": {
+    "title": "Рецепти",
+    "openDemoRecipe": "Відкрити демо рецепт",
+    "newRecipe": "Новий рецепт"
+  },
+  "recipe": {
+    "title": "Рецепт",
+    "edit": "Редагувати",
+    "startCooking": "Почати готувати"
+  },
+  "recipeForm": {
+    "titleNew": "Новий рецепт",
+    "titleEdit": "Редагувати рецепт"
+  },
+  "cookingMode": {
+    "title": "Готування"
+  },
+  "timers": {
+    "title": "Таймери"
+  },
+  "settings": {
+    "title": "Налаштування",
+    "theme": {
+      "label": "Тема",
+      "system": "Системна",
+      "light": "Світла",
+      "dark": "Темна"
+    }
+  },
+  "navigation": {
+    "timersButton": "Таймери",
+    "settingsButton": "Налаштування"
+  }
+}

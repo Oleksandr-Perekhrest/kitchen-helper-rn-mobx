@@ -46,11 +46,11 @@ cd ios && bundle exec pod install
 - MobX 7 + mobx-react-lite — observable settings store; `persist` helper with versioned `{ version, data }` envelope
 - react-native-mmkv 4 (Nitro-based) — synchronous key-value storage backing the settings store
 - web-only Storybook 10 with @storybook/react-native-web-vite (`stories/`, addons Docs and a11y, default viewport "Cookalong · 390×844")
+- i18next 26 + react-i18next + react-native-localize — EN and UK locales bundled as JSON resources; `resolveLanguage` resolves `LanguagePreference` → `AppLanguage`; typed keys via `src/i18n/i18next.d.ts` augmentation
 
 **Planned — do not add any of these until a task explicitly asks:**
 
 - React Hook Form + zod
-- i18next (EN + UK locales)
 - react-native-notify-kit
 - expo-speech-recognition (Expo used only as a module provider)
 
@@ -64,6 +64,7 @@ Entry point: `index.js` → `App.tsx`. iOS bundle target: `Cookalong` (`ios/Cook
 - `src/navigation` — navigator (`RootNavigator`), route types (`types.ts`), navigation theme hook (`useNavigationTheme.ts`)
 - `src/screens` — one file per screen; screens may use stores and navigation, `src/ui` may not
 - `src/storage` — `KeyValueStorage` interface, MMKV adapter (`mmkvStorage.ts`), in-memory adapter for tests (`memoryStorage.ts`)
+- `src/i18n` — i18next setup: `index.ts` (init + `getDeviceLanguages`), `resolveLanguage.ts`, `i18next.d.ts` (typed keys), `locales/en.json` and `locales/uk.json`
 - `src/stores` — MobX stores (`SettingsStore`, `RootStore`), `persist` helper, `StoreProvider` context
 - `stories/` — Storybook stories mirroring `src/`
 - `__tests__/` — tests mirroring `src/`
@@ -151,6 +152,8 @@ Workflows live in `.github/workflows/`.
 - Do not edit `android/` or `ios/` unless the task explicitly asks.
 - Do not run native builds (`pnpm android`, `pnpm ios`, `gradlew`, `xcodebuild`, `pod install`) unless the task asks; they are slow.
 - After adding a native dependency, running `cd ios && bundle exec pod install` is the user's job — say in the report that pods must be installed; `pnpm ios` does not always install new pods.
+- No hard-coded user-visible strings in `src/screens` or `src/navigation` — always use `t()` from `useTranslation()`. `src/ui` components receive text via props.
+- Every new i18n key must be added to both `src/i18n/locales/en.json` and `src/i18n/locales/uk.json`.
 
 ## Storybook stories
 

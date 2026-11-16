@@ -1,4 +1,5 @@
 // outsource dependencies
+import { useTranslation } from "react-i18next";
 import { View, StyleSheet } from "react-native";
 import { Timer, Settings } from "lucide-react-native";
 import { useNavigation } from "@react-navigation/native";
@@ -18,18 +19,19 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 function RecipeListHeaderRight() {
     const navigation = useNavigation();
+    const { t } = useTranslation();
     return (
         <View style={styles.headerButtons}>
             <IconButton
                 icon={Timer}
                 variant="ghost"
-                accessibilityLabel="Timers"
+                accessibilityLabel={t("navigation.timersButton")}
                 onPress={() => navigation.navigate("Timers")}
             />
             <IconButton
                 icon={Settings}
                 variant="ghost"
-                accessibilityLabel="Settings"
+                accessibilityLabel={t("navigation.settingsButton")}
                 onPress={() => navigation.navigate("Settings")}
             />
         </View>
@@ -37,20 +39,21 @@ function RecipeListHeaderRight() {
 }
 
 export function RootNavigator() {
+    const { t } = useTranslation();
     return (
         <Stack.Navigator initialRouteName="RecipeList">
             <Stack.Screen
                 name="RecipeList"
                 component={RecipeListScreen}
                 options={{
-                    title: "Recipes",
+                    title: t("recipeList.title"),
                     headerRight: RecipeListHeaderRight,
                 }}
             />
             <Stack.Screen
                 name="Recipe"
                 component={RecipeScreen}
-                options={{ title: "Recipe" }}
+                options={{ title: t("recipe.title") }}
             />
             <Stack.Screen
                 name="RecipeForm"
@@ -58,24 +61,24 @@ export function RootNavigator() {
                 options={({ route }) => ({
                     title:
                         route.params.recipeId !== undefined
-                            ? "Edit recipe"
-                            : "New recipe",
+                            ? t("recipeForm.titleEdit")
+                            : t("recipeForm.titleNew"),
                 })}
             />
             <Stack.Screen
                 name="CookingMode"
                 component={CookingModeScreen}
-                options={{ title: "Cooking" }}
+                options={{ title: t("cookingMode.title") }}
             />
             <Stack.Screen
                 name="Timers"
                 component={TimersScreen}
-                options={{ title: "Timers" }}
+                options={{ title: t("timers.title") }}
             />
             <Stack.Screen
                 name="Settings"
                 component={SettingsScreen}
-                options={{ title: "Settings" }}
+                options={{ title: t("settings.title") }}
             />
         </Stack.Navigator>
     );

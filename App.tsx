@@ -8,8 +8,10 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 // local dependencies
 import { useTheme, ThemeProvider } from "./src/theme";
 import { createRootStore } from "./src/stores/RootStore";
+import { resolveLanguage } from "./src/i18n/resolveLanguage";
 import { createMmkvStorage } from "./src/storage/mmkvStorage";
 import { RootNavigator } from "./src/navigation/RootNavigator";
+import { i18n, initI18n, getDeviceLanguages } from "./src/i18n";
 import { useStores, StoreProvider } from "./src/stores/StoreProvider";
 import { applyNativeColorScheme } from "./src/theme/nativeColorScheme";
 import { useNavigationTheme } from "./src/navigation/useNavigationTheme";
@@ -35,6 +37,11 @@ const ThemedApp = observer(function ThemedAppComponent() {
     useEffect(() => {
         applyNativeColorScheme(settings.themePreference);
     }, [settings.themePreference]);
+    useEffect(() => {
+        i18n.changeLanguage(
+            resolveLanguage(settings.language, getDeviceLanguages()),
+        );
+    }, [settings.language]);
     return (
         <ThemeProvider preference={settings.themePreference}>
             <SafeAreaProvider>
@@ -45,7 +52,11 @@ const ThemedApp = observer(function ThemedAppComponent() {
 });
 
 function App() {
-    const [store] = useState(() => createRootStore(createMmkvStorage()));
+    const [store] = useState(() => {
+        const s = createRootStore(createMmkvStorage());
+        initI18n(resolveLanguage(s.settings.language, getDeviceLanguages()));
+        return s;
+    });
     return (
         <StoreProvider store={store}>
             <ThemedApp />

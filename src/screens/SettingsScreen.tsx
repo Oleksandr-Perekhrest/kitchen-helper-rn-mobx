@@ -1,5 +1,6 @@
 // outsource dependencies
 import { observer } from "mobx-react-lite";
+import { useTranslation } from "react-i18next";
 import { View, StyleSheet } from "react-native";
 
 // local dependencies
@@ -11,18 +12,22 @@ import type { RootStackScreenProps } from "../navigation/types";
 
 type Props = RootStackScreenProps<"Settings">;
 
-const THEME_OPTIONS: ReadonlyArray<{ value: ThemePreference; label: string }> =
-    [
-        { value: "system", label: "System" },
-        { value: "light", label: "Light" },
-        { value: "dark", label: "Dark" },
-    ];
-
 export const SettingsScreen = observer(function SettingsScreenComponent(
     _props: Props,
 ) {
+    const { t } = useTranslation();
     const { colors, spacing } = useTheme();
     const { settings } = useStores();
+
+    const themeOptions: ReadonlyArray<{
+        value: ThemePreference;
+        label: string;
+    }> = [
+        { value: "system", label: t("settings.theme.system") },
+        { value: "light", label: t("settings.theme.light") },
+        { value: "dark", label: t("settings.theme.dark") },
+    ];
+
     return (
         <View
             style={[
@@ -30,14 +35,14 @@ export const SettingsScreen = observer(function SettingsScreenComponent(
                 { backgroundColor: colors.background, padding: spacing[16] },
             ]}
         >
-            <Text variant="headline">Settings</Text>
+            <Text variant="headline">{t("settings.title")}</Text>
             <View style={styles.section}>
-                <Text variant="label">Theme</Text>
+                <Text variant="label">{t("settings.theme.label")}</Text>
                 <SegmentedControl
-                    options={THEME_OPTIONS}
+                    options={themeOptions}
                     value={settings.themePreference}
                     onChange={(value) => settings.setThemePreference(value)}
-                    accessibilityLabel="Theme"
+                    accessibilityLabel={t("settings.theme.label")}
                 />
             </View>
         </View>

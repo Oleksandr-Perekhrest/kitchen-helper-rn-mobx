@@ -8,6 +8,6 @@ import App from "../App";
 describe("App", () => {
     it("renders the RecipeList screen", async () => {
         await render(<App />);
-        expect(await screen.findByText("Recipe List")).toBeOnTheScreen();
+        expect(await screen.findByText("Recipes")).toBeOnTheScreen();
     });
 });

@@ -1,4 +1,5 @@
 // outsource dependencies
+import { useTranslation } from "react-i18next";
 import { View, StyleSheet } from "react-native";
 
 // local dependencies
@@ -9,6 +10,7 @@ import type { RootStackScreenProps } from "../navigation/types";
 type Props = RootStackScreenProps<"CookingMode">;
 
 export function CookingModeScreen({ route }: Props) {
+    const { t } = useTranslation();
     const { colors, spacing } = useTheme();
     const { recipeId } = route.params;
     return (
@@ -18,7 +20,7 @@ export function CookingModeScreen({ route }: Props) {
                 { backgroundColor: colors.background, padding: spacing[16] },
             ]}
         >
-            <Text variant="headline">Cooking</Text>
+            <Text variant="headline">{t("cookingMode.title")}</Text>
             <Text variant="body">ID: {recipeId}</Text>
         </View>
     );

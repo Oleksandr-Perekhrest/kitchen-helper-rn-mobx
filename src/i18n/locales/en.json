@@ -1,0 +1,38 @@
+{
+  "common": {
+    "appName": "Cookalong"
+  },
+  "recipeList": {
+    "title": "Recipes",
+    "openDemoRecipe": "Open demo recipe",
+    "newRecipe": "New recipe"
+  },
+  "recipe": {
+    "title": "Recipe",
+    "edit": "Edit",
+    "startCooking": "Start cooking"
+  },
+  "recipeForm": {
+    "titleNew": "New recipe",
+    "titleEdit": "Edit recipe"
+  },
+  "cookingMode": {
+    "title": "Cooking"
+  },
+  "timers": {
+    "title": "Timers"
+  },
+  "settings": {
+    "title": "Settings",
+    "theme": {
+      "label": "Theme",
+      "system": "System",
+      "light": "Light",
+      "dark": "Dark"
+    }
+  },
+  "navigation": {
+    "timersButton": "Timers",
+    "settingsButton": "Settings"
+  }
+}
