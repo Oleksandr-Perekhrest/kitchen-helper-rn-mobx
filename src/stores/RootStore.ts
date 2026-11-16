@@ -1,7 +1,10 @@
 // local dependencies
 import { persist } from "./persist";
+import { RecipeSchema } from "../domain/recipe";
+import { getDemoRecipes } from "../data/demoRecipes";
 import type { KeyValueStorage } from "../storage/types";
 import { RECIPE_SCHEMA_VERSION } from "../domain/recipe";
+import { resolveLanguage } from "../i18n/resolveLanguage";
 import {
     RecipesStore,
     parseRecipes,
@@ -20,9 +23,22 @@ export type RootStore = {
     dispose: () => void;
 };
 
-export function createRootStore(storage: KeyValueStorage): RootStore {
+export type RootStoreOptions = {
+    deviceLanguages: readonly string[];
+    now?: () => Date;
+};
+
+export function createRootStore(
+    storage: KeyValueStorage,
+    options: RootStoreOptions,
+): RootStore {
     const settings = new SettingsStore();
     const recipes = new RecipesStore();
+
+    // Key absent means the app has never written recipe data (true first launch).
+    // Once persist() writes the key (even as an empty array after user deletes all),
+    // this stays false — so user deletions and corrupt envelopes never re-seed.
+    const isFirstLaunch = storage.getString(RECIPES_STORAGE_KEY) === undefined;
 
     const disposeSettings = persist({
         storage,
@@ -49,6 +65,30 @@ export function createRootStore(storage: KeyValueStorage): RootStore {
         apply: (data) => recipes.replaceAll(data),
         parse: parseRecipes,
     });
+
+    if (isFirstLaunch) {
+        const now = (options.now ?? (() => new Date()))();
+        const language = resolveLanguage(
+            settings.language,
+            options.deviceLanguages,
+        );
+
+        if (__DEV__) {
+            for (const lang of ["en", "uk"] as const) {
+                for (const recipe of getDemoRecipes(lang, now)) {
+                    const result = RecipeSchema.safeParse(recipe);
+                    if (!result.success) {
+                        console.error(
+                            "[demoRecipes] invalid demo recipe:",
+                            result.error.issues,
+                        );
+                    }
+                }
+            }
+        }
+
+        recipes.replaceAll(getDemoRecipes(language, now));
+    }
 
     return {
         settings,

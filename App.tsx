@@ -53,8 +53,9 @@ const ThemedApp = observer(function ThemedAppComponent() {
 
 function App() {
     const [store] = useState(() => {
-        const s = createRootStore(createMmkvStorage());
-        initI18n(resolveLanguage(s.settings.language, getDeviceLanguages()));
+        const deviceLanguages = getDeviceLanguages();
+        const s = createRootStore(createMmkvStorage(), { deviceLanguages });
+        initI18n(resolveLanguage(s.settings.language, deviceLanguages));
         return s;
     });
     return (
