@@ -1,5 +1,5 @@
 // outsource dependencies
-import { it, expect, describe } from "@jest/globals";
+import { it, jest, expect, describe } from "@jest/globals";
 
 // local dependencies
 import type { Recipe } from "../../src/domain/recipe";
@@ -59,12 +59,25 @@ const INVALID_RECIPE = {
 
 describe("parseRecipes", () => {
     it("array with one valid and one invalid recipe returns exactly the valid one", () => {
-        const result = parseRecipes(
-            [VALID_RECIPE, INVALID_RECIPE],
-            RECIPE_SCHEMA_VERSION,
-        );
-        expect(result).toHaveLength(1);
-        expect(result?.[0]?.id).toBe("aaaa0001-0001-4001-a001-000000000001");
+        const warnSpy = jest
+            .spyOn(console, "warn")
+            .mockImplementation(() => {});
+        try {
+            const result = parseRecipes(
+                [VALID_RECIPE, INVALID_RECIPE],
+                RECIPE_SCHEMA_VERSION,
+            );
+            expect(result).toHaveLength(1);
+            expect(result?.[0]?.id).toBe(
+                "aaaa0001-0001-4001-a001-000000000001",
+            );
+            expect(warnSpy).toHaveBeenCalledTimes(1);
+            expect(warnSpy).toHaveBeenCalledWith(
+                expect.stringContaining("dropped 1"),
+            );
+        } finally {
+            warnSpy.mockRestore();
+        }
     });
 
     it("non-array data returns null", () => {
