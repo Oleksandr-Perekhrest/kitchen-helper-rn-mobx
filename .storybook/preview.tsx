@@ -34,7 +34,7 @@ function LocaleWrapper({
     children: ReactNode;
 }) {
     useEffect(() => {
-        void storybookI18n.changeLanguage(locale);
+        storybookI18n.changeLanguage(locale).catch(() => undefined);
     }, [locale]);
     return <I18nextProvider i18n={storybookI18n}>{children}</I18nextProvider>;
 }
