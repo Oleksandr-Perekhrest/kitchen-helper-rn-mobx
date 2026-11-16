@@ -10,7 +10,14 @@
   "recipe": {
     "title": "Recipe",
     "edit": "Edit",
-    "startCooking": "Start cooking"
+    "startCooking": "Start cooking",
+    "servings_one": "{{count}} serving",
+    "servings_other": "{{count}} servings"
+  },
+  "duration": {
+    "hours": "{{hours}} h",
+    "minutes": "{{minutes}} min",
+    "hoursMinutes": "{{hours}} h {{minutes}} min"
   },
   "recipeForm": {
     "titleNew": "New recipe",
