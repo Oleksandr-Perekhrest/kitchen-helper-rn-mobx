@@ -30,18 +30,20 @@ export function parseSettings(
     if (version !== SETTINGS_VERSION) return null;
     if (typeof data !== "object" || data === null) return null;
 
-    const record = data as Record<string, unknown>;
+    const themePreference =
+        "themePreference" in data && isThemePreference(data.themePreference)
+            ? data.themePreference
+            : "system";
 
-    const themePreference = isThemePreference(record.themePreference)
-        ? record.themePreference
-        : "system";
-
-    const language = isLanguagePreference(record.language)
-        ? record.language
-        : "system";
+    const language =
+        "language" in data && isLanguagePreference(data.language)
+            ? data.language
+            : "system";
 
     const voiceEnabled =
-        typeof record.voiceEnabled === "boolean" ? record.voiceEnabled : true;
+        "voiceEnabled" in data && typeof data.voiceEnabled === "boolean"
+            ? data.voiceEnabled
+            : true;
 
     return { themePreference, language, voiceEnabled };
 }

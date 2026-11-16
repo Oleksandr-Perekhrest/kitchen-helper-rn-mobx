@@ -9,7 +9,7 @@ type PersistEnvelope = { version: number; data: unknown };
 function isEnvelope(val: unknown): val is PersistEnvelope {
     if (typeof val !== "object" || val === null) return false;
     if (!("version" in val) || !("data" in val)) return false;
-    return typeof (val as { version: unknown }).version === "number";
+    return typeof val.version === "number";
 }
 
 /**
