@@ -28,7 +28,8 @@ export function parseSettings(
     version: number,
 ): SettingsSnapshot | null {
     if (version !== SETTINGS_VERSION) return null;
-    if (typeof data !== "object" || data === null) return null;
+    if (typeof data !== "object" || data === null || Array.isArray(data))
+        return null;
 
     const themePreference =
         "themePreference" in data && isThemePreference(data.themePreference)
