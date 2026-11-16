@@ -1,10 +1,13 @@
+// outsource dependencies
+import { toJS } from "mobx";
+
 // local dependencies
 import { persist } from "./persist";
 import { RecipeSchema } from "../domain/recipe";
 import { getDemoRecipes } from "../data/demoRecipes";
 import type { KeyValueStorage } from "../storage/types";
 import { RECIPE_SCHEMA_VERSION } from "../domain/recipe";
-import { resolveLanguage } from "../i18n/resolveLanguage";
+import { resolveLanguage, SUPPORTED_LANGUAGES } from "../i18n/resolveLanguage";
 import {
     RecipesStore,
     parseRecipes,
@@ -61,7 +64,9 @@ export function createRootStore(
         storage,
         key: RECIPES_STORAGE_KEY,
         version: RECIPE_SCHEMA_VERSION,
-        snapshot: () => recipes.recipes,
+        // toJS dereferences every nested observable so MobX tracks field-level
+        // mutations (add, update) and not just array reference replacements.
+        snapshot: () => toJS(recipes.recipes),
         apply: (data) => recipes.replaceAll(data),
         parse: parseRecipes,
     });
@@ -74,7 +79,7 @@ export function createRootStore(
         );
 
         if (__DEV__) {
-            for (const lang of ["en", "uk"] as const) {
+            for (const lang of SUPPORTED_LANGUAGES) {
                 for (const recipe of getDemoRecipes(lang, now)) {
                     const result = RecipeSchema.safeParse(recipe);
                     if (!result.success) {
