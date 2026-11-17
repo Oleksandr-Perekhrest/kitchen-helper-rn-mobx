@@ -106,9 +106,55 @@ export function fromRecipe(recipe: Recipe): RecipeFormValues {
     };
 }
 
+function isBlank(s: string): boolean {
+    return s.trim() === "";
+}
+
 function isPositiveIntStr(s: string): boolean {
     const t = s.trim();
     return /^\d+$/.test(t) && parseInt(t, 10) > 0;
+}
+
+type PushFn = (message: string, path: (string | number)[]) => void;
+
+function checkBasicsFields(
+    value: {
+        title: string;
+        servings: number;
+        totalMinutes: string;
+        caloriesPerServing: string;
+        tags: Tag[];
+    },
+    push: PushFn,
+): void {
+    const { title, servings, totalMinutes, caloriesPerServing, tags } = value;
+    if (title.trim().length === 0) {
+        push("recipeForm.errors.titleRequired", ["title"]);
+    } else if (title.trim().length > 100) {
+        push("recipeForm.errors.titleMaxLength", ["title"]);
+    }
+    if (!Number.isInteger(servings)) {
+        push("recipeForm.errors.servingsInteger", ["servings"]);
+    } else if (servings < 1) {
+        push("recipeForm.errors.servingsMin", ["servings"]);
+    } else if (servings > 50) {
+        push("recipeForm.errors.servingsMax", ["servings"]);
+    }
+    if (!isBlank(totalMinutes) && !isPositiveIntStr(totalMinutes)) {
+        push("recipeForm.errors.totalMinutesFormat", ["totalMinutes"]);
+    }
+    if (!isBlank(caloriesPerServing) && !isPositiveIntStr(caloriesPerServing)) {
+        push("recipeForm.errors.caloriesPerServingFormat", [
+            "caloriesPerServing",
+        ]);
+    }
+    if (new Set(tags).size !== tags.length) {
+        push("recipeForm.errors.tagsUnique", ["tags"]);
+    }
+}
+
+function checkStepsMinOne(steps: { length: number }, push: PushFn): void {
+    if (steps.length === 0) push("recipeForm.errors.stepsMinOne", ["steps"]);
 }
 
 const formIngredientSchema = z
@@ -158,7 +204,7 @@ const formStepSchema = z
             });
         }
         const { timerMinutes } = ctx.value;
-        if (timerMinutes !== "") {
+        if (!isBlank(timerMinutes)) {
             const t = timerMinutes.trim();
             const mins = parseInt(t, 10);
             if (!/^\d+$/.test(t) || mins <= 0) {
@@ -188,72 +234,14 @@ export const basicsStepSchema = z
         tags: z.array(z.enum(TAGS)),
     })
     .check((ctx) => {
-        const { title, servings, totalMinutes, caloriesPerServing, tags } =
-            ctx.value;
-        if (title.trim().length === 0) {
+        const push: PushFn = (message, path) =>
             ctx.issues.push({
                 code: "custom",
                 input: ctx.value,
-                message: "recipeForm.errors.titleRequired",
-                path: ["title"],
+                message,
+                path,
             });
-        } else if (title.trim().length > 100) {
-            ctx.issues.push({
-                code: "custom",
-                input: ctx.value,
-                message: "recipeForm.errors.titleMaxLength",
-                path: ["title"],
-            });
-        }
-        if (!Number.isInteger(servings)) {
-            ctx.issues.push({
-                code: "custom",
-                input: ctx.value,
-                message: "recipeForm.errors.servingsInteger",
-                path: ["servings"],
-            });
-        } else if (servings < 1) {
-            ctx.issues.push({
-                code: "custom",
-                input: ctx.value,
-                message: "recipeForm.errors.servingsMin",
-                path: ["servings"],
-            });
-        } else if (servings > 50) {
-            ctx.issues.push({
-                code: "custom",
-                input: ctx.value,
-                message: "recipeForm.errors.servingsMax",
-                path: ["servings"],
-            });
-        }
-        if (totalMinutes !== "" && !isPositiveIntStr(totalMinutes)) {
-            ctx.issues.push({
-                code: "custom",
-                input: ctx.value,
-                message: "recipeForm.errors.totalMinutesFormat",
-                path: ["totalMinutes"],
-            });
-        }
-        if (
-            caloriesPerServing !== "" &&
-            !isPositiveIntStr(caloriesPerServing)
-        ) {
-            ctx.issues.push({
-                code: "custom",
-                input: ctx.value,
-                message: "recipeForm.errors.caloriesPerServingFormat",
-                path: ["caloriesPerServing"],
-            });
-        }
-        if (new Set(tags).size !== tags.length) {
-            ctx.issues.push({
-                code: "custom",
-                input: ctx.value,
-                message: "recipeForm.errors.tagsUnique",
-                path: ["tags"],
-            });
-        }
+        checkBasicsFields(ctx.value, push);
     });
 
 export const ingredientsStepSchema = z.object({
@@ -261,18 +249,16 @@ export const ingredientsStepSchema = z.object({
 });
 
 export const stepsStepSchema = z
-    .object({
-        steps: z.array(formStepSchema),
-    })
+    .object({ steps: z.array(formStepSchema) })
     .check((ctx) => {
-        if (ctx.value.steps.length === 0) {
+        const push: PushFn = (message, path) =>
             ctx.issues.push({
                 code: "custom",
                 input: ctx.value,
-                message: "recipeForm.errors.stepsMinOne",
-                path: ["steps"],
+                message,
+                path,
             });
-        }
+        checkStepsMinOne(ctx.value.steps, push);
     });
 
 export const recipeFormSchema = z
@@ -287,97 +273,25 @@ export const recipeFormSchema = z
         steps: z.array(formStepSchema),
     })
     .check((ctx) => {
-        const {
-            title,
-            servings,
-            totalMinutes,
-            caloriesPerServing,
-            tags,
-            ingredients,
-            steps,
-        } = ctx.value;
-        if (title.trim().length === 0) {
+        const push: PushFn = (message, path) =>
             ctx.issues.push({
                 code: "custom",
                 input: ctx.value,
-                message: "recipeForm.errors.titleRequired",
-                path: ["title"],
+                message,
+                path,
             });
-        } else if (title.trim().length > 100) {
-            ctx.issues.push({
-                code: "custom",
-                input: ctx.value,
-                message: "recipeForm.errors.titleMaxLength",
-                path: ["title"],
-            });
-        }
-        if (!Number.isInteger(servings)) {
-            ctx.issues.push({
-                code: "custom",
-                input: ctx.value,
-                message: "recipeForm.errors.servingsInteger",
-                path: ["servings"],
-            });
-        } else if (servings < 1) {
-            ctx.issues.push({
-                code: "custom",
-                input: ctx.value,
-                message: "recipeForm.errors.servingsMin",
-                path: ["servings"],
-            });
-        } else if (servings > 50) {
-            ctx.issues.push({
-                code: "custom",
-                input: ctx.value,
-                message: "recipeForm.errors.servingsMax",
-                path: ["servings"],
-            });
-        }
-        if (totalMinutes !== "" && !isPositiveIntStr(totalMinutes)) {
-            ctx.issues.push({
-                code: "custom",
-                input: ctx.value,
-                message: "recipeForm.errors.totalMinutesFormat",
-                path: ["totalMinutes"],
-            });
-        }
-        if (
-            caloriesPerServing !== "" &&
-            !isPositiveIntStr(caloriesPerServing)
-        ) {
-            ctx.issues.push({
-                code: "custom",
-                input: ctx.value,
-                message: "recipeForm.errors.caloriesPerServingFormat",
-                path: ["caloriesPerServing"],
-            });
-        }
-        if (new Set(tags).size !== tags.length) {
-            ctx.issues.push({
-                code: "custom",
-                input: ctx.value,
-                message: "recipeForm.errors.tagsUnique",
-                path: ["tags"],
-            });
-        }
-        if (steps.length === 0) {
-            ctx.issues.push({
-                code: "custom",
-                input: ctx.value,
-                message: "recipeForm.errors.stepsMinOne",
-                path: ["steps"],
-            });
-        }
+        checkBasicsFields(ctx.value, push);
+        checkStepsMinOne(ctx.value.steps, push);
+        const { ingredients, steps } = ctx.value;
         const ingredientIds = new Set(ingredients.map((i) => i.id));
         for (const [si, step] of steps.entries()) {
             for (const refId of step.ingredientIds) {
                 if (!ingredientIds.has(refId)) {
-                    ctx.issues.push({
-                        code: "custom",
-                        input: ctx.value,
-                        message: "recipeForm.errors.stepIngredientRef",
-                        path: ["steps", si, "ingredientIds"],
-                    });
+                    push("recipeForm.errors.stepIngredientRef", [
+                        "steps",
+                        si,
+                        "ingredientIds",
+                    ]);
                     break;
                 }
             }
@@ -411,7 +325,7 @@ export function toRecipe(
             text: s.text.trim(),
             ingredientIds: s.ingredientIds,
         };
-        if (s.timerMinutes === "") return base;
+        if (isBlank(s.timerMinutes)) return base;
         return {
             ...base,
             timer: {
@@ -421,14 +335,12 @@ export function toRecipe(
         };
     });
 
-    const totalMinutes =
-        values.totalMinutes !== ""
-            ? parseDecimal(values.totalMinutes)
-            : undefined;
-    const caloriesPerServing =
-        values.caloriesPerServing !== ""
-            ? parseDecimal(values.caloriesPerServing)
-            : undefined;
+    const totalMinutes = !isBlank(values.totalMinutes)
+        ? parseDecimal(values.totalMinutes)
+        : undefined;
+    const caloriesPerServing = !isBlank(values.caloriesPerServing)
+        ? parseDecimal(values.caloriesPerServing)
+        : undefined;
 
     const recipe = {
         id: options.existing?.id ?? createId(),
@@ -446,4 +358,80 @@ export function toRecipe(
     };
 
     return RecipeSchema.parse(recipe);
+}
+
+export function unusedIngredients(
+    values: RecipeFormValues,
+): RecipeFormIngredient[] {
+    const usedIds = new Set(values.steps.flatMap((s) => s.ingredientIds));
+    return values.ingredients.filter(
+        (i) => !isBlank(i.name) && !usedIds.has(i.id),
+    );
+}
+
+export function insertIngredient(
+    step: RecipeFormStep,
+    ingredient: RecipeFormIngredient,
+    selection: { start: number; end: number },
+): { step: RecipeFormStep; cursor: number } {
+    const textLen = step.text.length;
+    const rawStart = Math.min(selection.start, selection.end);
+    const rawEnd = Math.max(selection.start, selection.end);
+    const start = Math.min(Math.max(rawStart, 0), textLen);
+    const end = Math.min(Math.max(rawEnd, 0), textLen);
+
+    const name = ingredient.name.trim();
+    const before = step.text.slice(0, start);
+    const after = step.text.slice(end);
+
+    const prevChar: string | undefined =
+        before.length > 0 ? before.slice(-1) : undefined;
+    const nextChar: string | undefined =
+        after.length > 0 ? after.slice(0, 1) : undefined;
+
+    const prefix = prevChar !== undefined && !/\s/.test(prevChar) ? " " : "";
+    const suffix =
+        nextChar !== undefined && !/[\s,.;:!?)]/.test(nextChar) ? " " : "";
+
+    const newText = before + prefix + name + suffix + after;
+    const cursor = before.length + prefix.length + name.length + suffix.length;
+
+    const newIngredientIds = step.ingredientIds.includes(ingredient.id)
+        ? step.ingredientIds
+        : [...step.ingredientIds, ingredient.id];
+
+    return {
+        step: { ...step, text: newText, ingredientIds: newIngredientIds },
+        cursor,
+    };
+}
+
+export function unlinkIngredient(
+    step: RecipeFormStep,
+    ingredientId: string,
+): RecipeFormStep {
+    return {
+        ...step,
+        ingredientIds: step.ingredientIds.filter((id) => id !== ingredientId),
+    };
+}
+
+export function removeIngredient(
+    values: RecipeFormValues,
+    ingredientId: string,
+): RecipeFormValues {
+    return {
+        ...values,
+        ingredients: values.ingredients.filter((i) => i.id !== ingredientId),
+        steps: values.steps.map((s) =>
+            s.ingredientIds.includes(ingredientId)
+                ? {
+                      ...s,
+                      ingredientIds: s.ingredientIds.filter(
+                          (id) => id !== ingredientId,
+                      ),
+                  }
+                : s,
+        ),
+    };
 }
