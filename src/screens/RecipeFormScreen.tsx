@@ -158,6 +158,7 @@ export const RecipeFormScreen = observer(function RecipeFormScreenComponent({
                                 label={t("recipeForm.buttons.next")}
                                 variant="primary"
                                 icon={ChevronRight}
+                                iconPosition="end"
                                 onPress={() => handleNext()}
                                 style={styles.nextButton}
                             />

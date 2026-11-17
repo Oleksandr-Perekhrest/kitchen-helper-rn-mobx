@@ -55,6 +55,16 @@ export const WithIcon: Story = {
     args: { label: "Далі", variant: "primary", size: "lg", icon: ArrowRight },
 };
 
+export const IconEnd: Story = {
+    args: {
+        label: "Далі",
+        variant: "primary",
+        size: "lg",
+        icon: ArrowRight,
+        iconPosition: "end",
+    },
+};
+
 export const Disabled: Story = {
     args: { disabled: true },
 };

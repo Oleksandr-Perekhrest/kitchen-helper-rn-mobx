@@ -139,6 +139,7 @@ export function isFormErrorKey(value: string): value is FormErrorKey {
     return (FORM_ERROR_KEYS as readonly string[]).includes(value);
 }
 
+// continue: true is required; zod 4 skips later checks after any issue pushed without it.
 type PushFn = (message: FormErrorKey, path: (string | number)[]) => void;
 
 function checkBasicsFields(
@@ -199,6 +200,7 @@ const formIngredientSchema = z
                 message:
                     "recipeForm.errors.ingredientNameRequired" satisfies FormErrorKey,
                 path: ["name"],
+                continue: true,
             });
         }
         if (ctx.value.unit !== "toTaste") {
@@ -210,6 +212,7 @@ const formIngredientSchema = z
                     message:
                         "recipeForm.errors.ingredientAmountInvalid" satisfies FormErrorKey,
                     path: ["amount"],
+                    continue: true,
                 });
             }
         }
@@ -231,6 +234,7 @@ const formStepSchema = z
                 message:
                     "recipeForm.errors.stepTextRequired" satisfies FormErrorKey,
                 path: ["text"],
+                continue: true,
             });
         }
         const { timerMinutes } = ctx.value;
@@ -244,6 +248,7 @@ const formStepSchema = z
                     message:
                         "recipeForm.errors.stepTimerFormat" satisfies FormErrorKey,
                     path: ["timerMinutes"],
+                    continue: true,
                 });
             } else if (mins > 1440) {
                 ctx.issues.push({
@@ -252,6 +257,7 @@ const formStepSchema = z
                     message:
                         "recipeForm.errors.stepTimerMax" satisfies FormErrorKey,
                     path: ["timerMinutes"],
+                    continue: true,
                 });
             }
         }
@@ -271,6 +277,7 @@ export const basicsStepSchema = z
                 input: ctx.value,
                 message,
                 path,
+                continue: true,
             });
         checkBasicsFields(ctx.value, push);
     });
@@ -287,6 +294,7 @@ export const ingredientsStepSchema = z
                 input: ctx.value,
                 message,
                 path,
+                continue: true,
             });
         checkServings(ctx.value, push);
     });
@@ -300,6 +308,7 @@ export const stepsStepSchema = z
                 input: ctx.value,
                 message,
                 path,
+                continue: true,
             });
         checkStepsMinOne(ctx.value.steps, push);
     });
@@ -322,6 +331,7 @@ export const recipeFormSchema = z
                 input: ctx.value,
                 message,
                 path,
+                continue: true,
             });
         checkBasicsFields(ctx.value, push);
         checkServings(ctx.value, push);

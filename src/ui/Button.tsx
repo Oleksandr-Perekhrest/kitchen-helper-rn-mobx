@@ -28,8 +28,10 @@ export type ButtonProps = {
     variant?: ButtonVariant;
     /** Button size. Defaults to `"lg"`. */
     size?: "lg" | "md";
-    /** Optional leading Lucide icon. */
+    /** Optional Lucide icon. */
     icon?: LucideIcon;
+    /** Where to place the icon relative to the label. Defaults to `"start"`. */
+    iconPosition?: "start" | "end";
     /** Whether the button is disabled. */
     disabled?: boolean;
     /** Additional container styles. */
@@ -49,6 +51,7 @@ export function Button({
     variant = "primary",
     size = "lg",
     icon,
+    iconPosition = "start",
     disabled = false,
     style,
 }: ButtonProps) {
@@ -108,12 +111,15 @@ export function Button({
                 style,
             ]}
         >
-            {icon && (
+            {icon && iconPosition === "start" && (
                 <Icon icon={icon} size={iconSize} tone={tone} strokeWidth={2} />
             )}
             <Text variant={textVariant} tone={tone}>
                 {label}
             </Text>
+            {icon && iconPosition === "end" && (
+                <Icon icon={icon} size={iconSize} tone={tone} strokeWidth={2} />
+            )}
         </Pressable>
     );
 }
