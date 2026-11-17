@@ -6,13 +6,8 @@ import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SearchX, ChevronRight } from "lucide-react-native";
 import { useForm, useWatch, FormProvider } from "react-hook-form";
+import { ScrollView, StyleSheet, View as RNView } from "react-native";
 import { useRef, useMemo, useState, useEffect, useCallback } from "react";
-import {
-    ScrollView,
-    StyleSheet,
-    View as RNView,
-    findNodeHandle,
-} from "react-native";
 
 // local dependencies
 import { spacing, useTheme } from "../theme";
@@ -88,6 +83,7 @@ export const RecipeFormScreen = observer(function RecipeFormScreenComponent({
     const scrollYRef = useRef(0);
     const cloudBottomYRef = useRef<number | null>(null);
     const [showTopSheet, setShowTopSheet] = useState(false);
+    const showTopSheetRef = useRef(false);
     const [topSheetOpen, setTopSheetOpen] = useState(false);
 
     const currentStepKey: WizardStep = WIZARD_STEPS[currentIndex] ?? "basics";
@@ -188,13 +184,20 @@ export const RecipeFormScreen = observer(function RecipeFormScreenComponent({
         total: WIZARD_STEPS.length,
     });
 
+    function updateTopSheetVisibility(isOut: boolean) {
+        if (isOut !== showTopSheetRef.current) {
+            showTopSheetRef.current = isOut;
+            setShowTopSheet(isOut);
+        }
+    }
+
     function goToStep(index: number) {
         setCurrentIndex(index);
         setHighestVisited((prev) => Math.max(prev, index));
         scrollRef.current?.scrollTo({ y: 0, animated: false });
         scrollYRef.current = 0;
         cloudBottomYRef.current = null;
-        setShowTopSheet(false);
+        updateTopSheetVisibility(false);
     }
 
     function handleBack() {
@@ -209,7 +212,7 @@ export const RecipeFormScreen = observer(function RecipeFormScreenComponent({
             const isOut =
                 cloudBottomYRef.current !== null &&
                 cloudBottomYRef.current < scrollYRef.current;
-            setShowTopSheet(isOut);
+            updateTopSheetVisibility(isOut);
         }
     }
 
@@ -217,15 +220,16 @@ export const RecipeFormScreen = observer(function RecipeFormScreenComponent({
         const cloud = cloudRef.current;
         const scroll = scrollRef.current;
         if (cloud === null || scroll === null) return;
-        const scrollNode = findNodeHandle(scroll);
-        if (scrollNode == null) return;
+        const innerView = scroll.getInnerViewRef();
+        if (innerView == null) return;
         cloud.measureLayout(
-            scrollNode,
+            innerView,
             (_x, y, _w, height) => {
                 cloudBottomYRef.current = y + height;
                 if (currentStepKey === "steps") {
-                    const isOut = cloudBottomYRef.current < scrollYRef.current;
-                    setShowTopSheet(isOut);
+                    updateTopSheetVisibility(
+                        cloudBottomYRef.current < scrollYRef.current,
+                    );
                 }
             },
             () => {},
@@ -239,13 +243,13 @@ export const RecipeFormScreen = observer(function RecipeFormScreenComponent({
             scrollRef.current?.scrollTo({ y: 0, animated: true });
             return;
         }
-        const scrollNode = findNodeHandle(scroll);
-        if (scrollNode == null) {
+        const innerView = scroll.getInnerViewRef();
+        if (innerView == null) {
             scroll.scrollTo({ y: 0, animated: true });
             return;
         }
         cloud.measureLayout(
-            scrollNode,
+            innerView,
             (_x, y) => scroll.scrollTo({ y, animated: true }),
             () => scroll.scrollTo({ y: 0, animated: true }),
         );
