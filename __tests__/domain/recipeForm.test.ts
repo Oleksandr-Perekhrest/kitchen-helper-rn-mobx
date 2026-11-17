@@ -31,4 +31,18 @@ describe("recipeFormSchema reports every independent error", () => {
             expect(paths).toContainEqual(["ingredients", 0, "amount"]);
         }
     });
+
+    it("ingredientsStepSchema with empty ingredients reports ingredientsMinOne at path [ingredients]", () => {
+        const result = ingredientsStepSchema.safeParse({
+            servings: 2,
+            ingredients: [],
+        });
+        expect(result.success).toBe(false);
+        if (!result.success) {
+            const paths = result.error.issues.map((i) => i.path);
+            const messages = result.error.issues.map((i) => i.message);
+            expect(paths).toContainEqual(["ingredients"]);
+            expect(messages).toContain("recipeForm.errors.ingredientsMinOne");
+        }
+    });
 });

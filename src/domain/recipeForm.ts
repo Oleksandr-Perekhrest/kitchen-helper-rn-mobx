@@ -126,6 +126,7 @@ export const FORM_ERROR_KEYS = [
     "recipeForm.errors.tagsUnique",
     "recipeForm.errors.ingredientNameRequired",
     "recipeForm.errors.ingredientAmountInvalid",
+    "recipeForm.errors.ingredientsMinOne",
     "recipeForm.errors.stepTextRequired",
     "recipeForm.errors.stepTimerFormat",
     "recipeForm.errors.stepTimerMax",
@@ -179,6 +180,14 @@ function checkServings(value: { servings: number }, push: PushFn): void {
     } else if (servings > 50) {
         push("recipeForm.errors.servingsMax", ["servings"]);
     }
+}
+
+function checkIngredientsMinOne(
+    ingredients: { length: number },
+    push: PushFn,
+): void {
+    if (ingredients.length === 0)
+        push("recipeForm.errors.ingredientsMinOne", ["ingredients"]);
 }
 
 function checkStepsMinOne(steps: { length: number }, push: PushFn): void {
@@ -297,6 +306,7 @@ export const ingredientsStepSchema = z
                 continue: true,
             });
         checkServings(ctx.value, push);
+        checkIngredientsMinOne(ctx.value.ingredients, push);
     });
 
 export const stepsStepSchema = z
@@ -335,6 +345,7 @@ export const recipeFormSchema = z
             });
         checkBasicsFields(ctx.value, push);
         checkServings(ctx.value, push);
+        checkIngredientsMinOne(ctx.value.ingredients, push);
         checkStepsMinOne(ctx.value.steps, push);
         const { ingredients, steps } = ctx.value;
         const ingredientIds = new Set(ingredients.map((i) => i.id));

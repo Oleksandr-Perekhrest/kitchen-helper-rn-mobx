@@ -97,6 +97,12 @@ export function IngredientsStep() {
         openSheetIndex !== null ? fields[openSheetIndex] : undefined;
     const sheetUnit = currentSheetRow?.unit ?? "g";
 
+    const rawListError = errors.ingredients?.message;
+    const listError =
+        rawListError !== undefined && isFormErrorKey(rawListError)
+            ? t(rawListError)
+            : undefined;
+
     return (
         <View style={styles.container}>
             {/* Header: "Ingredients for" + servings stepper */}
@@ -318,16 +324,23 @@ export function IngredientsStep() {
                 </Text>
             )}
 
-            {/* Add ingredient */}
-            <Pressable
-                role="button"
-                onPress={handleAddIngredient}
-                style={[styles.addButton, { borderColor: colors.primary }]}
-            >
-                <Text variant="label" tone="primary">
-                    {t("recipeForm.ingredients.addIngredient")}
-                </Text>
-            </Pressable>
+            {/* List-level error + add button */}
+            <View style={styles.addSection}>
+                {listError !== undefined && (
+                    <Text variant="caption" tone="danger">
+                        {listError}
+                    </Text>
+                )}
+                <Pressable
+                    role="button"
+                    onPress={handleAddIngredient}
+                    style={[styles.addButton, { borderColor: colors.primary }]}
+                >
+                    <Text variant="label" tone="primary">
+                        {t("recipeForm.ingredients.addIngredient")}
+                    </Text>
+                </Pressable>
+            </View>
 
             {/* Unit selection sheet */}
             <OptionSheet
@@ -412,6 +425,9 @@ const styles = StyleSheet.create({
     emptyHint: {
         textAlign: "center",
         paddingVertical: 8,
+    },
+    addSection: {
+        gap: 8,
     },
     addButton: {
         height: 48,
