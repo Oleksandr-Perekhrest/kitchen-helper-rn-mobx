@@ -121,6 +121,15 @@
       "timerMinutesA11y": "Хвилини таймера, крок {{n}}",
       "timerMin": "хв",
       "addStep": "Додати крок"
+    },
+    "productCloud": {
+      "title": "Продукти · натисни, щоб вставити в крок {{n}}",
+      "inThisStep": "у цьому кроці",
+      "inAnotherStep": "в іншому",
+      "notUsed": "ще ні",
+      "inThisStepA11y": "{{name}}, у цьому кроці. Вставити в текст кроку",
+      "inAnotherStepA11y": "{{name}}, в іншому кроці. Вставити в текст кроку",
+      "notUsedA11y": "{{name}}, не використано. Вставити в текст кроку"
     }
   },
   "cookingMode": {

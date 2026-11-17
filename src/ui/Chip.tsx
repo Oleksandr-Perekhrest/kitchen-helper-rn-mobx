@@ -22,6 +22,8 @@ export type ChipProps = {
     disabled?: boolean;
     /** ARIA role for the pressable. Defaults to "checkbox". */
     role?: "checkbox" | "radio";
+    /** Optional aria-label override. Defaults to label. */
+    ariaLabel?: string;
 };
 
 export const INFO_CHIP_VARIANTS = ["filled", "outline"] as const;
@@ -44,6 +46,7 @@ export function Chip({
     icon,
     disabled = false,
     role = "checkbox",
+    ariaLabel,
 }: ChipProps) {
     const { colors } = useTheme();
 
@@ -57,7 +60,7 @@ export function Chip({
             disabled={disabled}
             onPress={onPress}
             role={role}
-            aria-label={label}
+            aria-label={ariaLabel ?? label}
             aria-checked={selected}
             aria-disabled={disabled}
             style={({ pressed }) => [

@@ -1,24 +1,23 @@
 // outsource dependencies
-import type { Ref, ElementRef } from "react";
+import type { ElementRef } from "react";
 import type { TextInput } from "react-native";
-import { X, Check } from "lucide-react-native";
 import { useTranslation } from "react-i18next";
 import { useRef, useState, useEffect } from "react";
 import { View, Pressable, StyleSheet } from "react-native";
 import {
     useWatch,
-    Controller,
     useFormState,
     useFieldArray,
     useFormContext,
 } from "react-hook-form";
 
 // local dependencies
+import { Text } from "../../ui";
+import { StepCard } from "./StepCard";
+import { useTheme } from "../../theme";
 import type { TimerKind } from "../../theme";
-import { TIMER_ICONS } from "../../ui/timerIcons";
-import { useTheme, TIMER_KINDS } from "../../theme";
-import { formatDuration } from "../../i18n/formatDuration";
-import { Text, Icon, TextField, IconButton, TimerBadge } from "../../ui";
+import { ProductCloud } from "./ProductCloud";
+import type { InsertTrigger } from "./StepCard";
 import type {
     RecipeFormValues,
     RecipeFormIngredient,
@@ -26,27 +25,22 @@ import type {
 import {
     emptyStep,
     isFormErrorKey,
-    unlinkIngredient,
+    insertIngredient,
 } from "../../domain/recipeForm";
-
-type TextInputRef = Ref<ElementRef<typeof TextInput>>;
-
-const BADGE_SIZE = 28;
-
-const TIMER_KIND_KEYS = {
-    boil: "timerKinds.boil",
-    fry: "timerKinds.fry",
-    stew: "timerKinds.stew",
-    bake: "timerKinds.bake",
-    other: "timerKinds.other",
-} as const;
 
 export function StepsStep() {
     const { t } = useTranslation();
     const { colors } = useTheme();
 
-    const { control, setValue, getValues, setFocus, trigger, clearErrors } =
-        useFormContext<RecipeFormValues>();
+    const {
+        control,
+        setValue,
+        getValues,
+        setFocus,
+        trigger,
+        clearErrors,
+        getFieldState,
+    } = useFormContext<RecipeFormValues>();
     const { errors } = useFormState<RecipeFormValues>({ control });
 
     const { fields, append, remove } = useFieldArray({
@@ -55,20 +49,24 @@ export function StepsStep() {
         keyName: "_key",
     });
 
-    // useWatch provides reactive timerMinutes/timerKind values — fields[] snapshot
-    // from useFieldArray does not update on setValue sub-field changes.
     const watchedSteps = useWatch({ control, name: "steps" });
 
     const [activeStepId, setActiveStepId] = useState<string | undefined>(
         () => fields[0]?.id,
     );
-    // At most one timer editor open at a time; opening one closes any other.
     const [editingTimerStepId, setEditingTimerStepId] = useState<string | null>(
+        null,
+    );
+    const [insertTrigger, setInsertTrigger] = useState<InsertTrigger | null>(
         null,
     );
 
     const pendingFocusIndex = useRef(-1);
     const pendingTimerFocusId = useRef<string | null>(null);
+    const insertVersionRef = useRef(0);
+    const selectionMapRef = useRef<Map<string, { start: number; end: number }>>(
+        new Map(),
+    );
     const timerMinRefMap = useRef<Map<string, ElementRef<typeof TextInput>>>(
         new Map(),
     );
@@ -92,13 +90,19 @@ export function StepsStep() {
         }
     });
 
-    // toNestErrors puts path ["steps"] error in .root when item-level errors
-    // coexist, or directly in .message when the array is empty and no item names exist.
     const rawListError = errors.steps?.root?.message ?? errors.steps?.message;
     const listError =
         rawListError !== undefined && isFormErrorKey(rawListError)
             ? t(rawListError)
             : undefined;
+
+    const activeStepIndex = fields.findIndex((f) => f.id === activeStepId);
+    const activeStepNum = activeStepIndex >= 0 ? activeStepIndex + 1 : 1;
+
+    const ingredients = getValues("ingredients");
+    const ingredientMap = new Map<string, RecipeFormIngredient>(
+        ingredients.map((i) => [i.id, i]),
+    );
 
     function handleAddStep() {
         const step = emptyStep();
@@ -139,441 +143,85 @@ export function StepsStep() {
         setEditingTimerStepId(null);
     }
 
-    const ingredients = getValues("ingredients");
-    const ingredientMap = new Map<string, RecipeFormIngredient>(
-        ingredients.map((i) => [i.id, i]),
-    );
+    function handleInsertIngredient(ingredient: RecipeFormIngredient) {
+        if (activeStepIndex < 0) return;
+        const currentStep = getValues(`steps.${activeStepIndex}`);
+        const sel = selectionMapRef.current.get(currentStep.id) ?? {
+            start: currentStep.text.length,
+            end: currentStep.text.length,
+        };
+        const { step: updatedStep, cursor } = insertIngredient(
+            currentStep,
+            ingredient,
+            sel,
+        );
+        const hasTextError = getFieldState(
+            `steps.${activeStepIndex}.text`,
+        ).invalid;
+        setValue(`steps.${activeStepIndex}.text`, updatedStep.text, {
+            shouldDirty: true,
+            shouldValidate: hasTextError,
+        });
+        setValue(
+            `steps.${activeStepIndex}.ingredientIds`,
+            updatedStep.ingredientIds,
+            { shouldDirty: true },
+        );
+        insertVersionRef.current += 1;
+        setInsertTrigger({
+            stepId: currentStep.id,
+            cursor,
+            version: insertVersionRef.current,
+        });
+    }
 
     return (
         <View style={styles.container}>
-            {/* TODO: ingredient cloud will go here (next task) */}
+            <ProductCloud
+                activeStepId={activeStepId}
+                activeStepNum={activeStepNum}
+                onInsert={handleInsertIngredient}
+            />
 
             {fields.length > 0 && (
                 <View>
                     {fields.map((field, index) => {
-                        const stepNum = index + 1;
-                        const isEditingTimer = editingTimerStepId === field.id;
-
                         const watched = watchedSteps[index];
                         const watchedTimerMinutes: string =
                             watched?.timerMinutes ?? "";
                         const watchedTimerKind: TimerKind =
                             watched?.timerKind ?? "other";
-                        const hasTimer = watchedTimerMinutes.trim() !== "";
-
-                        const stepErrors = errors.steps?.[index];
-
-                        const rawTextError = stepErrors?.text?.message;
-                        const translatedTextError =
-                            rawTextError !== undefined &&
-                            isFormErrorKey(rawTextError)
-                                ? t(rawTextError)
-                                : undefined;
-
-                        const rawTimerError = stepErrors?.timerMinutes?.message;
-                        const translatedTimerError =
-                            rawTimerError !== undefined &&
-                            isFormErrorKey(rawTimerError)
-                                ? t(rawTimerError)
-                                : undefined;
-
-                        const linkedIngredients = field.ingredientIds
-                            .map((id) => ingredientMap.get(id))
-                            .filter(
-                                (i): i is RecipeFormIngredient =>
-                                    i !== undefined,
-                            );
+                        const watchedIngredientIds: string[] =
+                            watched?.ingredientIds ?? field.ingredientIds;
 
                         return (
-                            <Pressable
+                            <StepCard
                                 key={field._key}
-                                onPress={() => setActiveStepId(field.id)}
-                                style={styles.card}
-                            >
-                                {/* Header: badge + "Step N" + delete */}
-                                <View style={styles.cardHeader}>
-                                    <View
-                                        style={[
-                                            styles.stepBadge,
-                                            {
-                                                backgroundColor:
-                                                    colors.primarySoft,
-                                            },
-                                        ]}
-                                    >
-                                        <Text variant="caption" tone="primary">
-                                            {String(stepNum)}
-                                        </Text>
-                                    </View>
-                                    <Text
-                                        variant="label"
-                                        style={styles.stepTitle}
-                                    >
-                                        {t("recipeForm.stepsEditor.stepN", {
-                                            n: stepNum,
-                                        })}
-                                    </Text>
-                                    {fields.length > 1 && (
-                                        <IconButton
-                                            icon={X}
-                                            variant="ghost"
-                                            accessibilityLabel={t(
-                                                "recipeForm.stepsEditor.deleteStepA11y",
-                                                { n: stepNum },
-                                            )}
-                                            onPress={() => handleDelete(index)}
-                                        />
-                                    )}
-                                </View>
-
-                                {/* Step text */}
-                                <Controller
-                                    name={`steps.${index}.text`}
-                                    control={control}
-                                    render={({ field: textField }) => (
-                                        <TextField
-                                            ref={textField.ref as TextInputRef}
-                                            value={textField.value}
-                                            onChangeText={textField.onChange}
-                                            onBlur={textField.onBlur}
-                                            onFocus={() =>
-                                                setActiveStepId(field.id)
-                                            }
-                                            multiline
-                                            numberOfLines={2}
-                                            aria-label={t(
-                                                "recipeForm.stepsEditor.stepDescA11y",
-                                                { n: stepNum },
-                                            )}
-                                            placeholder={t(
-                                                "recipeForm.stepsEditor.stepDescPlaceholder",
-                                            )}
-                                            error={translatedTextError}
-                                        />
-                                    )}
-                                />
-
-                                {/* Linked ingredient chips */}
-                                {linkedIngredients.length > 0 && (
-                                    <View style={styles.linkedRow}>
-                                        {linkedIngredients.map((ingredient) => (
-                                            <View
-                                                key={ingredient.id}
-                                                style={[
-                                                    styles.linkedChip,
-                                                    {
-                                                        backgroundColor:
-                                                            colors.surfaceAlt,
-                                                        borderColor:
-                                                            colors.borderStrong,
-                                                    },
-                                                ]}
-                                            >
-                                                <Text variant="caption">
-                                                    {ingredient.name}
-                                                </Text>
-                                                <Pressable
-                                                    role="button"
-                                                    aria-label={t(
-                                                        "recipeForm.stepsEditor.unlinkA11y",
-                                                        {
-                                                            name: ingredient.name,
-                                                        },
-                                                    )}
-                                                    onPress={() => {
-                                                        const currentStep =
-                                                            getValues(
-                                                                `steps.${index}`,
-                                                            );
-                                                        const updated =
-                                                            unlinkIngredient(
-                                                                currentStep,
-                                                                ingredient.id,
-                                                            );
-                                                        setValue(
-                                                            `steps.${index}.ingredientIds`,
-                                                            updated.ingredientIds,
-                                                            {
-                                                                shouldDirty: true,
-                                                            },
-                                                        );
-                                                    }}
-                                                    style={styles.unlinkButton}
-                                                >
-                                                    <Icon
-                                                        icon={X}
-                                                        size={12}
-                                                        tone="textMuted"
-                                                    />
-                                                </Pressable>
-                                            </View>
-                                        ))}
-                                    </View>
-                                )}
-
-                                {/* Static timer plaque (pressable, opens editor) */}
-                                {!isEditingTimer && hasTimer && (
-                                    <TimerBadge
-                                        kind={watchedTimerKind}
-                                        timeLabel={formatDuration(
-                                            t,
-                                            parseInt(
-                                                watchedTimerMinutes.trim(),
-                                                10,
-                                            ),
-                                        )}
-                                        kindLabel={t(
-                                            TIMER_KIND_KEYS[watchedTimerKind],
-                                        )}
-                                        onPress={() =>
-                                            handleOpenTimerEditor(field.id)
-                                        }
-                                        accessibilityLabel={t(
-                                            "recipeForm.stepsEditor.editTimerPlaqueA11y",
-                                            {
-                                                kind: t(
-                                                    TIMER_KIND_KEYS[
-                                                        watchedTimerKind
-                                                    ],
-                                                ),
-                                                n: parseInt(
-                                                    watchedTimerMinutes.trim(),
-                                                    10,
-                                                ),
-                                            },
-                                        )}
-                                    />
-                                )}
-
-                                {/* Timer editor */}
-                                {isEditingTimer && (
-                                    <View style={styles.timerEditor}>
-                                        {/* Row 1: minutes field, "min", spacer, ✓, × */}
-                                        <View style={styles.timerMinRow}>
-                                            <Controller
-                                                name={`steps.${index}.timerMinutes`}
-                                                control={control}
-                                                render={({
-                                                    field: timerMinField,
-                                                }) => (
-                                                    <TextField
-                                                        ref={(r) => {
-                                                            if (r !== null) {
-                                                                timerMinRefMap.current.set(
-                                                                    field.id,
-                                                                    r,
-                                                                );
-                                                            } else {
-                                                                timerMinRefMap.current.delete(
-                                                                    field.id,
-                                                                );
-                                                            }
-                                                            const rhfRef =
-                                                                timerMinField.ref as TextInputRef;
-                                                            if (
-                                                                typeof rhfRef ===
-                                                                "function"
-                                                            ) {
-                                                                rhfRef(r);
-                                                            }
-                                                        }}
-                                                        value={
-                                                            timerMinField.value
-                                                        }
-                                                        onChangeText={
-                                                            timerMinField.onChange
-                                                        }
-                                                        onBlur={
-                                                            timerMinField.onBlur
-                                                        }
-                                                        keyboardType="number-pad"
-                                                        aria-label={t(
-                                                            "recipeForm.stepsEditor.timerMinutesA11y",
-                                                            { n: stepNum },
-                                                        )}
-                                                        style={
-                                                            styles.timerMinField
-                                                        }
-                                                    />
-                                                )}
-                                            />
-                                            <Text
-                                                variant="label"
-                                                tone="textMuted"
-                                            >
-                                                {t(
-                                                    "recipeForm.stepsEditor.timerMin",
-                                                )}
-                                            </Text>
-                                            <View
-                                                style={styles.timerMinSpacer}
-                                            />
-                                            <IconButton
-                                                icon={Check}
-                                                variant="subtle"
-                                                iconTone="primary"
-                                                accessibilityLabel={t(
-                                                    "recipeForm.stepsEditor.saveTimer",
-                                                )}
-                                                onPress={() =>
-                                                    handleSaveTimer(index)
-                                                }
-                                            />
-                                            <IconButton
-                                                icon={X}
-                                                variant="ghost"
-                                                accessibilityLabel={t(
-                                                    "recipeForm.stepsEditor.removeTimer",
-                                                )}
-                                                onPress={() =>
-                                                    handleRemoveTimer(index)
-                                                }
-                                            />
-                                        </View>
-
-                                        {/* Row 2: five kind radio items, full width */}
-                                        <View
-                                            role="radiogroup"
-                                            style={styles.timerKindActionRow}
-                                        >
-                                            {TIMER_KINDS.map((kind) => {
-                                                const isSelected =
-                                                    watchedTimerKind === kind;
-                                                return (
-                                                    <Pressable
-                                                        key={kind}
-                                                        role="radio"
-                                                        aria-label={t(
-                                                            TIMER_KIND_KEYS[
-                                                                kind
-                                                            ],
-                                                        )}
-                                                        aria-checked={
-                                                            isSelected
-                                                        }
-                                                        onPress={() =>
-                                                            setValue(
-                                                                `steps.${index}.timerKind`,
-                                                                kind,
-                                                                {
-                                                                    shouldDirty: true,
-                                                                },
-                                                            )
-                                                        }
-                                                        style={
-                                                            styles.timerKindItem
-                                                        }
-                                                    >
-                                                        <View
-                                                            style={[
-                                                                styles.timerKindCircle,
-                                                                isSelected
-                                                                    ? {
-                                                                          backgroundColor:
-                                                                              colors
-                                                                                  .timer[
-                                                                                  kind
-                                                                              ],
-                                                                      }
-                                                                    : [
-                                                                          styles.timerKindCircleUnselected,
-                                                                          {
-                                                                              backgroundColor:
-                                                                                  colors.surface,
-                                                                              borderColor:
-                                                                                  colors.borderStrong,
-                                                                          },
-                                                                      ],
-                                                            ]}
-                                                        >
-                                                            <Icon
-                                                                icon={
-                                                                    TIMER_ICONS[
-                                                                        kind
-                                                                    ]
-                                                                }
-                                                                size={22}
-                                                                color={
-                                                                    isSelected
-                                                                        ? colors.onPrimary
-                                                                        : colors
-                                                                              .timer[
-                                                                              kind
-                                                                          ]
-                                                                }
-                                                                strokeWidth={2}
-                                                            />
-                                                        </View>
-                                                        <Text
-                                                            tone={
-                                                                isSelected
-                                                                    ? "text"
-                                                                    : "textMuted"
-                                                            }
-                                                            style={[
-                                                                styles.timerKindLabel,
-                                                                isSelected
-                                                                    ? styles.timerKindLabelSelected
-                                                                    : styles.timerKindLabelUnselected,
-                                                            ]}
-                                                        >
-                                                            {t(
-                                                                TIMER_KIND_KEYS[
-                                                                    kind
-                                                                ],
-                                                            )}
-                                                        </Text>
-                                                    </Pressable>
-                                                );
-                                            })}
-                                        </View>
-
-                                        {translatedTimerError !== undefined && (
-                                            <Text
-                                                variant="caption"
-                                                tone="danger"
-                                            >
-                                                {translatedTimerError}
-                                            </Text>
-                                        )}
-                                    </View>
-                                )}
-
-                                {/* Add timer button (no timer and editor closed) */}
-                                {!isEditingTimer && !hasTimer && (
-                                    <Pressable
-                                        role="button"
-                                        onPress={() =>
-                                            handleOpenTimerEditor(field.id)
-                                        }
-                                        style={styles.textButton}
-                                    >
-                                        <Text variant="label" tone="primary">
-                                            {t(
-                                                "recipeForm.stepsEditor.addTimer",
-                                            )}
-                                        </Text>
-                                    </Pressable>
-                                )}
-
-                                {/* Divider (not after last card) */}
-                                {index < fields.length - 1 && (
-                                    <View
-                                        style={[
-                                            styles.groupDivider,
-                                            {
-                                                backgroundColor: colors.border,
-                                            },
-                                        ]}
-                                    />
-                                )}
-                            </Pressable>
+                                field={field}
+                                index={index}
+                                isLast={index === fields.length - 1}
+                                canDelete={fields.length > 1}
+                                isEditingTimer={editingTimerStepId === field.id}
+                                watchedTimerMinutes={watchedTimerMinutes}
+                                watchedTimerKind={watchedTimerKind}
+                                watchedIngredientIds={watchedIngredientIds}
+                                ingredientMap={ingredientMap}
+                                insertTrigger={insertTrigger}
+                                selectionMapRef={selectionMapRef}
+                                timerMinRefMap={timerMinRefMap}
+                                onActivate={() => setActiveStepId(field.id)}
+                                onDelete={() => handleDelete(index)}
+                                onOpenTimerEditor={() =>
+                                    handleOpenTimerEditor(field.id)
+                                }
+                                onSaveTimer={() => handleSaveTimer(index)}
+                                onRemoveTimer={() => handleRemoveTimer(index)}
+                            />
                         );
                     })}
                 </View>
             )}
 
-            {/* List-level error + Add step */}
             <View style={styles.addSection}>
                 {listError !== undefined && (
                     <Text variant="caption" tone="danger">
@@ -599,100 +247,7 @@ const styles = StyleSheet.create({
         gap: 16,
         marginTop: 24,
     },
-    card: {
-        gap: 10,
-    },
-    cardHeader: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 8,
-    },
-    stepBadge: {
-        width: BADGE_SIZE,
-        height: BADGE_SIZE,
-        borderRadius: BADGE_SIZE / 2,
-        alignItems: "center",
-        justifyContent: "center",
-        flexShrink: 0,
-    },
-    stepTitle: {
-        flex: 1,
-    },
-    linkedRow: {
-        flexDirection: "row",
-        flexWrap: "wrap",
-        gap: 6,
-    },
-    linkedChip: {
-        flexDirection: "row",
-        alignItems: "center",
-        height: 28,
-        paddingLeft: 10,
-        paddingRight: 6,
-        borderRadius: 14,
-        borderWidth: 1,
-        gap: 4,
-    },
-    unlinkButton: {
-        width: 20,
-        height: 20,
-        alignItems: "center",
-        justifyContent: "center",
-    },
-    timerEditor: {
-        gap: 10,
-    },
-    timerMinRow: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 8,
-    },
-    timerMinField: {
-        width: 80,
-    },
-    timerMinSpacer: {
-        flex: 1,
-    },
-    timerKindActionRow: {
-        flexDirection: "row",
-    },
-    timerKindItem: {
-        flex: 1,
-        alignItems: "center",
-        gap: 4,
-    },
-    timerKindCircle: {
-        width: 44,
-        height: 44,
-        borderRadius: 22,
-        alignItems: "center",
-        justifyContent: "center",
-    },
-    timerKindCircleUnselected: {
-        borderWidth: 1,
-    },
-    timerKindLabel: {
-        fontSize: 12,
-        textAlign: "center",
-    },
-    timerKindLabelSelected: {
-        fontWeight: "700",
-    },
-    timerKindLabelUnselected: {
-        fontWeight: "600",
-    },
-    textButton: {
-        alignSelf: "flex-start",
-        paddingVertical: 4,
-    },
-    groupDivider: {
-        height: StyleSheet.hairlineWidth,
-        marginTop: 8,
-        marginBottom: 8,
-    },
-    addSection: {
-        gap: 8,
-    },
+    addSection: { gap: 8 },
     addButton: {
         height: 48,
         borderRadius: 12,

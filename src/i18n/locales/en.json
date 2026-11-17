@@ -117,6 +117,15 @@
       "timerMinutesA11y": "Timer minutes, step {{n}}",
       "timerMin": "min",
       "addStep": "Add step"
+    },
+    "productCloud": {
+      "title": "Ingredients · tap to insert into step {{n}}",
+      "inThisStep": "in this step",
+      "inAnotherStep": "in another step",
+      "notUsed": "not used yet",
+      "inThisStepA11y": "{{name}}, in this step. Insert into step text",
+      "inAnotherStepA11y": "{{name}}, in another step. Insert into step text",
+      "notUsedA11y": "{{name}}, not used. Insert into step text"
     }
   },
   "cookingMode": {
