@@ -15,13 +15,20 @@ import {
 
 // local dependencies
 import { useTheme } from "../theme";
-import { TIMER_ICONS } from "../ui/timerIcons";
 import { useStores } from "../stores/StoreProvider";
 import { formatDuration } from "../i18n/formatDuration";
 import { highlightSegments } from "../domain/highlight";
 import type { RootStackScreenProps } from "../navigation/types";
 import { formatQuantity, scaleIngredients } from "../domain/scaling";
-import { Text, Icon, Button, Stepper, EmptyState, IconButton } from "../ui";
+import {
+    Text,
+    Icon,
+    Button,
+    Stepper,
+    EmptyState,
+    IconButton,
+    TimerBadge,
+} from "../ui";
 
 const HORIZONTAL_PAD = 16;
 const PHOTO_HEIGHT = 220;
@@ -325,42 +332,13 @@ export const RecipeScreen = observer(function RecipeScreenComponent({
                                         )}
                                     </Text>
                                     {step.timer !== undefined && (
-                                        <View
-                                            style={[
-                                                styles.stepTimerBadge,
-                                                {
-                                                    borderColor:
-                                                        colors.timer[
-                                                            step.timer.kind
-                                                        ],
-                                                },
-                                            ]}
-                                        >
-                                            <Icon
-                                                icon={
-                                                    TIMER_ICONS[step.timer.kind]
-                                                }
-                                                size={14}
-                                                color={
-                                                    colors.timer[
-                                                        step.timer.kind
-                                                    ]
-                                                }
-                                            />
-                                            <Text
-                                                variant="caption"
-                                                style={{
-                                                    color: colors.timer[
-                                                        step.timer.kind
-                                                    ],
-                                                }}
-                                            >
-                                                {formatDuration(
-                                                    t,
-                                                    step.timer.minutes,
-                                                )}
-                                            </Text>
-                                        </View>
+                                        <TimerBadge
+                                            kind={step.timer.kind}
+                                            timeLabel={formatDuration(
+                                                t,
+                                                step.timer.minutes,
+                                            )}
+                                        />
                                     )}
                                 </View>
                             </View>
@@ -498,16 +476,6 @@ const styles = StyleSheet.create({
     },
     highlight: {
         fontWeight: "600",
-    },
-    stepTimerBadge: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 4,
-        height: 28,
-        paddingHorizontal: 10,
-        borderRadius: 14,
-        borderWidth: 1,
-        alignSelf: "flex-start",
     },
     bottomBar: {
         paddingHorizontal: HORIZONTAL_PAD,

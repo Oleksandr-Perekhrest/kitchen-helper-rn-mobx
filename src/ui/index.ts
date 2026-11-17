@@ -22,6 +22,8 @@ export type { StepperProps } from "./Stepper";
 export { Stepper } from "./Stepper";
 export type { TimerPillProps } from "./TimerPill";
 export { TimerPill } from "./TimerPill";
+export type { TimerBadgeProps } from "./TimerBadge";
+export { TimerBadge } from "./TimerBadge";
 export { TIMER_ICONS } from "./timerIcons";
 export type { RecipeCardProps } from "./RecipeCard";
 export { RecipeCard } from "./RecipeCard";

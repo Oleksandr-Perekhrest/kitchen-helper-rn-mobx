@@ -18,7 +18,7 @@ import type { TimerKind } from "../../theme";
 import { TIMER_ICONS } from "../../ui/timerIcons";
 import { useTheme, TIMER_KINDS } from "../../theme";
 import { formatDuration } from "../../i18n/formatDuration";
-import { Text, Icon, TextField, IconButton } from "../../ui";
+import { Text, Icon, TextField, IconButton, TimerBadge } from "../../ui";
 import type {
     RecipeFormValues,
     RecipeFormIngredient,
@@ -32,6 +32,14 @@ import {
 type TextInputRef = Ref<ElementRef<typeof TextInput>>;
 
 const BADGE_SIZE = 28;
+
+const TIMER_KIND_KEYS = {
+    boil: "timerKinds.boil",
+    fry: "timerKinds.fry",
+    stew: "timerKinds.stew",
+    bake: "timerKinds.bake",
+    other: "timerKinds.other",
+} as const;
 
 export function StepsStep() {
     const { t } = useTranslation();
@@ -303,15 +311,30 @@ export function StepsStep() {
                                     </View>
                                 )}
 
-                                {/* Static timer plaque (pressable, opens editor) — same visual as RecipeScreen */}
+                                {/* Static timer plaque (pressable, opens editor) */}
                                 {!isEditingTimer && hasTimer && (
-                                    <Pressable
-                                        role="button"
-                                        aria-label={t(
+                                    <TimerBadge
+                                        kind={watchedTimerKind}
+                                        timeLabel={formatDuration(
+                                            t,
+                                            parseInt(
+                                                watchedTimerMinutes.trim(),
+                                                10,
+                                            ),
+                                        )}
+                                        kindLabel={t(
+                                            TIMER_KIND_KEYS[watchedTimerKind],
+                                        )}
+                                        onPress={() =>
+                                            handleOpenTimerEditor(field.id)
+                                        }
+                                        accessibilityLabel={t(
                                             "recipeForm.stepsEditor.editTimerPlaqueA11y",
                                             {
                                                 kind: t(
-                                                    `timerKinds.${watchedTimerKind}` as "timerKinds.boil",
+                                                    TIMER_KIND_KEYS[
+                                                        watchedTimerKind
+                                                    ],
                                                 ),
                                                 n: parseInt(
                                                     watchedTimerMinutes.trim(),
@@ -319,43 +342,7 @@ export function StepsStep() {
                                                 ),
                                             },
                                         )}
-                                        onPress={() =>
-                                            handleOpenTimerEditor(field.id)
-                                        }
-                                        style={[
-                                            styles.timerPlaque,
-                                            {
-                                                borderColor:
-                                                    colors.timer[
-                                                        watchedTimerKind
-                                                    ],
-                                            },
-                                        ]}
-                                    >
-                                        <Icon
-                                            icon={TIMER_ICONS[watchedTimerKind]}
-                                            size={14}
-                                            color={
-                                                colors.timer[watchedTimerKind]
-                                            }
-                                        />
-                                        <Text
-                                            variant="caption"
-                                            style={{
-                                                color: colors.timer[
-                                                    watchedTimerKind
-                                                ],
-                                            }}
-                                        >
-                                            {formatDuration(
-                                                t,
-                                                parseInt(
-                                                    watchedTimerMinutes.trim(),
-                                                    10,
-                                                ),
-                                            )}
-                                        </Text>
-                                    </Pressable>
+                                    />
                                 )}
 
                                 {/* Timer editor */}
@@ -457,7 +444,9 @@ export function StepsStep() {
                                                         key={kind}
                                                         role="radio"
                                                         aria-label={t(
-                                                            `timerKinds.${kind}` as "timerKinds.boil",
+                                                            TIMER_KIND_KEYS[
+                                                                kind
+                                                            ],
                                                         )}
                                                         aria-checked={
                                                             isSelected
@@ -529,7 +518,9 @@ export function StepsStep() {
                                                             ]}
                                                         >
                                                             {t(
-                                                                `timerKinds.${kind}` as "timerKinds.boil",
+                                                                TIMER_KIND_KEYS[
+                                                                    kind
+                                                                ],
                                                             )}
                                                         </Text>
                                                     </Pressable>
@@ -647,16 +638,6 @@ const styles = StyleSheet.create({
         height: 20,
         alignItems: "center",
         justifyContent: "center",
-    },
-    timerPlaque: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 4,
-        height: 28,
-        paddingHorizontal: 10,
-        borderRadius: 14,
-        borderWidth: 1,
-        alignSelf: "flex-start",
     },
     timerEditor: {
         gap: 10,
