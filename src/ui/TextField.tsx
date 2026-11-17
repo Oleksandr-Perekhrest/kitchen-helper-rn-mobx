@@ -1,5 +1,6 @@
 // outsource dependencies
 import { useState } from "react";
+import type { Ref, ElementRef } from "react";
 import type { TextInputProps } from "react-native";
 import type { LucideIcon } from "lucide-react-native";
 import type { StyleProp, ViewStyle } from "react-native";
@@ -10,7 +11,7 @@ import { Icon } from "./Icon";
 import { Text } from "./Text";
 import { useTheme, typography } from "../theme";
 
-export type TextFieldProps = Omit<TextInputProps, "style"> & {
+export type TextFieldProps = Omit<TextInputProps, "style" | "ref"> & {
     /** Label displayed above the input. */
     label?: string;
     /** Error message displayed below the input; makes the input border danger-colored. */
@@ -19,6 +20,8 @@ export type TextFieldProps = Omit<TextInputProps, "style"> & {
     style?: StyleProp<ViewStyle>;
     /** Optional leading icon rendered at 20 px in textMuted tone. */
     icon?: LucideIcon;
+    /** React 19: ref forwarded to the underlying TextInput. */
+    ref?: Ref<ElementRef<typeof TextInput>>;
 };
 
 export function TextField({
@@ -26,6 +29,7 @@ export function TextField({
     error,
     style,
     icon,
+    ref,
     multiline = false,
     onFocus,
     onBlur,
@@ -69,6 +73,7 @@ export function TextField({
                     />
                 )}
                 <TextInput
+                    ref={ref}
                     multiline={multiline}
                     aria-label={label}
                     accessibilityHint={hasError ? error : undefined}

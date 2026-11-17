@@ -56,6 +56,24 @@
   "recipeForm": {
     "titleNew": "New recipe",
     "titleEdit": "Edit recipe",
+    "counter": "{{current}} of {{total}}",
+    "steps": {
+      "basics": "Basics",
+      "ingredients": "Ingredients",
+      "steps": "Steps",
+      "review": "Review"
+    },
+    "fields": {
+      "title": "Title",
+      "caloriesPerServing": "Calories per serving · optional",
+      "caloriesHint": "kcal",
+      "tags": "Tags"
+    },
+    "buttons": {
+      "back": "Back",
+      "next": "Next",
+      "save": "Save recipe"
+    },
     "errors": {
       "titleRequired": "Title is required",
       "titleMaxLength": "Title must be 100 characters or fewer",

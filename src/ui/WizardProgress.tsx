@@ -119,6 +119,8 @@ const styles = StyleSheet.create({
     step: {
         flex: 1,
         gap: 6,
+        minHeight: 44,
+        justifyContent: "flex-start",
     },
     stepPressable: {
         flex: 1,

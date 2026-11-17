@@ -1,0 +1,126 @@
+// outsource dependencies
+import type { Ref, ElementRef } from "react";
+import { useTranslation } from "react-i18next";
+import { View, TextInput, StyleSheet } from "react-native";
+import { Controller, useFormContext } from "react-hook-form";
+
+// local dependencies
+import { TAGS } from "../../domain/recipe";
+import { Chip, Text, TextField } from "../../ui";
+import { isFormErrorKey } from "../../domain/recipeForm";
+import type { RecipeFormValues } from "../../domain/recipeForm";
+
+type TextInputRef = Ref<ElementRef<typeof TextInput>>;
+
+export function BasicsStep() {
+    const { t } = useTranslation();
+    const { control } = useFormContext<RecipeFormValues>();
+
+    return (
+        <View style={styles.container}>
+            <Controller
+                name="title"
+                control={control}
+                render={({ field, fieldState }) => {
+                    const errorMsg = fieldState.error?.message;
+                    return (
+                        <TextField
+                            ref={field.ref as TextInputRef}
+                            label={t("recipeForm.fields.title")}
+                            value={field.value}
+                            onChangeText={field.onChange}
+                            onBlur={field.onBlur}
+                            returnKeyType="next"
+                            error={
+                                errorMsg !== undefined &&
+                                isFormErrorKey(errorMsg)
+                                    ? t(errorMsg)
+                                    : undefined
+                            }
+                        />
+                    );
+                }}
+            />
+            <Controller
+                name="caloriesPerServing"
+                control={control}
+                render={({ field, fieldState }) => {
+                    const errorMsg = fieldState.error?.message;
+                    return (
+                        <TextField
+                            ref={field.ref as TextInputRef}
+                            label={t("recipeForm.fields.caloriesPerServing")}
+                            value={field.value}
+                            onChangeText={field.onChange}
+                            onBlur={field.onBlur}
+                            keyboardType="number-pad"
+                            placeholder={t("recipeForm.fields.caloriesHint")}
+                            error={
+                                errorMsg !== undefined &&
+                                isFormErrorKey(errorMsg)
+                                    ? t(errorMsg)
+                                    : undefined
+                            }
+                        />
+                    );
+                }}
+            />
+            <Controller
+                name="tags"
+                control={control}
+                render={({ field, fieldState }) => {
+                    const errorMsg = fieldState.error?.message;
+                    return (
+                        <View>
+                            <Text variant="label">
+                                {t("recipeForm.fields.tags")}
+                            </Text>
+                            <View
+                                role="group"
+                                aria-label={t("recipeForm.fields.tags")}
+                                style={styles.tagsWrap}
+                            >
+                                {TAGS.map((tag) => (
+                                    <Chip
+                                        key={tag}
+                                        label={t(`tags.${tag}`)}
+                                        selected={field.value.includes(tag)}
+                                        role="checkbox"
+                                        onPress={() => {
+                                            const current = field.value;
+                                            const next = current.includes(tag)
+                                                ? current.filter(
+                                                      (v) => v !== tag,
+                                                  )
+                                                : [...current, tag];
+                                            field.onChange(next);
+                                        }}
+                                    />
+                                ))}
+                            </View>
+                            {errorMsg !== undefined &&
+                                isFormErrorKey(errorMsg) && (
+                                    <Text variant="caption" tone="danger">
+                                        {t(errorMsg)}
+                                    </Text>
+                                )}
+                        </View>
+                    );
+                }}
+            />
+        </View>
+    );
+}
+
+const styles = StyleSheet.create({
+    container: {
+        gap: 20,
+        marginTop: 24,
+    },
+    tagsWrap: {
+        flexDirection: "row",
+        flexWrap: "wrap",
+        gap: 8,
+        marginTop: 6,
+    },
+});
