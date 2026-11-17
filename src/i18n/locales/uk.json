@@ -59,7 +59,24 @@
   },
   "recipeForm": {
     "titleNew": "Новий рецепт",
-    "titleEdit": "Редагувати рецепт"
+    "titleEdit": "Редагувати рецепт",
+    "errors": {
+      "titleRequired": "Введіть назву рецепту",
+      "titleMaxLength": "Назва має містити не більше 100 символів",
+      "servingsInteger": "Кількість порцій має бути цілим числом",
+      "servingsMin": "Мінімальна кількість порцій — 1",
+      "servingsMax": "Максимальна кількість порцій — 50",
+      "totalMinutesFormat": "Введіть ціле число хвилин",
+      "caloriesPerServingFormat": "Введіть ціле число калорій",
+      "tagsUnique": "Теги мають бути унікальними",
+      "ingredientNameRequired": "Введіть назву інгредієнта",
+      "ingredientAmountInvalid": "Введіть додатне число для кількості",
+      "stepsMinOne": "Додайте принаймні один крок",
+      "stepTextRequired": "Введіть опис кроку",
+      "stepTimerFormat": "Таймер має бути додатним цілим числом",
+      "stepTimerMax": "Таймер не може перевищувати 1440 хвилин",
+      "stepIngredientRef": "Крок посилається на невідомий інгредієнт"
+    }
   },
   "cookingMode": {
     "title": "Готування"

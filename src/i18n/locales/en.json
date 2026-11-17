@@ -55,7 +55,24 @@
   },
   "recipeForm": {
     "titleNew": "New recipe",
-    "titleEdit": "Edit recipe"
+    "titleEdit": "Edit recipe",
+    "errors": {
+      "titleRequired": "Title is required",
+      "titleMaxLength": "Title must be 100 characters or fewer",
+      "servingsInteger": "Servings must be a whole number",
+      "servingsMin": "Servings must be at least 1",
+      "servingsMax": "Servings cannot exceed 50",
+      "totalMinutesFormat": "Enter a whole number of minutes",
+      "caloriesPerServingFormat": "Enter a whole number of calories",
+      "tagsUnique": "Tags must be unique",
+      "ingredientNameRequired": "Ingredient name is required",
+      "ingredientAmountInvalid": "Enter a positive number for the amount",
+      "stepsMinOne": "Add at least one step",
+      "stepTextRequired": "Step description is required",
+      "stepTimerFormat": "Timer must be a positive whole number",
+      "stepTimerMax": "Timer cannot exceed 1440 minutes",
+      "stepIngredientRef": "Step references an unknown ingredient"
+    }
   },
   "cookingMode": {
     "title": "Cooking"
