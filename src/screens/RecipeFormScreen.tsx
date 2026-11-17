@@ -3,7 +3,6 @@ import type { ElementRef } from "react";
 import { useRef, useState } from "react";
 import { observer } from "mobx-react-lite";
 import { useTranslation } from "react-i18next";
-import type { FieldPath } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, FormProvider } from "react-hook-form";
 import { SearchX, ChevronRight } from "lucide-react-native";
@@ -81,10 +80,7 @@ export const RecipeFormScreen = observer(function RecipeFormScreenComponent({
 
     async function handleNext() {
         const fields = WIZARD_STEP_FIELDS[currentStepKey];
-        const isValid = await form.trigger(
-            [...fields] as FieldPath<RecipeFormValues>[],
-            { shouldFocus: true },
-        );
+        const isValid = await form.trigger([...fields], { shouldFocus: true });
         if (isValid) {
             goToStep(currentIndex + 1);
         }

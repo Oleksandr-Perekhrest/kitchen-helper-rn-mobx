@@ -80,9 +80,8 @@
     },
     "ingredients": {
       "headerFor": "Продукти на",
-      "colQty": "К-сть",
-      "colUnit": "Одиниця",
-      "colName": "Назва",
+      "namePlaceholder": "Назва",
+      "amountPlaceholder": "Кількість",
       "addIngredient": "Додати продукт",
       "unitSheetTitle": "Одиниця виміру",
       "emptyHint": "Поки що немає продуктів",

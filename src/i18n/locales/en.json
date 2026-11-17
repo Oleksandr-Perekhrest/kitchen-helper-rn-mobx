@@ -76,9 +76,8 @@
     },
     "ingredients": {
       "headerFor": "Ingredients for",
-      "colQty": "Qty",
-      "colUnit": "Unit",
-      "colName": "Name",
+      "namePlaceholder": "Name",
+      "amountPlaceholder": "Amount",
       "addIngredient": "Add ingredient",
       "unitSheetTitle": "Unit",
       "emptyHint": "No ingredients yet",

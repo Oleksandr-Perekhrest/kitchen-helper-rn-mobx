@@ -64,7 +64,7 @@ export function IngredientsStep() {
     useEffect(() => {
         const idx = pendingFocusIndex.current;
         if (idx >= 0 && idx < fields.length) {
-            setFocus(`ingredients.${idx}.amount`);
+            setFocus(`ingredients.${idx}.name`);
             pendingFocusIndex.current = -1;
         }
     }, [fields.length, setFocus]);
@@ -122,184 +122,190 @@ export function IngredientsStep() {
                 )}
             />
 
-            {/* Column captions */}
+            {/* Ingredient groups */}
             {fields.length > 0 && (
-                <View style={styles.captions}>
-                    <Text
-                        variant="caption"
-                        tone="textMuted"
-                        style={styles.captionQty}
-                    >
-                        {t("recipeForm.ingredients.colQty")}
-                    </Text>
-                    <Text
-                        variant="caption"
-                        tone="textMuted"
-                        style={styles.captionUnit}
-                    >
-                        {t("recipeForm.ingredients.colUnit")}
-                    </Text>
-                    <Text
-                        variant="caption"
-                        tone="textMuted"
-                        style={styles.captionName}
-                    >
-                        {t("recipeForm.ingredients.colName")}
-                    </Text>
-                </View>
-            )}
+                <View>
+                    {fields.map((field, index) => {
+                        const rowErrors = errors.ingredients?.[index];
+                        const rawNameError = rowErrors?.name?.message;
+                        const rawAmountError = rowErrors?.amount?.message;
+                        const translatedNameError =
+                            rawNameError !== undefined &&
+                            isFormErrorKey(rawNameError)
+                                ? t(rawNameError)
+                                : undefined;
+                        const translatedAmountError =
+                            rawAmountError !== undefined &&
+                            isFormErrorKey(rawAmountError)
+                                ? t(rawAmountError)
+                                : undefined;
+                        const displayError =
+                            translatedNameError ?? translatedAmountError;
+                        const isToTaste = field.unit === "toTaste";
+                        const rowNum = index + 1;
 
-            {/* Ingredient rows */}
-            {fields.map((field, index) => {
-                const rowErrors = errors.ingredients?.[index];
-                const rawNameError = rowErrors?.name?.message;
-                const rawAmountError = rowErrors?.amount?.message;
-                const translatedNameError =
-                    rawNameError !== undefined && isFormErrorKey(rawNameError)
-                        ? t(rawNameError)
-                        : undefined;
-                const translatedAmountError =
-                    rawAmountError !== undefined &&
-                    isFormErrorKey(rawAmountError)
-                        ? t(rawAmountError)
-                        : undefined;
-                const displayError =
-                    translatedNameError ?? translatedAmountError;
-                const isToTaste = field.unit === "toTaste";
-                const rowNum = index + 1;
-
-                return (
-                    <View key={field._key}>
-                        <View style={styles.row}>
-                            {/* Amount or spacer */}
-                            {isToTaste ? (
-                                <View style={styles.amountSpacer} />
-                            ) : (
-                                <Controller
-                                    name={`ingredients.${index}.amount`}
-                                    control={control}
-                                    render={({ field: amountField }) => (
-                                        <TextField
-                                            ref={
-                                                amountField.ref as TextInputRef
-                                            }
-                                            value={amountField.value}
-                                            onChangeText={amountField.onChange}
-                                            onBlur={amountField.onBlur}
-                                            keyboardType="decimal-pad"
-                                            textAlign="center"
-                                            aria-label={t(
-                                                "recipeForm.ingredients.amountA11y",
-                                                { row: rowNum },
-                                            )}
-                                            style={styles.amountField}
-                                            error={translatedAmountError}
-                                            hideErrorText
-                                        />
-                                    )}
-                                />
-                            )}
-
-                            {/* Unit button */}
-                            <Controller
-                                name={`ingredients.${index}.unit`}
-                                control={control}
-                                render={({ field: unitField }) => {
-                                    const unitLabel =
-                                        unitField.value === "toTaste"
-                                            ? t("units.toTaste")
-                                            : t(
-                                                  `units.${unitField.value}` as "units.g",
-                                                  { count: 1 },
-                                              );
-                                    return (
-                                        <Pressable
-                                            role="button"
-                                            aria-label={t(
-                                                "recipeForm.ingredients.unitA11y",
-                                                {
-                                                    row: rowNum,
-                                                    unit: unitLabel,
-                                                },
-                                            )}
-                                            onPress={() =>
-                                                setOpenSheetIndex(index)
-                                            }
-                                            style={[
-                                                styles.unitButton,
-                                                {
-                                                    backgroundColor:
-                                                        colors.surface,
-                                                    borderColor:
-                                                        colors.borderStrong,
-                                                },
-                                            ]}
-                                        >
-                                            <Text
-                                                variant="label"
-                                                numberOfLines={1}
-                                                style={styles.unitLabel}
-                                            >
-                                                {unitLabel}
-                                            </Text>
-                                            <Icon
-                                                icon={ChevronDown}
-                                                size={14}
-                                                tone="textMuted"
+                        return (
+                            <View key={field._key} style={styles.group}>
+                                {/* Line 1: name + delete */}
+                                <View style={styles.nameLine}>
+                                    <Controller
+                                        name={`ingredients.${index}.name`}
+                                        control={control}
+                                        render={({ field: nameField }) => (
+                                            <TextField
+                                                ref={
+                                                    nameField.ref as TextInputRef
+                                                }
+                                                value={nameField.value}
+                                                onChangeText={
+                                                    nameField.onChange
+                                                }
+                                                onBlur={nameField.onBlur}
+                                                placeholder={t(
+                                                    "recipeForm.ingredients.namePlaceholder",
+                                                )}
+                                                aria-label={t(
+                                                    "recipeForm.ingredients.nameA11y",
+                                                    { row: rowNum },
+                                                )}
+                                                style={styles.nameField}
+                                                error={translatedNameError}
+                                                hideErrorText
                                             />
-                                        </Pressable>
-                                    );
-                                }}
-                            />
-
-                            {/* Name */}
-                            <Controller
-                                name={`ingredients.${index}.name`}
-                                control={control}
-                                render={({ field: nameField }) => (
-                                    <TextField
-                                        ref={nameField.ref as TextInputRef}
-                                        value={nameField.value}
-                                        onChangeText={nameField.onChange}
-                                        onBlur={nameField.onBlur}
-                                        placeholder={t(
-                                            "recipeForm.ingredients.colName",
                                         )}
-                                        aria-label={t(
-                                            "recipeForm.ingredients.nameA11y",
+                                    />
+                                    <IconButton
+                                        icon={X}
+                                        variant="ghost"
+                                        accessibilityLabel={t(
+                                            "recipeForm.ingredients.deleteA11y",
                                             { row: rowNum },
                                         )}
-                                        style={styles.nameField}
-                                        error={translatedNameError}
-                                        hideErrorText
+                                        onPress={() => handleDelete(index)}
+                                    />
+                                </View>
+
+                                {/* Line 2: amount + unit (or unit full-width if toTaste) */}
+                                <View style={styles.amountLine}>
+                                    {!isToTaste && (
+                                        <Controller
+                                            name={`ingredients.${index}.amount`}
+                                            control={control}
+                                            render={({
+                                                field: amountField,
+                                            }) => (
+                                                <TextField
+                                                    ref={
+                                                        amountField.ref as TextInputRef
+                                                    }
+                                                    value={amountField.value}
+                                                    onChangeText={
+                                                        amountField.onChange
+                                                    }
+                                                    onBlur={amountField.onBlur}
+                                                    keyboardType="decimal-pad"
+                                                    placeholder={t(
+                                                        "recipeForm.ingredients.amountPlaceholder",
+                                                    )}
+                                                    aria-label={t(
+                                                        "recipeForm.ingredients.amountA11y",
+                                                        { row: rowNum },
+                                                    )}
+                                                    style={styles.amountField}
+                                                    error={
+                                                        translatedAmountError
+                                                    }
+                                                    hideErrorText
+                                                />
+                                            )}
+                                        />
+                                    )}
+
+                                    {/* Unit button */}
+                                    <Controller
+                                        name={`ingredients.${index}.unit`}
+                                        control={control}
+                                        render={({ field: unitField }) => {
+                                            const unitLabel =
+                                                unitField.value === "toTaste"
+                                                    ? t("units.toTaste")
+                                                    : t(
+                                                          `units.${unitField.value}` as "units.g",
+                                                          { count: 1 },
+                                                      );
+                                            return (
+                                                <Pressable
+                                                    role="button"
+                                                    aria-label={t(
+                                                        "recipeForm.ingredients.unitA11y",
+                                                        {
+                                                            row: rowNum,
+                                                            unit: unitLabel,
+                                                        },
+                                                    )}
+                                                    onPress={() =>
+                                                        setOpenSheetIndex(index)
+                                                    }
+                                                    style={[
+                                                        styles.unitButton,
+                                                        isToTaste
+                                                            ? styles.unitButtonFull
+                                                            : styles.unitButtonFixed,
+                                                        {
+                                                            backgroundColor:
+                                                                colors.surface,
+                                                            borderColor:
+                                                                colors.borderStrong,
+                                                        },
+                                                    ]}
+                                                >
+                                                    <Text
+                                                        variant="label"
+                                                        numberOfLines={1}
+                                                        style={
+                                                            styles.unitLabelText
+                                                        }
+                                                    >
+                                                        {unitLabel}
+                                                    </Text>
+                                                    <Icon
+                                                        icon={ChevronDown}
+                                                        size={14}
+                                                        tone="textMuted"
+                                                    />
+                                                </Pressable>
+                                            );
+                                        }}
+                                    />
+                                </View>
+
+                                {/* Error line */}
+                                {displayError !== undefined && (
+                                    <Text
+                                        variant="caption"
+                                        tone="danger"
+                                        style={styles.rowError}
+                                    >
+                                        {displayError}
+                                    </Text>
+                                )}
+
+                                {/* Divider (not after last group) */}
+                                {index < fields.length - 1 && (
+                                    <View
+                                        style={[
+                                            styles.groupDivider,
+                                            {
+                                                backgroundColor: colors.border,
+                                            },
+                                        ]}
                                     />
                                 )}
-                            />
-
-                            {/* Delete */}
-                            <IconButton
-                                icon={X}
-                                variant="ghost"
-                                accessibilityLabel={t(
-                                    "recipeForm.ingredients.deleteA11y",
-                                    { row: rowNum },
-                                )}
-                                onPress={() => handleDelete(index)}
-                            />
-                        </View>
-
-                        {displayError !== undefined && (
-                            <Text
-                                variant="caption"
-                                tone="danger"
-                                style={styles.rowError}
-                            >
-                                {displayError}
-                            </Text>
-                        )}
-                    </View>
-                );
-            })}
+                            </View>
+                        );
+                    })}
+                </View>
+            )}
 
             {/* Empty hint */}
             {fields.length === 0 && (
@@ -316,12 +322,7 @@ export function IngredientsStep() {
             <Pressable
                 role="button"
                 onPress={handleAddIngredient}
-                style={[
-                    styles.addButton,
-                    {
-                        borderColor: colors.primary,
-                    },
-                ]}
+                style={[styles.addButton, { borderColor: colors.primary }]}
             >
                 <Text variant="label" tone="primary">
                     {t("recipeForm.ingredients.addIngredient")}
@@ -363,54 +364,50 @@ const styles = StyleSheet.create({
         justifyContent: "space-between",
         gap: 8,
     },
-    captions: {
+    group: {
+        gap: 8,
+    },
+    nameLine: {
         flexDirection: "row",
         alignItems: "center",
-        gap: 6,
-        paddingRight: 50,
+        gap: 8,
     },
-    captionQty: {
-        width: 64,
-        textAlign: "center",
-    },
-    captionUnit: {
-        width: 78,
-    },
-    captionName: {
+    nameField: {
         flex: 1,
     },
-    row: {
+    amountLine: {
         flexDirection: "row",
         alignItems: "center",
-        gap: 6,
+        gap: 8,
     },
     amountField: {
-        width: 64,
-    },
-    amountSpacer: {
-        width: 64,
+        flex: 1,
     },
     unitButton: {
-        width: 78,
         height: 48,
         borderRadius: 12,
         borderWidth: 1,
         flexDirection: "row",
         alignItems: "center",
-        justifyContent: "center",
-        gap: 2,
-        paddingHorizontal: 6,
+        paddingHorizontal: 10,
+        gap: 4,
     },
-    unitLabel: {
+    unitButtonFixed: {
+        width: 120,
+    },
+    unitButtonFull: {
         flex: 1,
-        textAlign: "center",
     },
-    nameField: {
+    unitLabelText: {
         flex: 1,
     },
     rowError: {
         marginTop: 2,
-        marginLeft: 6,
+    },
+    groupDivider: {
+        height: StyleSheet.hairlineWidth,
+        marginTop: 8,
+        marginBottom: 8,
     },
     emptyHint: {
         textAlign: "center",
