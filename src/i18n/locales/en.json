@@ -112,7 +112,8 @@
       "unlinkA11y": "Unlink {{name}}",
       "addTimer": "Add timer",
       "removeTimer": "Remove timer",
-      "timerEditorLabel": "Timer · {{kind}}",
+      "saveTimer": "Save timer",
+      "editTimerPlaqueA11y": "Edit timer: {{kind}} · {{n}} min",
       "timerMinutesA11y": "Timer minutes, step {{n}}",
       "timerMin": "min",
       "addStep": "Add step"

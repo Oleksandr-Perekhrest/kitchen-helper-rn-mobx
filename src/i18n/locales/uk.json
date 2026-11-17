@@ -116,7 +116,8 @@
       "unlinkA11y": "Відвʼязати {{name}}",
       "addTimer": "Додати таймер",
       "removeTimer": "Прибрати таймер",
-      "timerEditorLabel": "Таймер · {{kind}}",
+      "saveTimer": "Зберегти таймер",
+      "editTimerPlaqueA11y": "Редагувати таймер: {{kind}} · {{n}} хв",
       "timerMinutesA11y": "Хвилини таймера, крок {{n}}",
       "timerMin": "хв",
       "addStep": "Додати крок"

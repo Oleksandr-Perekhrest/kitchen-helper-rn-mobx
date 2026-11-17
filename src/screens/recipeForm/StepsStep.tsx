@@ -1,11 +1,12 @@
 // outsource dependencies
-import { X } from "lucide-react-native";
 import type { Ref, ElementRef } from "react";
 import type { TextInput } from "react-native";
+import { X, Check } from "lucide-react-native";
 import { useTranslation } from "react-i18next";
 import { useRef, useState, useEffect } from "react";
 import { View, Pressable, StyleSheet } from "react-native";
 import {
+    useWatch,
     Controller,
     useFormState,
     useFieldArray,
@@ -36,7 +37,7 @@ export function StepsStep() {
     const { t } = useTranslation();
     const { colors } = useTheme();
 
-    const { control, setValue, getValues, setFocus } =
+    const { control, setValue, getValues, setFocus, trigger, clearErrors } =
         useFormContext<RecipeFormValues>();
     const { errors } = useFormState<RecipeFormValues>({ control });
 
@@ -46,11 +47,16 @@ export function StepsStep() {
         keyName: "_key",
     });
 
+    // useWatch provides reactive timerMinutes/timerKind values — fields[] snapshot
+    // from useFieldArray does not update on setValue sub-field changes.
+    const watchedSteps = useWatch({ control, name: "steps" });
+
     const [activeStepId, setActiveStepId] = useState<string | undefined>(
         () => fields[0]?.id,
     );
-    const [timerEditorIds, setTimerEditorIds] = useState<ReadonlySet<string>>(
-        new Set(),
+    // At most one timer editor open at a time; opening one closes any other.
+    const [editingTimerStepId, setEditingTimerStepId] = useState<string | null>(
+        null,
     );
 
     const pendingFocusIndex = useRef(-1);
@@ -101,26 +107,28 @@ export function StepsStep() {
             const remaining = fields.filter((_, i) => i !== index);
             setActiveStepId(remaining[0]?.id);
         }
-        setTimerEditorIds((prev) => {
-            const next = new Set(prev);
-            next.delete(field.id);
-            return next;
-        });
+        if (field.id === editingTimerStepId) {
+            setEditingTimerStepId(null);
+        }
     }
 
-    function handleAddTimer(stepId: string) {
-        setTimerEditorIds((prev) => new Set([...prev, stepId]));
+    function handleOpenTimerEditor(stepId: string) {
+        setEditingTimerStepId(stepId);
         pendingTimerFocusId.current = stepId;
     }
 
-    function handleRemoveTimer(index: number, stepId: string) {
+    async function handleSaveTimer(index: number) {
+        const isValid = await trigger(`steps.${index}.timerMinutes`);
+        if (isValid) {
+            setEditingTimerStepId(null);
+        }
+    }
+
+    function handleRemoveTimer(index: number) {
         setValue(`steps.${index}.timerMinutes`, "", { shouldDirty: true });
         setValue(`steps.${index}.timerKind`, "other", { shouldDirty: true });
-        setTimerEditorIds((prev) => {
-            const next = new Set(prev);
-            next.delete(stepId);
-            return next;
-        });
+        clearErrors(`steps.${index}.timerMinutes`);
+        setEditingTimerStepId(null);
     }
 
     const ingredients = getValues("ingredients");
@@ -135,12 +143,16 @@ export function StepsStep() {
             {fields.length > 0 && (
                 <View>
                     {fields.map((field, index) => {
-                        const isActive = field.id === activeStepId;
                         const stepNum = index + 1;
-                        const hasTimer = field.timerMinutes.trim() !== "";
-                        const showTimerEditor =
-                            isActive &&
-                            (hasTimer || timerEditorIds.has(field.id));
+                        const isEditingTimer = editingTimerStepId === field.id;
+
+                        const watched = watchedSteps[index];
+                        const watchedTimerMinutes: string =
+                            watched?.timerMinutes ?? "";
+                        const watchedTimerKind: TimerKind =
+                            watched?.timerKind ?? "other";
+                        const hasTimer = watchedTimerMinutes.trim() !== "";
+
                         const stepErrors = errors.steps?.[index];
 
                         const rawTextError = stepErrors?.text?.message;
@@ -163,8 +175,6 @@ export function StepsStep() {
                                 (i): i is RecipeFormIngredient =>
                                     i !== undefined,
                             );
-
-                        const timerKind: TimerKind = field.timerKind;
 
                         return (
                             <Pressable
@@ -293,54 +303,65 @@ export function StepsStep() {
                                     </View>
                                 )}
 
-                                {/* Static timer plaque (not active, has timer) — same visual as RecipeScreen */}
-                                {!isActive && hasTimer && (
-                                    <View
+                                {/* Static timer plaque (pressable, opens editor) — same visual as RecipeScreen */}
+                                {!isEditingTimer && hasTimer && (
+                                    <Pressable
+                                        role="button"
+                                        aria-label={t(
+                                            "recipeForm.stepsEditor.editTimerPlaqueA11y",
+                                            {
+                                                kind: t(
+                                                    `timerKinds.${watchedTimerKind}` as "timerKinds.boil",
+                                                ),
+                                                n: parseInt(
+                                                    watchedTimerMinutes.trim(),
+                                                    10,
+                                                ),
+                                            },
+                                        )}
+                                        onPress={() =>
+                                            handleOpenTimerEditor(field.id)
+                                        }
                                         style={[
                                             styles.timerPlaque,
                                             {
                                                 borderColor:
-                                                    colors.timer[timerKind],
+                                                    colors.timer[
+                                                        watchedTimerKind
+                                                    ],
                                             },
                                         ]}
                                     >
                                         <Icon
-                                            icon={TIMER_ICONS[timerKind]}
+                                            icon={TIMER_ICONS[watchedTimerKind]}
                                             size={14}
-                                            color={colors.timer[timerKind]}
+                                            color={
+                                                colors.timer[watchedTimerKind]
+                                            }
                                         />
                                         <Text
                                             variant="caption"
                                             style={{
-                                                color: colors.timer[timerKind],
+                                                color: colors.timer[
+                                                    watchedTimerKind
+                                                ],
                                             }}
                                         >
                                             {formatDuration(
                                                 t,
                                                 parseInt(
-                                                    field.timerMinutes.trim(),
+                                                    watchedTimerMinutes.trim(),
                                                     10,
                                                 ),
                                             )}
                                         </Text>
-                                    </View>
+                                    </Pressable>
                                 )}
 
-                                {/* Timer editor (active + has timer or editor opened) */}
-                                {showTimerEditor && (
+                                {/* Timer editor */}
+                                {isEditingTimer && (
                                     <View style={styles.timerEditor}>
-                                        <View style={styles.timerEditorHeader}>
-                                            <Text variant="label">
-                                                {t(
-                                                    "recipeForm.stepsEditor.timerEditorLabel",
-                                                    {
-                                                        kind: t(
-                                                            `timerKinds.${timerKind}` as "timerKinds.boil",
-                                                        ),
-                                                    },
-                                                )}
-                                            </Text>
-                                        </View>
+                                        {/* Row 1: minutes field + "min" label */}
                                         <View style={styles.timerMinRow}>
                                             <Controller
                                                 name={`steps.${index}.timerMinutes`}
@@ -397,11 +418,17 @@ export function StepsStep() {
                                                     "recipeForm.stepsEditor.timerMin",
                                                 )}
                                             </Text>
-                                            <View
-                                                role="radiogroup"
-                                                style={styles.timerKindsRow}
-                                            >
-                                                {TIMER_KINDS.map((kind) => (
+                                        </View>
+
+                                        {/* Row 2: kind radio buttons + ✓ + × */}
+                                        <View
+                                            role="radiogroup"
+                                            style={styles.timerKindActionRow}
+                                        >
+                                            {TIMER_KINDS.map((kind) => {
+                                                const isSelected =
+                                                    watchedTimerKind === kind;
+                                                return (
                                                     <Pressable
                                                         key={kind}
                                                         role="radio"
@@ -409,7 +436,7 @@ export function StepsStep() {
                                                             `timerKinds.${kind}` as "timerKinds.boil",
                                                         )}
                                                         aria-checked={
-                                                            timerKind === kind
+                                                            isSelected
                                                         }
                                                         onPress={() =>
                                                             setValue(
@@ -420,9 +447,26 @@ export function StepsStep() {
                                                                 },
                                                             )
                                                         }
-                                                        style={
-                                                            styles.timerKindButton
-                                                        }
+                                                        style={[
+                                                            styles.timerKindButton,
+                                                            isSelected
+                                                                ? {
+                                                                      backgroundColor:
+                                                                          colors
+                                                                              .timer[
+                                                                              kind
+                                                                          ],
+                                                                  }
+                                                                : [
+                                                                      styles.timerKindButtonUnselected,
+                                                                      {
+                                                                          backgroundColor:
+                                                                              colors.surface,
+                                                                          borderColor:
+                                                                              colors.borderStrong,
+                                                                      },
+                                                                  ],
+                                                        ]}
                                                     >
                                                         <Icon
                                                             icon={
@@ -432,16 +476,41 @@ export function StepsStep() {
                                                             }
                                                             size={22}
                                                             color={
-                                                                colors.timer[
-                                                                    kind
-                                                                ]
+                                                                isSelected
+                                                                    ? colors.onPrimary
+                                                                    : colors
+                                                                          .timer[
+                                                                          kind
+                                                                      ]
                                                             }
                                                             strokeWidth={2}
                                                         />
                                                     </Pressable>
-                                                ))}
-                                            </View>
+                                                );
+                                            })}
+                                            <IconButton
+                                                icon={Check}
+                                                variant="subtle"
+                                                iconTone="primary"
+                                                accessibilityLabel={t(
+                                                    "recipeForm.stepsEditor.saveTimer",
+                                                )}
+                                                onPress={() =>
+                                                    handleSaveTimer(index)
+                                                }
+                                            />
+                                            <IconButton
+                                                icon={X}
+                                                variant="ghost"
+                                                accessibilityLabel={t(
+                                                    "recipeForm.stepsEditor.removeTimer",
+                                                )}
+                                                onPress={() =>
+                                                    handleRemoveTimer(index)
+                                                }
+                                            />
                                         </View>
+
                                         {translatedTimerError !== undefined && (
                                             <Text
                                                 variant="caption"
@@ -450,46 +519,25 @@ export function StepsStep() {
                                                 {translatedTimerError}
                                             </Text>
                                         )}
-                                        <Pressable
-                                            role="button"
-                                            onPress={() =>
-                                                handleRemoveTimer(
-                                                    index,
-                                                    field.id,
-                                                )
-                                            }
-                                            style={styles.textButton}
-                                        >
-                                            <Text variant="label" tone="danger">
-                                                {t(
-                                                    "recipeForm.stepsEditor.removeTimer",
-                                                )}
-                                            </Text>
-                                        </Pressable>
                                     </View>
                                 )}
 
-                                {/* Add timer button (active, no timer, editor not open) */}
-                                {isActive &&
-                                    !hasTimer &&
-                                    !timerEditorIds.has(field.id) && (
-                                        <Pressable
-                                            role="button"
-                                            onPress={() =>
-                                                handleAddTimer(field.id)
-                                            }
-                                            style={styles.textButton}
-                                        >
-                                            <Text
-                                                variant="label"
-                                                tone="primary"
-                                            >
-                                                {t(
-                                                    "recipeForm.stepsEditor.addTimer",
-                                                )}
-                                            </Text>
-                                        </Pressable>
-                                    )}
+                                {/* Add timer button (no timer and editor closed) */}
+                                {!isEditingTimer && !hasTimer && (
+                                    <Pressable
+                                        role="button"
+                                        onPress={() =>
+                                            handleOpenTimerEditor(field.id)
+                                        }
+                                        style={styles.textButton}
+                                    >
+                                        <Text variant="label" tone="primary">
+                                            {t(
+                                                "recipeForm.stepsEditor.addTimer",
+                                            )}
+                                        </Text>
+                                    </Pressable>
+                                )}
 
                                 {/* Divider (not after last card) */}
                                 {index < fields.length - 1 && (
@@ -587,10 +635,6 @@ const styles = StyleSheet.create({
     timerEditor: {
         gap: 10,
     },
-    timerEditorHeader: {
-        flexDirection: "row",
-        alignItems: "center",
-    },
     timerMinRow: {
         flexDirection: "row",
         alignItems: "center",
@@ -599,16 +643,20 @@ const styles = StyleSheet.create({
     timerMinField: {
         width: 80,
     },
-    timerKindsRow: {
-        flex: 1,
+    timerKindActionRow: {
         flexDirection: "row",
         justifyContent: "space-between",
+        alignItems: "center",
     },
     timerKindButton: {
         width: 44,
         height: 44,
+        borderRadius: 22,
         alignItems: "center",
         justifyContent: "center",
+    },
+    timerKindButtonUnselected: {
+        borderWidth: 1,
     },
     textButton: {
         alignSelf: "flex-start",
