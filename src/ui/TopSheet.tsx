@@ -81,10 +81,9 @@ export function TopSheet({
         ]).start();
     }, [open, maxHeight, heightAnim, opacityAnim]);
 
-    function handleContentSizeChange(_w: number, h: number) {
+    function handleContentLayout(h: number) {
         contentHeightRef.current = h;
         if (openRef.current) {
-            // Adjust height smoothly when chips are added or removed while open.
             Animated.timing(heightAnim, {
                 toValue: Math.min(h, maxHeight),
                 duration: 150,
@@ -168,10 +167,15 @@ export function TopSheet({
                     keyboardShouldPersistTaps="handled"
                     scrollEnabled={open}
                     style={styles.scroll}
-                    contentContainerStyle={styles.contentPadding}
-                    onContentSizeChange={handleContentSizeChange}
                 >
-                    {children}
+                    <View
+                        style={styles.contentPadding}
+                        onLayout={(e) =>
+                            handleContentLayout(e.nativeEvent.layout.height)
+                        }
+                    >
+                        {children}
+                    </View>
                 </ScrollView>
             </Animated.View>
         </View>
