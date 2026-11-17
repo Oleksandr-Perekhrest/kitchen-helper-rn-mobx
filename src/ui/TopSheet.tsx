@@ -39,14 +39,12 @@ export function TopSheet({
     const { height: windowHeight } = useWindowDimensions();
     const maxHeight = windowHeight * maxHeightRatio;
 
-    // Single animated value pair — both on the JS driver so they compose
-    // reliably on Fabric (no cross-driver nesting issues).
     const heightAnim = useRef(new Animated.Value(0)).current;
-    const opacityAnim = useRef(new Animated.Value(0)).current;
 
-    // Measured scroll-content height so the panel fits its content exactly
-    // (no empty gap for 3 chips, scrollable for 20 chips).
+    // Last measured content height and the last height target we animated to,
+    // both as refs so callbacks never capture stale values.
     const contentHeightRef = useRef(0);
+    const targetHeightRef = useRef(0);
 
     // Stable refs for PanResponder callbacks (created once on mount).
     const openRef = useRef(open);
@@ -61,35 +59,33 @@ export function TopSheet({
     }, [onOpenChange]);
 
     useEffect(() => {
-        // Use measured content height when available; fall back to cap so the
-        // panel is never empty on first open before onContentSizeChange fires.
         const contentH = contentHeightRef.current;
         const targetH = open
             ? Math.min(contentH > 0 ? contentH : maxHeight, maxHeight)
             : 0;
-        Animated.parallel([
-            Animated.timing(heightAnim, {
-                toValue: targetH,
-                duration: 220,
-                useNativeDriver: false,
-            }),
-            Animated.timing(opacityAnim, {
-                toValue: open ? 1 : 0,
-                duration: 180,
-                useNativeDriver: false,
-            }),
-        ]).start();
-    }, [open, maxHeight, heightAnim, opacityAnim]);
+        // Skip when already heading to the same target (avoids spurious restarts).
+        if (Math.abs(targetH - targetHeightRef.current) <= 1) return;
+        targetHeightRef.current = targetH;
+        Animated.timing(heightAnim, {
+            toValue: targetH,
+            duration: 220,
+            useNativeDriver: false,
+        }).start();
+    }, [open, maxHeight, heightAnim]);
 
     function handleContentLayout(h: number) {
+        // Ignore sub-pixel noise to prevent restarting during reflow.
+        if (Math.abs(h - contentHeightRef.current) <= 1) return;
         contentHeightRef.current = h;
-        if (openRef.current) {
-            Animated.timing(heightAnim, {
-                toValue: Math.min(h, maxHeight),
-                duration: 150,
-                useNativeDriver: false,
-            }).start();
-        }
+        if (!openRef.current) return;
+        const targetH = Math.min(h, maxHeight);
+        if (Math.abs(targetH - targetHeightRef.current) <= 1) return;
+        targetHeightRef.current = targetH;
+        Animated.timing(heightAnim, {
+            toValue: targetH,
+            duration: 150,
+            useNativeDriver: false,
+        }).start();
     }
 
     const panResponder = useRef(
@@ -152,13 +148,11 @@ export function TopSheet({
                     />
                 </View>
             </View>
-            {/* Single animated container: height + opacity on the same JS driver. */}
             <Animated.View
                 style={[
                     styles.contentWrapper,
                     {
                         height: heightAnim,
-                        opacity: opacityAnim,
                         backgroundColor: colors.surface,
                     },
                 ]}
@@ -167,6 +161,7 @@ export function TopSheet({
                     keyboardShouldPersistTaps="handled"
                     scrollEnabled={open}
                     style={styles.scroll}
+                    contentContainerStyle={styles.contentContainer}
                 >
                     <View
                         style={styles.contentPadding}
@@ -217,6 +212,9 @@ const styles = StyleSheet.create({
     },
     scroll: {
         flex: 1,
+    },
+    contentContainer: {
+        flexGrow: 0,
     },
     contentPadding: {
         padding: 16,
