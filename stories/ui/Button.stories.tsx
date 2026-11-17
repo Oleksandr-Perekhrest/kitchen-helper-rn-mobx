@@ -51,6 +51,15 @@ export const Danger: Story = {
     args: { label: "Видалити", variant: "danger", size: "md", icon: Trash2 },
 };
 
+export const DangerText: Story = {
+    args: {
+        label: "Видалити рецепт",
+        variant: "dangerText",
+        size: "md",
+        icon: Trash2,
+    },
+};
+
 export const WithIcon: Story = {
     args: { label: "Далі", variant: "primary", size: "lg", icon: ArrowRight },
 };

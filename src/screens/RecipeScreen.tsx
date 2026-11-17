@@ -3,11 +3,19 @@ import { observer } from "mobx-react-lite";
 import { useTranslation } from "react-i18next";
 import { useState, useLayoutEffect } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { View, Image, Pressable, ScrollView, StyleSheet } from "react-native";
+import {
+    View,
+    Alert,
+    Image,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+} from "react-native";
 import {
     Star,
     Play,
     Clock,
+    Trash2,
     Pencil,
     SearchX,
     UtensilsCrossed,
@@ -343,6 +351,37 @@ export const RecipeScreen = observer(function RecipeScreenComponent({
                             </View>
                         );
                     })}
+                    <Button
+                        label={t("recipe.deleteRecipe")}
+                        icon={Trash2}
+                        variant="dangerText"
+                        size="md"
+                        accessibilityLabel={t("recipe.deleteRecipeA11y", {
+                            title: recipe.title,
+                        })}
+                        onPress={() => {
+                            const { id, title } = recipe;
+                            Alert.alert(
+                                t("recipe.deleteConfirm.title", { title }),
+                                t("recipe.deleteConfirm.message"),
+                                [
+                                    {
+                                        text: t("recipe.deleteConfirm.cancel"),
+                                        style: "cancel",
+                                    },
+                                    {
+                                        text: t("recipe.deleteConfirm.confirm"),
+                                        style: "destructive",
+                                        onPress: () => {
+                                            navigation.goBack();
+                                            recipes.remove(id);
+                                        },
+                                    },
+                                ],
+                            );
+                        }}
+                        style={styles.deleteButton}
+                    />
                 </View>
             </ScrollView>
 
@@ -494,5 +533,9 @@ const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "center",
         borderRadius: 22,
+    },
+    deleteButton: {
+        alignSelf: "center",
+        marginTop: 32,
     },
 });

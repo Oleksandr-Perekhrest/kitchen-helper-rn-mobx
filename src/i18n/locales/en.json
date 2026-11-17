@@ -46,7 +46,15 @@
     "servingsLabel": "Servings",
     "steps_one": "{{count}} step",
     "steps_other": "{{count}} steps",
-    "calories": "{{count}} kcal / serving"
+    "calories": "{{count}} kcal / serving",
+    "deleteRecipe": "Delete recipe",
+    "deleteRecipeA11y": "Delete recipe {{title}}",
+    "deleteConfirm": {
+      "title": "Delete \"{{title}}\"?",
+      "message": "This cannot be undone.",
+      "cancel": "Cancel",
+      "confirm": "Delete"
+    }
   },
   "duration": {
     "hours": "{{hours}} h",

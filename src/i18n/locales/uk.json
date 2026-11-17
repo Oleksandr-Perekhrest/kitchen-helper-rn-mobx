@@ -50,7 +50,15 @@
     "steps_few": "{{count}} кроки",
     "steps_many": "{{count}} кроків",
     "steps_other": "{{count}} кроку",
-    "calories": "{{count}} ккал / порц."
+    "calories": "{{count}} ккал / порц.",
+    "deleteRecipe": "Видалити рецепт",
+    "deleteRecipeA11y": "Видалити рецепт {{title}}",
+    "deleteConfirm": {
+      "title": "Видалити „{{title}}”?",
+      "message": "Цю дію не можна скасувати.",
+      "cancel": "Скасувати",
+      "confirm": "Видалити"
+    }
   },
   "duration": {
     "hours": "{{hours}} год",

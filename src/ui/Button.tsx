@@ -15,6 +15,7 @@ export const BUTTON_VARIANTS = [
     "soft",
     "neutral",
     "danger",
+    "dangerText",
 ] as const;
 
 export type ButtonVariant = (typeof BUTTON_VARIANTS)[number];
@@ -36,6 +37,8 @@ export type ButtonProps = {
     disabled?: boolean;
     /** Additional container styles. */
     style?: StyleProp<ViewStyle>;
+    /** Overrides the default aria-label (which equals `label`). */
+    accessibilityLabel?: string;
 };
 
 type VariantStyle = {
@@ -54,6 +57,7 @@ export function Button({
     iconPosition = "start",
     disabled = false,
     style,
+    accessibilityLabel,
 }: ButtonProps) {
     const { colors } = useTheme();
 
@@ -86,6 +90,11 @@ export function Button({
             borderWidth: 1,
             tone: "danger",
         },
+        dangerText: {
+            backgroundColor: "transparent",
+            borderWidth: 0,
+            tone: "danger",
+        },
     };
 
     const { backgroundColor, borderColor, borderWidth, tone } =
@@ -100,7 +109,7 @@ export function Button({
             disabled={disabled}
             onPress={onPress}
             role="button"
-            aria-label={label}
+            aria-label={accessibilityLabel ?? label}
             aria-disabled={disabled}
             style={({ pressed }) => [
                 styles.base,
