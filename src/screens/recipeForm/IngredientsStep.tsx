@@ -14,6 +14,7 @@ import {
 
 // local dependencies
 import { useTheme } from "../../theme";
+import { tUnit } from "../../i18n/tUnit";
 import { UNITS } from "../../domain/recipe";
 import type { Unit } from "../../domain/recipe";
 import type { RecipeFormValues } from "../../domain/recipeForm";
@@ -54,10 +55,7 @@ export function IngredientsStep() {
         () =>
             UNITS.map((unit) => ({
                 value: unit,
-                label:
-                    unit === "toTaste"
-                        ? t("units.toTaste")
-                        : t(`units.${unit}` as "units.g", { count: 1 }),
+                label: tUnit(t, unit, 1),
             })),
         [t],
     );
@@ -236,13 +234,11 @@ export function IngredientsStep() {
                                         name={`ingredients.${index}.unit`}
                                         control={control}
                                         render={({ field: unitField }) => {
-                                            const unitLabel =
-                                                unitField.value === "toTaste"
-                                                    ? t("units.toTaste")
-                                                    : t(
-                                                          `units.${unitField.value}` as "units.g",
-                                                          { count: 1 },
-                                                      );
+                                            const unitLabel = tUnit(
+                                                t,
+                                                unitField.value,
+                                                1,
+                                            );
                                             return (
                                                 <Pressable
                                                     role="button"

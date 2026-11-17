@@ -15,6 +15,7 @@ import {
 
 // local dependencies
 import { useTheme } from "../theme";
+import { tUnit } from "../i18n/tUnit";
 import { useStores } from "../stores/StoreProvider";
 import { formatDuration } from "../i18n/formatDuration";
 import { highlightSegments } from "../domain/highlight";
@@ -226,9 +227,7 @@ export const RecipeScreen = observer(function RecipeScreenComponent({
                             amountText = t("units.toTaste");
                         } else if (ingredient.amount !== undefined) {
                             const { amount, unit } = ingredient;
-                            // Dynamic unit key — all non-toTaste Unit values map to valid units.* i18n
-                            // keys; TypeScript cannot verify template-literal keys with plural suffixes.
-                            amountText = `${formatQuantity(amount, i18n.language)} ${t(`units.${unit}` as "units.g", { count: amount })}`;
+                            amountText = `${formatQuantity(amount, i18n.language)} ${tUnit(t, unit, amount)}`;
                         } else {
                             amountText = "";
                         }

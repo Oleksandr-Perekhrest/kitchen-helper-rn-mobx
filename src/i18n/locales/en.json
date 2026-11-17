@@ -126,6 +126,12 @@
       "inThisStepA11y": "{{name}}, in this step. Insert into step text",
       "inAnotherStepA11y": "{{name}}, in another step. Insert into step text",
       "notUsedA11y": "{{name}}, not used. Insert into step text"
+    },
+    "unusedWarning": {
+      "title_one": "1 ingredient is not used in any step",
+      "title_other": "{{count}} ingredients are not used in any step",
+      "addToSteps": "Add to steps",
+      "continueAnyway": "Continue anyway"
     }
   },
   "cookingMode": {

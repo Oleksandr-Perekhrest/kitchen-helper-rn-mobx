@@ -1,12 +1,18 @@
 // outsource dependencies
 import type { ElementRef } from "react";
-import { useRef, useState } from "react";
+import type { View } from "react-native";
 import { observer } from "mobx-react-lite";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, FormProvider } from "react-hook-form";
 import { SearchX, ChevronRight } from "lucide-react-native";
-import { View, ScrollView, StyleSheet } from "react-native";
+import { useRef, useMemo, useState, useEffect } from "react";
+import { useForm, useWatch, FormProvider } from "react-hook-form";
+import {
+    ScrollView,
+    StyleSheet,
+    View as RNView,
+    findNodeHandle,
+} from "react-native";
 
 // local dependencies
 import { spacing, useTheme } from "../theme";
@@ -14,15 +20,16 @@ import { StepsStep } from "./recipeForm/StepsStep";
 import { useStores } from "../stores/StoreProvider";
 import { BasicsStep } from "./recipeForm/BasicsStep";
 import { ReviewStep } from "./recipeForm/ReviewStep";
-import { Button, EmptyState, WizardProgress } from "../ui";
 import { IngredientsStep } from "./recipeForm/IngredientsStep";
 import type { RootStackScreenProps } from "../navigation/types";
+import { Banner, Button, EmptyState, WizardProgress } from "../ui";
 import type { WizardStep, RecipeFormValues } from "../domain/recipeForm";
 import {
     fromRecipe,
     WIZARD_STEPS,
     emptyFormValues,
     recipeFormSchema,
+    unusedIngredients,
     WIZARD_STEP_FIELDS,
 } from "../domain/recipeForm";
 
@@ -53,10 +60,35 @@ export const RecipeFormScreen = observer(function RecipeFormScreenComponent({
 
     const [currentIndex, setCurrentIndex] = useState(0);
     const [highestVisited, setHighestVisited] = useState(0);
+    const [showUnusedWarning, setShowUnusedWarning] = useState(false);
     const scrollRef = useRef<ElementRef<typeof ScrollView>>(null);
+    const cloudRef = useRef<ElementRef<typeof View>>(null);
 
     const currentStepKey: WizardStep = WIZARD_STEPS[currentIndex] ?? "basics";
     const isLastStep = currentIndex === WIZARD_STEPS.length - 1;
+
+    const watchedIngredients = useWatch({
+        control: form.control,
+        name: "ingredients",
+    });
+    const watchedSteps = useWatch({ control: form.control, name: "steps" });
+
+    const liveUnused = useMemo(() => {
+        const usedIds = new Set(watchedSteps.flatMap((s) => s.ingredientIds));
+        return watchedIngredients.filter(
+            (i) => i.name.trim() !== "" && !usedIds.has(i.id),
+        );
+    }, [watchedIngredients, watchedSteps]);
+
+    useEffect(() => {
+        if (liveUnused.length === 0) {
+            setShowUnusedWarning(false);
+        }
+    }, [liveUnused]);
+
+    useEffect(() => {
+        setShowUnusedWarning(false);
+    }, [currentStepKey]);
 
     const wizardSteps = WIZARD_STEPS.map((key) => ({
         key,
@@ -78,12 +110,49 @@ export const RecipeFormScreen = observer(function RecipeFormScreenComponent({
         goToStep(currentIndex - 1);
     }
 
+    function scrollToCloud() {
+        const cloud = cloudRef.current;
+        const scroll = scrollRef.current;
+        if (cloud === null || scroll === null) {
+            scrollRef.current?.scrollTo({ y: 0, animated: true });
+            return;
+        }
+        const scrollNode = findNodeHandle(scroll);
+        if (scrollNode == null) {
+            scroll.scrollTo({ y: 0, animated: true });
+            return;
+        }
+        cloud.measureLayout(
+            scrollNode,
+            (_x, y) => scroll.scrollTo({ y, animated: true }),
+            () => scroll.scrollTo({ y: 0, animated: true }),
+        );
+    }
+
+    function handleAddToSteps() {
+        setShowUnusedWarning(false);
+        scrollToCloud();
+    }
+
+    function handleContinueAnyway() {
+        setShowUnusedWarning(false);
+        goToStep(currentIndex + 1);
+    }
+
     async function handleNext() {
         const fields = WIZARD_STEP_FIELDS[currentStepKey];
         const isValid = await form.trigger([...fields], { shouldFocus: true });
-        if (isValid) {
-            goToStep(currentIndex + 1);
+        if (!isValid) return;
+
+        if (currentStepKey === "steps") {
+            const unused = unusedIngredients(form.getValues());
+            if (unused.length > 0) {
+                setShowUnusedWarning(true);
+                return;
+            }
         }
+
+        goToStep(currentIndex + 1);
     }
 
     if (isEditMode && recipe === undefined) {
@@ -100,7 +169,7 @@ export const RecipeFormScreen = observer(function RecipeFormScreenComponent({
 
     return (
         <FormProvider {...form}>
-            <View
+            <RNView
                 style={[
                     styles.container,
                     { backgroundColor: colors.background },
@@ -123,9 +192,38 @@ export const RecipeFormScreen = observer(function RecipeFormScreenComponent({
                     />
                     {currentStepKey === "basics" && <BasicsStep />}
                     {currentStepKey === "ingredients" && <IngredientsStep />}
-                    {currentStepKey === "steps" && <StepsStep />}
+                    {currentStepKey === "steps" && (
+                        <StepsStep cloudRef={cloudRef} />
+                    )}
                     {currentStepKey === "review" && <ReviewStep />}
-                    <View style={styles.buttonRow}>
+                    {showUnusedWarning && (
+                        <Banner
+                            tone="warning"
+                            title={t("recipeForm.unusedWarning.title", {
+                                count: liveUnused.length,
+                            })}
+                            message={liveUnused.map((i) => i.name).join(", ")}
+                            actions={
+                                <>
+                                    <Button
+                                        label={t(
+                                            "recipeForm.unusedWarning.addToSteps",
+                                        )}
+                                        variant="secondary"
+                                        onPress={handleAddToSteps}
+                                    />
+                                    <Button
+                                        label={t(
+                                            "recipeForm.unusedWarning.continueAnyway",
+                                        )}
+                                        variant="primary"
+                                        onPress={handleContinueAnyway}
+                                    />
+                                </>
+                            }
+                        />
+                    )}
+                    <RNView style={styles.buttonRow}>
                         {currentIndex > 0 && (
                             <Button
                                 label={t("recipeForm.buttons.back")}
@@ -152,9 +250,9 @@ export const RecipeFormScreen = observer(function RecipeFormScreenComponent({
                                 style={styles.nextButton}
                             />
                         )}
-                    </View>
+                    </RNView>
                 </ScrollView>
-            </View>
+            </RNView>
         </FormProvider>
     );
 });

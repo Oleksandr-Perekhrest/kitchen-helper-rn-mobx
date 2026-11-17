@@ -2,6 +2,7 @@
 import { Link2 } from "lucide-react-native";
 import { useTranslation } from "react-i18next";
 import { View, StyleSheet } from "react-native";
+import type { RefObject, ElementRef } from "react";
 import { useWatch, useFormContext } from "react-hook-form";
 
 // local dependencies
@@ -16,9 +17,15 @@ type Props = {
     activeStepId: string | undefined;
     activeStepNum: number;
     onInsert: (ingredient: RecipeFormIngredient) => void;
+    cloudRef?: RefObject<ElementRef<typeof View> | null>;
 };
 
-export function ProductCloud({ activeStepId, activeStepNum, onInsert }: Props) {
+export function ProductCloud({
+    activeStepId,
+    activeStepNum,
+    onInsert,
+    cloudRef,
+}: Props) {
     const { t } = useTranslation();
     const { colors } = useTheme();
     const { control } = useFormContext<RecipeFormValues>();
@@ -38,7 +45,7 @@ export function ProductCloud({ activeStepId, activeStepNum, onInsert }: Props) {
     );
 
     return (
-        <View style={styles.container}>
+        <View ref={cloudRef} style={styles.container}>
             <Text variant="label">
                 {t("recipeForm.productCloud.title", { n: activeStepNum })}
             </Text>
@@ -58,6 +65,7 @@ export function ProductCloud({ activeStepId, activeStepNum, onInsert }: Props) {
                     return (
                         <Chip
                             key={ingredient.id}
+                            role="button"
                             label={ingredient.name}
                             selected={inThisStep}
                             icon={inAnotherStep ? Link2 : undefined}

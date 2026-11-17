@@ -1,7 +1,7 @@
 // outsource dependencies
-import type { ElementRef } from "react";
 import type { TextInput } from "react-native";
 import { useTranslation } from "react-i18next";
+import type { RefObject, ElementRef } from "react";
 import { useRef, useState, useEffect } from "react";
 import { View, Pressable, StyleSheet } from "react-native";
 import {
@@ -28,7 +28,11 @@ import {
     insertIngredient,
 } from "../../domain/recipeForm";
 
-export function StepsStep() {
+type Props = {
+    cloudRef?: RefObject<ElementRef<typeof View> | null>;
+};
+
+export function StepsStep({ cloudRef }: Props) {
     const { t } = useTranslation();
     const { colors } = useTheme();
 
@@ -178,6 +182,7 @@ export function StepsStep() {
     return (
         <View style={styles.container}>
             <ProductCloud
+                cloudRef={cloudRef}
                 activeStepId={activeStepId}
                 activeStepNum={activeStepNum}
                 onInsert={handleInsertIngredient}

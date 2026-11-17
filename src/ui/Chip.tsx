@@ -21,7 +21,7 @@ export type ChipProps = {
     /** Whether the chip is disabled. */
     disabled?: boolean;
     /** ARIA role for the pressable. Defaults to "checkbox". */
-    role?: "checkbox" | "radio";
+    role?: "checkbox" | "radio" | "button";
     /** Optional aria-label override. Defaults to label. */
     ariaLabel?: string;
 };
@@ -61,7 +61,7 @@ export function Chip({
             onPress={onPress}
             role={role}
             aria-label={ariaLabel ?? label}
-            aria-checked={selected}
+            aria-checked={role !== "button" ? selected : undefined}
             aria-disabled={disabled}
             style={({ pressed }) => [
                 styles.chip,
