@@ -361,7 +361,7 @@ export function StepsStep() {
                                 {/* Timer editor */}
                                 {isEditingTimer && (
                                     <View style={styles.timerEditor}>
-                                        {/* Row 1: minutes field + "min" label */}
+                                        {/* Row 1: minutes field, "min", spacer, ✓, × */}
                                         <View style={styles.timerMinRow}>
                                             <Controller
                                                 name={`steps.${index}.timerMinutes`}
@@ -418,9 +418,33 @@ export function StepsStep() {
                                                     "recipeForm.stepsEditor.timerMin",
                                                 )}
                                             </Text>
+                                            <View
+                                                style={styles.timerMinSpacer}
+                                            />
+                                            <IconButton
+                                                icon={Check}
+                                                variant="subtle"
+                                                iconTone="primary"
+                                                accessibilityLabel={t(
+                                                    "recipeForm.stepsEditor.saveTimer",
+                                                )}
+                                                onPress={() =>
+                                                    handleSaveTimer(index)
+                                                }
+                                            />
+                                            <IconButton
+                                                icon={X}
+                                                variant="ghost"
+                                                accessibilityLabel={t(
+                                                    "recipeForm.stepsEditor.removeTimer",
+                                                )}
+                                                onPress={() =>
+                                                    handleRemoveTimer(index)
+                                                }
+                                            />
                                         </View>
 
-                                        {/* Row 2: kind radio buttons + ✓ + × */}
+                                        {/* Row 2: five kind radio items, full width */}
                                         <View
                                             role="radiogroup"
                                             style={styles.timerKindActionRow}
@@ -447,68 +471,70 @@ export function StepsStep() {
                                                                 },
                                                             )
                                                         }
-                                                        style={[
-                                                            styles.timerKindButton,
-                                                            isSelected
-                                                                ? {
-                                                                      backgroundColor:
-                                                                          colors
+                                                        style={
+                                                            styles.timerKindItem
+                                                        }
+                                                    >
+                                                        <View
+                                                            style={[
+                                                                styles.timerKindCircle,
+                                                                isSelected
+                                                                    ? {
+                                                                          backgroundColor:
+                                                                              colors
+                                                                                  .timer[
+                                                                                  kind
+                                                                              ],
+                                                                      }
+                                                                    : [
+                                                                          styles.timerKindCircleUnselected,
+                                                                          {
+                                                                              backgroundColor:
+                                                                                  colors.surface,
+                                                                              borderColor:
+                                                                                  colors.borderStrong,
+                                                                          },
+                                                                      ],
+                                                            ]}
+                                                        >
+                                                            <Icon
+                                                                icon={
+                                                                    TIMER_ICONS[
+                                                                        kind
+                                                                    ]
+                                                                }
+                                                                size={22}
+                                                                color={
+                                                                    isSelected
+                                                                        ? colors.onPrimary
+                                                                        : colors
                                                                               .timer[
                                                                               kind
-                                                                          ],
-                                                                  }
-                                                                : [
-                                                                      styles.timerKindButtonUnselected,
-                                                                      {
-                                                                          backgroundColor:
-                                                                              colors.surface,
-                                                                          borderColor:
-                                                                              colors.borderStrong,
-                                                                      },
-                                                                  ],
-                                                        ]}
-                                                    >
-                                                        <Icon
-                                                            icon={
-                                                                TIMER_ICONS[
-                                                                    kind
-                                                                ]
-                                                            }
-                                                            size={22}
-                                                            color={
+                                                                          ]
+                                                                }
+                                                                strokeWidth={2}
+                                                            />
+                                                        </View>
+                                                        <Text
+                                                            tone={
                                                                 isSelected
-                                                                    ? colors.onPrimary
-                                                                    : colors
-                                                                          .timer[
-                                                                          kind
-                                                                      ]
+                                                                    ? "text"
+                                                                    : "textMuted"
                                                             }
-                                                            strokeWidth={2}
-                                                        />
+                                                            style={[
+                                                                styles.timerKindLabel,
+                                                                isSelected
+                                                                    ? styles.timerKindLabelSelected
+                                                                    : styles.timerKindLabelUnselected,
+                                                            ]}
+                                                        >
+                                                            {t(
+                                                                `timerKinds.${kind}` as "timerKinds.boil",
+                                                            )}
+                                                        </Text>
                                                     </Pressable>
                                                 );
                                             })}
-                                            <IconButton
-                                                icon={Check}
-                                                variant="subtle"
-                                                iconTone="primary"
-                                                accessibilityLabel={t(
-                                                    "recipeForm.stepsEditor.saveTimer",
-                                                )}
-                                                onPress={() =>
-                                                    handleSaveTimer(index)
-                                                }
-                                            />
-                                            <IconButton
-                                                icon={X}
-                                                variant="ghost"
-                                                accessibilityLabel={t(
-                                                    "recipeForm.stepsEditor.removeTimer",
-                                                )}
-                                                onPress={() =>
-                                                    handleRemoveTimer(index)
-                                                }
-                                            />
                                         </View>
 
                                         {translatedTimerError !== undefined && (
@@ -643,20 +669,36 @@ const styles = StyleSheet.create({
     timerMinField: {
         width: 80,
     },
+    timerMinSpacer: {
+        flex: 1,
+    },
     timerKindActionRow: {
         flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
     },
-    timerKindButton: {
+    timerKindItem: {
+        flex: 1,
+        alignItems: "center",
+        gap: 4,
+    },
+    timerKindCircle: {
         width: 44,
         height: 44,
         borderRadius: 22,
         alignItems: "center",
         justifyContent: "center",
     },
-    timerKindButtonUnselected: {
+    timerKindCircleUnselected: {
         borderWidth: 1,
+    },
+    timerKindLabel: {
+        fontSize: 12,
+        textAlign: "center",
+    },
+    timerKindLabelSelected: {
+        fontWeight: "700",
+    },
+    timerKindLabelUnselected: {
+        fontWeight: "600",
     },
     textButton: {
         alignSelf: "flex-start",
