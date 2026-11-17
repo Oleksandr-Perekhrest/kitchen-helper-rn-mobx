@@ -115,30 +115,46 @@ function isPositiveIntStr(s: string): boolean {
     return /^\d+$/.test(t) && parseInt(t, 10) > 0;
 }
 
-type PushFn = (message: string, path: (string | number)[]) => void;
+export const FORM_ERROR_KEYS = [
+    "recipeForm.errors.titleRequired",
+    "recipeForm.errors.titleMaxLength",
+    "recipeForm.errors.servingsInteger",
+    "recipeForm.errors.servingsMin",
+    "recipeForm.errors.servingsMax",
+    "recipeForm.errors.totalMinutesFormat",
+    "recipeForm.errors.caloriesPerServingFormat",
+    "recipeForm.errors.tagsUnique",
+    "recipeForm.errors.ingredientNameRequired",
+    "recipeForm.errors.ingredientAmountInvalid",
+    "recipeForm.errors.stepTextRequired",
+    "recipeForm.errors.stepTimerFormat",
+    "recipeForm.errors.stepTimerMax",
+    "recipeForm.errors.stepsMinOne",
+    "recipeForm.errors.stepIngredientRef",
+] as const;
+
+export type FormErrorKey = (typeof FORM_ERROR_KEYS)[number];
+
+export function isFormErrorKey(value: string): value is FormErrorKey {
+    return (FORM_ERROR_KEYS as readonly string[]).includes(value);
+}
+
+type PushFn = (message: FormErrorKey, path: (string | number)[]) => void;
 
 function checkBasicsFields(
     value: {
         title: string;
-        servings: number;
         totalMinutes: string;
         caloriesPerServing: string;
         tags: Tag[];
     },
     push: PushFn,
 ): void {
-    const { title, servings, totalMinutes, caloriesPerServing, tags } = value;
+    const { title, totalMinutes, caloriesPerServing, tags } = value;
     if (title.trim().length === 0) {
         push("recipeForm.errors.titleRequired", ["title"]);
     } else if (title.trim().length > 100) {
         push("recipeForm.errors.titleMaxLength", ["title"]);
-    }
-    if (!Number.isInteger(servings)) {
-        push("recipeForm.errors.servingsInteger", ["servings"]);
-    } else if (servings < 1) {
-        push("recipeForm.errors.servingsMin", ["servings"]);
-    } else if (servings > 50) {
-        push("recipeForm.errors.servingsMax", ["servings"]);
     }
     if (!isBlank(totalMinutes) && !isPositiveIntStr(totalMinutes)) {
         push("recipeForm.errors.totalMinutesFormat", ["totalMinutes"]);
@@ -150,6 +166,17 @@ function checkBasicsFields(
     }
     if (new Set(tags).size !== tags.length) {
         push("recipeForm.errors.tagsUnique", ["tags"]);
+    }
+}
+
+function checkServings(value: { servings: number }, push: PushFn): void {
+    const { servings } = value;
+    if (!Number.isInteger(servings)) {
+        push("recipeForm.errors.servingsInteger", ["servings"]);
+    } else if (servings < 1) {
+        push("recipeForm.errors.servingsMin", ["servings"]);
+    } else if (servings > 50) {
+        push("recipeForm.errors.servingsMax", ["servings"]);
     }
 }
 
@@ -169,7 +196,8 @@ const formIngredientSchema = z
             ctx.issues.push({
                 code: "custom",
                 input: ctx.value,
-                message: "recipeForm.errors.ingredientNameRequired",
+                message:
+                    "recipeForm.errors.ingredientNameRequired" satisfies FormErrorKey,
                 path: ["name"],
             });
         }
@@ -179,7 +207,8 @@ const formIngredientSchema = z
                 ctx.issues.push({
                     code: "custom",
                     input: ctx.value,
-                    message: "recipeForm.errors.ingredientAmountInvalid",
+                    message:
+                        "recipeForm.errors.ingredientAmountInvalid" satisfies FormErrorKey,
                     path: ["amount"],
                 });
             }
@@ -199,7 +228,8 @@ const formStepSchema = z
             ctx.issues.push({
                 code: "custom",
                 input: ctx.value,
-                message: "recipeForm.errors.stepTextRequired",
+                message:
+                    "recipeForm.errors.stepTextRequired" satisfies FormErrorKey,
                 path: ["text"],
             });
         }
@@ -211,14 +241,16 @@ const formStepSchema = z
                 ctx.issues.push({
                     code: "custom",
                     input: ctx.value,
-                    message: "recipeForm.errors.stepTimerFormat",
+                    message:
+                        "recipeForm.errors.stepTimerFormat" satisfies FormErrorKey,
                     path: ["timerMinutes"],
                 });
             } else if (mins > 1440) {
                 ctx.issues.push({
                     code: "custom",
                     input: ctx.value,
-                    message: "recipeForm.errors.stepTimerMax",
+                    message:
+                        "recipeForm.errors.stepTimerMax" satisfies FormErrorKey,
                     path: ["timerMinutes"],
                 });
             }
@@ -228,7 +260,6 @@ const formStepSchema = z
 export const basicsStepSchema = z
     .object({
         title: z.string(),
-        servings: z.number(),
         totalMinutes: z.string(),
         caloriesPerServing: z.string(),
         tags: z.array(z.enum(TAGS)),
@@ -244,9 +275,21 @@ export const basicsStepSchema = z
         checkBasicsFields(ctx.value, push);
     });
 
-export const ingredientsStepSchema = z.object({
-    ingredients: z.array(formIngredientSchema),
-});
+export const ingredientsStepSchema = z
+    .object({
+        servings: z.number(),
+        ingredients: z.array(formIngredientSchema),
+    })
+    .check((ctx) => {
+        const push: PushFn = (message, path) =>
+            ctx.issues.push({
+                code: "custom",
+                input: ctx.value,
+                message,
+                path,
+            });
+        checkServings(ctx.value, push);
+    });
 
 export const stepsStepSchema = z
     .object({ steps: z.array(formStepSchema) })
@@ -281,6 +324,7 @@ export const recipeFormSchema = z
                 path,
             });
         checkBasicsFields(ctx.value, push);
+        checkServings(ctx.value, push);
         checkStepsMinOne(ctx.value.steps, push);
         const { ingredients, steps } = ctx.value;
         const ingredientIds = new Set(ingredients.map((i) => i.id));
@@ -305,6 +349,16 @@ export const WIZARD_STEPS = [
     "review",
 ] as const;
 export type WizardStep = (typeof WIZARD_STEPS)[number];
+
+export const WIZARD_STEP_FIELDS: Record<
+    WizardStep,
+    readonly (keyof RecipeFormValues)[]
+> = {
+    basics: ["title", "totalMinutes", "caloriesPerServing", "tags"],
+    ingredients: ["servings", "ingredients"],
+    steps: ["steps"],
+    review: [],
+};
 
 export function toRecipe(
     values: RecipeFormValues,

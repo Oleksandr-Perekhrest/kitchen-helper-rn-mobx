@@ -27,3 +27,5 @@ export type { RecipeCardProps } from "./RecipeCard";
 export { RecipeCard } from "./RecipeCard";
 export type { EmptyStateProps } from "./EmptyState";
 export { EmptyState } from "./EmptyState";
+export type { WizardProgressProps, WizardProgressStep } from "./WizardProgress";
+export { WizardProgress } from "./WizardProgress";
