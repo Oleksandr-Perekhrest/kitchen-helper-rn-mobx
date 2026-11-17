@@ -74,6 +74,19 @@
       "next": "Next",
       "save": "Save recipe"
     },
+    "ingredients": {
+      "headerFor": "Ingredients for",
+      "colQty": "Qty",
+      "colUnit": "Unit",
+      "colName": "Name",
+      "addIngredient": "Add ingredient",
+      "unitSheetTitle": "Unit",
+      "emptyHint": "No ingredients yet",
+      "amountA11y": "Amount, row {{row}}",
+      "unitA11y": "Unit, row {{row}}: {{unit}}",
+      "nameA11y": "Name, row {{row}}",
+      "deleteA11y": "Delete ingredient {{row}}"
+    },
     "errors": {
       "titleRequired": "Title is required",
       "titleMaxLength": "Title must be 100 characters or fewer",

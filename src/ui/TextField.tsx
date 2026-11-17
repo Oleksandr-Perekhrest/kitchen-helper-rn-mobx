@@ -22,6 +22,8 @@ export type TextFieldProps = Omit<TextInputProps, "style" | "ref"> & {
     icon?: LucideIcon;
     /** React 19: ref forwarded to the underlying TextInput. */
     ref?: Ref<ElementRef<typeof TextInput>>;
+    /** Suppress the error text below the input (border still turns danger-colored). */
+    hideErrorText?: boolean;
 };
 
 export function TextField({
@@ -31,6 +33,7 @@ export function TextField({
     icon,
     ref,
     multiline = false,
+    hideErrorText = false,
     onFocus,
     onBlur,
     ...rest
@@ -94,7 +97,7 @@ export function TextField({
                     {...rest}
                 />
             </View>
-            {hasError && (
+            {hasError && !hideErrorText && (
                 <Text variant="caption" tone="danger">
                     {error}
                 </Text>

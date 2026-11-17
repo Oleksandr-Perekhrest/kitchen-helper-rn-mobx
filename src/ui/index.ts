@@ -29,3 +29,5 @@ export type { EmptyStateProps } from "./EmptyState";
 export { EmptyState } from "./EmptyState";
 export type { WizardProgressProps, WizardProgressStep } from "./WizardProgress";
 export { WizardProgress } from "./WizardProgress";
+export type { OptionSheetOption, OptionSheetProps } from "./OptionSheet";
+export { OptionSheet } from "./OptionSheet";

@@ -82,18 +82,11 @@ export const RecipeFormScreen = observer(function RecipeFormScreenComponent({
     async function handleNext() {
         const fields = WIZARD_STEP_FIELDS[currentStepKey];
         const isValid = await form.trigger(
-            fields as unknown as FieldPath<RecipeFormValues>[],
+            [...fields] as FieldPath<RecipeFormValues>[],
+            { shouldFocus: true },
         );
         if (isValid) {
             goToStep(currentIndex + 1);
-        } else {
-            const errors = form.formState.errors;
-            for (const field of fields) {
-                if (errors[field] !== undefined) {
-                    form.setFocus(field as FieldPath<RecipeFormValues>);
-                    break;
-                }
-            }
         }
     }
 

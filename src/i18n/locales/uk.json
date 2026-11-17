@@ -78,6 +78,19 @@
       "next": "Далі",
       "save": "Зберегти рецепт"
     },
+    "ingredients": {
+      "headerFor": "Продукти на",
+      "colQty": "К-сть",
+      "colUnit": "Одиниця",
+      "colName": "Назва",
+      "addIngredient": "Додати продукт",
+      "unitSheetTitle": "Одиниця виміру",
+      "emptyHint": "Поки що немає продуктів",
+      "amountA11y": "К-сть, рядок {{row}}",
+      "unitA11y": "Одиниця, рядок {{row}}: {{unit}}",
+      "nameA11y": "Назва, рядок {{row}}",
+      "deleteA11y": "Видалити інгредієнт {{row}}"
+    },
     "errors": {
       "titleRequired": "Введіть назву рецепту",
       "titleMaxLength": "Назва має містити не більше 100 символів",
