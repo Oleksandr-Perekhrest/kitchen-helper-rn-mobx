@@ -134,7 +134,18 @@
       "addToSteps": "Add to steps",
       "continueAnyway": "Continue anyway"
     },
+    "draft": {
+      "restored": "Draft restored",
+      "startOver": "Start over"
+    },
+    "discardChanges": {
+      "title": "Discard changes?",
+      "message": "Your changes will not be saved.",
+      "keepEditing": "Keep editing",
+      "discard": "Discard"
+    },
     "review": {
+      "untitled": "Untitled",
       "editBasics": "Edit basics",
       "edit": "Edit",
       "unusedBanner": "Not used in steps: {{names}}. You can save the recipe anyway.",

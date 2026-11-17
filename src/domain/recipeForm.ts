@@ -76,6 +76,38 @@ export function emptyFormValues(): RecipeFormValues {
     };
 }
 
+export const RecipeFormValuesShapeSchema = z.object({
+    title: z.string(),
+    servings: z.number(),
+    totalMinutes: z.string(),
+    caloriesPerServing: z.string(),
+    tags: z.array(z.enum(TAGS)),
+    photoUri: z.string().optional(),
+    ingredients: z.array(
+        z.object({
+            id: z.string(),
+            name: z.string(),
+            amount: z.string(),
+            unit: z.enum(UNITS),
+        }),
+    ),
+    steps: z.array(
+        z.object({
+            id: z.string(),
+            text: z.string(),
+            ingredientIds: z.array(z.string()),
+            timerMinutes: z.string(),
+            timerKind: z.enum(TIMER_KINDS),
+        }),
+    ),
+});
+
+export type RecipeDraft = {
+    values: RecipeFormValues;
+    stepIndex: number;
+    savedAt: string;
+};
+
 export function fromRecipe(recipe: Recipe): RecipeFormValues {
     return {
         title: recipe.title,

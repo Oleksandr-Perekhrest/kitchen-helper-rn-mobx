@@ -69,7 +69,13 @@ export function ReviewStep({ onGoToStep }: Props) {
         <View style={styles.container}>
             {/* Summary card */}
             <Card>
-                <Text variant="headline">{title}</Text>
+                {title.length > 0 ? (
+                    <Text variant="headline">{title}</Text>
+                ) : (
+                    <Text variant="headline" tone="textMuted">
+                        {t("recipeForm.review.untitled")}
+                    </Text>
+                )}
                 <Text variant="caption" tone="textMuted">
                     {metaParts.join(" · ")}
                 </Text>

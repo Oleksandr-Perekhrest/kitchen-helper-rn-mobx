@@ -140,7 +140,18 @@
       "addToSteps": "Додати в кроки",
       "continueAnyway": "Все одно далі"
     },
+    "draft": {
+      "restored": "Відновлено чернетку",
+      "startOver": "Почати заново"
+    },
+    "discardChanges": {
+      "title": "Відкинути зміни?",
+      "message": "Зміни не буде збережено.",
+      "keepEditing": "Залишитися",
+      "discard": "Відкинути"
+    },
     "review": {
+      "untitled": "Без назви",
       "editBasics": "Змінити основне",
       "edit": "Змінити",
       "unusedBanner": "Не використано в кроках: {{names}}. Рецепт можна зберегти й так.",

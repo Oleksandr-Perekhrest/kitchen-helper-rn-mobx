@@ -1,9 +1,11 @@
 // outsource dependencies
+import { Alert } from "react-native";
 import type { ElementRef } from "react";
 import type { View } from "react-native";
 import { observer } from "mobx-react-lite";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { usePreventRemove } from "@react-navigation/native";
 import { SearchX, ChevronRight } from "lucide-react-native";
 import { useForm, useWatch, FormProvider } from "react-hook-form";
 import { ScrollView, StyleSheet, View as RNView } from "react-native";
@@ -23,6 +25,7 @@ import type { InsertTrigger } from "./recipeForm/StepsEditorContext";
 import { Banner, Button, TopSheet, EmptyState, WizardProgress } from "../ui";
 import type {
     WizardStep,
+    RecipeDraft,
     RecipeFormValues,
     RecipeFormIngredient,
 } from "../domain/recipeForm";
@@ -45,16 +48,30 @@ export const RecipeFormScreen = observer(function RecipeFormScreenComponent({
 }: Props) {
     const { t } = useTranslation();
     const { colors } = useTheme();
-    const { recipes } = useStores();
+    const { recipes, draft } = useStores();
     const { recipeId } = route.params;
 
     const isEditMode = recipeId !== undefined;
     const recipe = isEditMode ? recipes.byId.get(recipeId) : undefined;
 
-    // Lazy initializer runs once on mount — form defaults don't update with the store
-    const [defaultValues] = useState<RecipeFormValues>(() =>
-        recipe !== undefined ? fromRecipe(recipe) : emptyFormValues(),
+    // Capture draft snapshot at mount — only for new recipe mode
+    const [draftAtMount] = useState<RecipeDraft | null>(() =>
+        !isEditMode ? draft.draft : null,
     );
+    const initialStepIndex =
+        draftAtMount !== null
+            ? Math.min(
+                  Math.max(draftAtMount.stepIndex, 0),
+                  WIZARD_STEPS.length - 1,
+              )
+            : 0;
+
+    // Lazy initializer runs once on mount — form defaults don't update with the store
+    const [defaultValues] = useState<RecipeFormValues>(() => {
+        if (recipe !== undefined) return fromRecipe(recipe);
+        if (draftAtMount !== null) return draftAtMount.values;
+        return emptyFormValues();
+    });
 
     const form = useForm<RecipeFormValues>({
         resolver: zodResolver(recipeFormSchema),
@@ -62,11 +79,14 @@ export const RecipeFormScreen = observer(function RecipeFormScreenComponent({
         mode: "onTouched",
     });
 
-    const [currentIndex, setCurrentIndex] = useState(0);
-    const [highestVisited, setHighestVisited] = useState(0);
+    const [currentIndex, setCurrentIndex] = useState(initialStepIndex);
+    const [highestVisited, setHighestVisited] = useState(initialStepIndex);
     const [saving, setSaving] = useState(false);
     const [saveError, setSaveError] = useState(false);
     const [showUnusedWarning, setShowUnusedWarning] = useState(false);
+    const [showDraftBanner, setShowDraftBanner] = useState(
+        draftAtMount !== null,
+    );
     const [pendingFocusStep, setPendingFocusStep] = useState<WizardStep | null>(
         null,
     );
@@ -91,6 +111,60 @@ export const RecipeFormScreen = observer(function RecipeFormScreenComponent({
     const [showTopSheet, setShowTopSheet] = useState(false);
     const showTopSheetRef = useRef(false);
     const [topSheetOpen, setTopSheetOpen] = useState(false);
+
+    // Keeps the latest currentIndex available inside async callbacks without
+    // causing the watch subscription effect to re-run on every step change.
+    const currentIndexRef = useRef(currentIndex);
+    useEffect(() => {
+        currentIndexRef.current = currentIndex;
+    }, [currentIndex]);
+
+    // Debounced auto-save for new recipe mode
+    const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const cancelDebounce = useCallback(() => {
+        if (debounceRef.current !== null) {
+            clearTimeout(debounceRef.current);
+            debounceRef.current = null;
+        }
+    }, []);
+
+    useEffect(() => {
+        if (isEditMode) return;
+        const subscription = form.watch(() => {
+            if (!form.formState.isDirty) return;
+            cancelDebounce();
+            debounceRef.current = setTimeout(() => {
+                debounceRef.current = null;
+                draft.save(form.getValues(), currentIndexRef.current);
+            }, 500);
+        });
+        return () => {
+            subscription.unsubscribe();
+            cancelDebounce();
+        };
+    }, [isEditMode, form, draft, cancelDebounce]);
+
+    // Discard-changes guard for edit mode
+    usePreventRemove(
+        isEditMode && form.formState.isDirty && !saving,
+        ({ data }) => {
+            Alert.alert(
+                t("recipeForm.discardChanges.title"),
+                t("recipeForm.discardChanges.message"),
+                [
+                    {
+                        text: t("recipeForm.discardChanges.keepEditing"),
+                        style: "cancel",
+                    },
+                    {
+                        text: t("recipeForm.discardChanges.discard"),
+                        style: "destructive",
+                        onPress: () => navigation.dispatch(data.action),
+                    },
+                ],
+            );
+        },
+    );
 
     const currentStepKey: WizardStep = WIZARD_STEPS[currentIndex] ?? "basics";
     const isLastStep = currentIndex === WIZARD_STEPS.length - 1;
@@ -207,8 +281,33 @@ export const RecipeFormScreen = observer(function RecipeFormScreenComponent({
     }
 
     function goToStep(index: number) {
+        // Save draft when changing steps in new-recipe mode (if dirty)
+        if (!isEditMode && form.formState.isDirty) {
+            cancelDebounce();
+            draft.save(form.getValues(), index);
+        }
+        setShowDraftBanner(false);
         setCurrentIndex(index);
         setHighestVisited((prev) => Math.max(prev, index));
+        scrollRef.current?.scrollTo({ y: 0, animated: false });
+        scrollYRef.current = 0;
+        cloudBottomYRef.current = null;
+        updateTopSheetVisibility(false);
+    }
+
+    function handleStartOver() {
+        cancelDebounce();
+        draft.clear();
+        const fresh = emptyFormValues();
+        form.reset(fresh);
+        setActiveStepId(fresh.steps[0]?.id);
+        setInsertTrigger(null);
+        setShowUnusedWarning(false);
+        setSaveError(false);
+        setShowDraftBanner(false);
+        setCurrentIndex(0);
+        setHighestVisited(0);
+        currentIndexRef.current = 0;
         scrollRef.current?.scrollTo({ y: 0, animated: false });
         scrollYRef.current = 0;
         cloudBottomYRef.current = null;
@@ -310,8 +409,11 @@ export const RecipeFormScreen = observer(function RecipeFormScreenComponent({
             });
             if (isEditMode) {
                 recipes.update(savedRecipe);
+                // saving=true already disables usePreventRemove before goBack fires
                 navigation.goBack();
             } else {
+                cancelDebounce();
+                draft.clear();
                 recipes.add(savedRecipe);
                 navigation.replace("Recipe", { recipeId: savedRecipe.id });
             }
@@ -379,6 +481,24 @@ export const RecipeFormScreen = observer(function RecipeFormScreenComponent({
                             }
                             onStepPress={goToStep}
                         />
+                        {showDraftBanner && (
+                            <RNView style={styles.bannerWrapper}>
+                                <Banner
+                                    tone="info"
+                                    message={t("recipeForm.draft.restored")}
+                                    actions={
+                                        <Button
+                                            label={t(
+                                                "recipeForm.draft.startOver",
+                                            )}
+                                            variant="secondary"
+                                            size="md"
+                                            onPress={handleStartOver}
+                                        />
+                                    }
+                                />
+                            </RNView>
+                        )}
                         {currentStepKey === "basics" && <BasicsStep />}
                         {currentStepKey === "ingredients" && (
                             <IngredientsStep />
