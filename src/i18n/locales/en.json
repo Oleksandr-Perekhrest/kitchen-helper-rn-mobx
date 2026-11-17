@@ -133,6 +133,16 @@
       "title_other": "{{count}} ingredients are not used in any step",
       "addToSteps": "Add to steps",
       "continueAnyway": "Continue anyway"
+    },
+    "review": {
+      "editBasics": "Edit basics",
+      "edit": "Edit",
+      "unusedBanner": "Not used in steps: {{names}}. You can save the recipe anyway.",
+      "ingredientsHeader_one": "Ingredients · {{count}} serving",
+      "ingredientsHeader_other": "Ingredients · {{count}} servings",
+      "editIngredients": "Edit ingredients",
+      "editSteps": "Edit steps",
+      "saveError": "Could not save the recipe"
     }
   },
   "cookingMode": {

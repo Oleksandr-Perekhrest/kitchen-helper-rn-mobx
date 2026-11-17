@@ -27,6 +27,7 @@ import type {
     RecipeFormIngredient,
 } from "../domain/recipeForm";
 import {
+    toRecipe,
     fromRecipe,
     WIZARD_STEPS,
     emptyFormValues,
@@ -63,7 +64,12 @@ export const RecipeFormScreen = observer(function RecipeFormScreenComponent({
 
     const [currentIndex, setCurrentIndex] = useState(0);
     const [highestVisited, setHighestVisited] = useState(0);
+    const [saving, setSaving] = useState(false);
+    const [saveError, setSaveError] = useState(false);
     const [showUnusedWarning, setShowUnusedWarning] = useState(false);
+    const [pendingFocusStep, setPendingFocusStep] = useState<WizardStep | null>(
+        null,
+    );
     const scrollRef = useRef<ElementRef<typeof ScrollView>>(null);
     const cloudRef = useRef<ElementRef<typeof View>>(null);
 
@@ -115,7 +121,16 @@ export const RecipeFormScreen = observer(function RecipeFormScreenComponent({
 
     useEffect(() => {
         setShowUnusedWarning(false);
+        setSaveError(false);
     }, [currentStepKey]);
+
+    useEffect(() => {
+        if (pendingFocusStep === null || currentStepKey !== pendingFocusStep)
+            return;
+        const fields = WIZARD_STEP_FIELDS[pendingFocusStep];
+        setPendingFocusStep(null);
+        form.trigger([...fields], { shouldFocus: true }).catch(() => {});
+    }, [currentStepKey, pendingFocusStep, form]);
 
     // Close the floating panel when it goes back off-screen (cloud visible again)
     useEffect(() => {
@@ -265,6 +280,47 @@ export const RecipeFormScreen = observer(function RecipeFormScreenComponent({
         goToStep(currentIndex + 1);
     }
 
+    async function handleSave() {
+        setSaving(true);
+        setSaveError(false);
+
+        const isValid = await form.trigger();
+
+        if (!isValid) {
+            setSaving(false);
+            const errors = form.formState.errors;
+            for (const [index, stepKey] of WIZARD_STEPS.entries()) {
+                if (stepKey === "review") continue;
+                const fields = WIZARD_STEP_FIELDS[stepKey];
+                const hasError = fields.some(
+                    (field) => errors[field] !== undefined,
+                );
+                if (hasError) {
+                    goToStep(index);
+                    setPendingFocusStep(WIZARD_STEPS[index] ?? null);
+                    break;
+                }
+            }
+            return;
+        }
+
+        try {
+            const savedRecipe = toRecipe(form.getValues(), {
+                existing: recipe,
+            });
+            if (isEditMode) {
+                recipes.update(savedRecipe);
+                navigation.goBack();
+            } else {
+                recipes.add(savedRecipe);
+                navigation.replace("Recipe", { recipeId: savedRecipe.id });
+            }
+        } catch {
+            setSaveError(true);
+            setSaving(false);
+        }
+    }
+
     async function handleNext() {
         const fields = WIZARD_STEP_FIELDS[currentStepKey];
         const isValid = await form.trigger([...fields], { shouldFocus: true });
@@ -333,7 +389,9 @@ export const RecipeFormScreen = observer(function RecipeFormScreenComponent({
                                 onCloudLayout={handleCloudLayout}
                             />
                         )}
-                        {currentStepKey === "review" && <ReviewStep />}
+                        {currentStepKey === "review" && (
+                            <ReviewStep onGoToStep={goToStep} />
+                        )}
                         {showUnusedWarning && (
                             <RNView style={styles.bannerWrapper}>
                                 <Banner
@@ -367,6 +425,14 @@ export const RecipeFormScreen = observer(function RecipeFormScreenComponent({
                                 />
                             </RNView>
                         )}
+                        {saveError && (
+                            <RNView style={styles.bannerWrapper}>
+                                <Banner
+                                    tone="warning"
+                                    message={t("recipeForm.review.saveError")}
+                                />
+                            </RNView>
+                        )}
                         <RNView style={styles.buttonRow}>
                             {currentIndex > 0 && (
                                 <Button
@@ -380,8 +446,8 @@ export const RecipeFormScreen = observer(function RecipeFormScreenComponent({
                                 <Button
                                     label={t("recipeForm.buttons.save")}
                                     variant="primary"
-                                    disabled
-                                    onPress={() => {}}
+                                    disabled={saving}
+                                    onPress={handleSave}
                                     style={styles.nextButton}
                                 />
                             ) : (

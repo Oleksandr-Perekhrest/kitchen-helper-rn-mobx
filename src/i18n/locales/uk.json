@@ -139,6 +139,18 @@
       "title_other": "{{count}} продукти не використано в кроках",
       "addToSteps": "Додати в кроки",
       "continueAnyway": "Все одно далі"
+    },
+    "review": {
+      "editBasics": "Змінити основне",
+      "edit": "Змінити",
+      "unusedBanner": "Не використано в кроках: {{names}}. Рецепт можна зберегти й так.",
+      "ingredientsHeader_one": "Продукти · {{count}} порція",
+      "ingredientsHeader_few": "Продукти · {{count}} порції",
+      "ingredientsHeader_many": "Продукти · {{count}} порцій",
+      "ingredientsHeader_other": "Продукти · {{count}} порції",
+      "editIngredients": "Змінити продукти",
+      "editSteps": "Змінити кроки",
+      "saveError": "Не вдалося зберегти рецепт"
     }
   },
   "cookingMode": {
