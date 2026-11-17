@@ -101,7 +101,7 @@
       "tagsUnique": "Теги мають бути унікальними",
       "ingredientNameRequired": "Введіть назву інгредієнта",
       "ingredientAmountInvalid": "Введіть додатне число для кількості",
-      "ingredientsMinOne": "Додайте хоча б один продукт",
+      "ingredientsMinOne": "Потрібен щонайменше один продукт",
       "stepsMinOne": "Додайте принаймні один крок",
       "stepTextRequired": "Введіть опис кроку",
       "stepTimerFormat": "Таймер має бути додатним цілим числом",

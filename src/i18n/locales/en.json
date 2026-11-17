@@ -97,7 +97,7 @@
       "tagsUnique": "Tags must be unique",
       "ingredientNameRequired": "Ingredient name is required",
       "ingredientAmountInvalid": "Enter a positive number for the amount",
-      "ingredientsMinOne": "Add at least one ingredient",
+      "ingredientsMinOne": "At least one ingredient is required",
       "stepsMinOne": "Add at least one step",
       "stepTextRequired": "Step description is required",
       "stepTimerFormat": "Timer must be a positive whole number",

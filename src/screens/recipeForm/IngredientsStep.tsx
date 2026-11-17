@@ -5,7 +5,12 @@ import { useTranslation } from "react-i18next";
 import { X, ChevronDown } from "lucide-react-native";
 import { View, Pressable, StyleSheet } from "react-native";
 import { useRef, useMemo, useState, useEffect } from "react";
-import { Controller, useFieldArray, useFormContext } from "react-hook-form";
+import {
+    Controller,
+    useFormState,
+    useFieldArray,
+    useFormContext,
+} from "react-hook-form";
 
 // local dependencies
 import { useTheme } from "../../theme";
@@ -32,13 +37,9 @@ export function IngredientsStep() {
     const { t } = useTranslation();
     const { colors } = useTheme();
 
-    const {
-        control,
-        setValue,
-        getValues,
-        setFocus,
-        formState: { errors },
-    } = useFormContext<RecipeFormValues>();
+    const { control, setValue, getValues, setFocus } =
+        useFormContext<RecipeFormValues>();
+    const { errors } = useFormState<RecipeFormValues>({ control });
 
     const { fields, append, remove } = useFieldArray({
         control,
@@ -97,7 +98,10 @@ export function IngredientsStep() {
         openSheetIndex !== null ? fields[openSheetIndex] : undefined;
     const sheetUnit = currentSheetRow?.unit ?? "g";
 
-    const rawListError = errors.ingredients?.message;
+    // toNestErrors puts path ["ingredients"] error in .root when item-level errors
+    // coexist, or directly in .message when the array is empty and no item names exist.
+    const rawListError =
+        errors.ingredients?.root?.message ?? errors.ingredients?.message;
     const listError =
         rawListError !== undefined && isFormErrorKey(rawListError)
             ? t(rawListError)
