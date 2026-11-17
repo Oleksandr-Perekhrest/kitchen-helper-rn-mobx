@@ -13,6 +13,7 @@ import { Controller, useFormState, useFormContext } from "react-hook-form";
 import { useTheme } from "../../theme";
 import { TimerEditor } from "./TimerEditor";
 import type { TimerKind } from "../../theme";
+import { useStepsEditor } from "./StepsEditorContext";
 import { formatDuration } from "../../i18n/formatDuration";
 import { Text, Icon, TextField, IconButton, TimerBadge } from "../../ui";
 import { isFormErrorKey, unlinkIngredient } from "../../domain/recipeForm";
@@ -31,12 +32,6 @@ const TIMER_KIND_KEYS = {
     other: "timerKinds.other",
 } as const;
 
-export type InsertTrigger = {
-    stepId: string;
-    cursor: number;
-    version: number;
-};
-
 type Props = {
     field: FieldArrayWithId<RecipeFormValues, "steps", "_key">;
     index: number;
@@ -47,10 +42,6 @@ type Props = {
     watchedTimerKind: TimerKind;
     watchedIngredientIds: string[];
     ingredientMap: Map<string, RecipeFormIngredient>;
-    insertTrigger: InsertTrigger | null;
-    selectionMapRef: MutableRefObject<
-        Map<string, { start: number; end: number }>
-    >;
     timerMinRefMap: MutableRefObject<Map<string, ElementRef<typeof TextInput>>>;
     onActivate: () => void;
     onDelete: () => void;
@@ -69,8 +60,6 @@ export function StepCard({
     watchedTimerKind,
     watchedIngredientIds,
     ingredientMap,
-    insertTrigger,
-    selectionMapRef,
     timerMinRefMap,
     onActivate,
     onDelete,
@@ -82,6 +71,7 @@ export function StepCard({
     const { colors } = useTheme();
     const { control, setValue, getValues } = useFormContext<RecipeFormValues>();
     const { errors } = useFormState<RecipeFormValues>({ control });
+    const { insertTrigger, selectionMapRef } = useStepsEditor();
 
     const textInputRef = useRef<ElementRef<typeof TextInput> | null>(null);
     const [controlledSelection, setControlledSelection] = useState<

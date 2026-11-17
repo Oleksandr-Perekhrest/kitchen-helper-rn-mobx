@@ -120,6 +120,7 @@
     },
     "productCloud": {
       "title": "Ingredients · tap to insert into step {{n}}",
+      "barLabel": "Ingredients · insert into step {{n}}",
       "inThisStep": "in this step",
       "inAnotherStep": "in another step",
       "notUsed": "not used yet",

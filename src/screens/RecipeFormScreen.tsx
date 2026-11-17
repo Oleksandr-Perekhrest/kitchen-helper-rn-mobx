@@ -5,8 +5,8 @@ import { observer } from "mobx-react-lite";
 import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SearchX, ChevronRight } from "lucide-react-native";
-import { useRef, useMemo, useState, useEffect } from "react";
 import { useForm, useWatch, FormProvider } from "react-hook-form";
+import { useRef, useMemo, useState, useEffect, useCallback } from "react";
 import {
     ScrollView,
     StyleSheet,
@@ -20,15 +20,23 @@ import { StepsStep } from "./recipeForm/StepsStep";
 import { useStores } from "../stores/StoreProvider";
 import { BasicsStep } from "./recipeForm/BasicsStep";
 import { ReviewStep } from "./recipeForm/ReviewStep";
+import { ProductCloud } from "./recipeForm/ProductCloud";
 import { IngredientsStep } from "./recipeForm/IngredientsStep";
 import type { RootStackScreenProps } from "../navigation/types";
-import { Banner, Button, EmptyState, WizardProgress } from "../ui";
-import type { WizardStep, RecipeFormValues } from "../domain/recipeForm";
+import { StepsEditorContext } from "./recipeForm/StepsEditorContext";
+import type { InsertTrigger } from "./recipeForm/StepsEditorContext";
+import { Banner, Button, TopSheet, EmptyState, WizardProgress } from "../ui";
+import type {
+    WizardStep,
+    RecipeFormValues,
+    RecipeFormIngredient,
+} from "../domain/recipeForm";
 import {
     fromRecipe,
     WIZARD_STEPS,
     emptyFormValues,
     recipeFormSchema,
+    insertIngredient,
     unusedIngredients,
     WIZARD_STEP_FIELDS,
 } from "../domain/recipeForm";
@@ -64,6 +72,24 @@ export const RecipeFormScreen = observer(function RecipeFormScreenComponent({
     const scrollRef = useRef<ElementRef<typeof ScrollView>>(null);
     const cloudRef = useRef<ElementRef<typeof View>>(null);
 
+    // Steps editor shared state — provided to StepsEditorContext
+    const [activeStepId, setActiveStepId] = useState<string | undefined>(
+        () => defaultValues.steps[0]?.id,
+    );
+    const [insertTrigger, setInsertTrigger] = useState<InsertTrigger | null>(
+        null,
+    );
+    const selectionMapRef = useRef<Map<string, { start: number; end: number }>>(
+        new Map(),
+    );
+    const insertVersionRef = useRef(0);
+
+    // Cloud visibility tracking — avoids re-renders during scroll
+    const scrollYRef = useRef(0);
+    const cloudBottomYRef = useRef<number | null>(null);
+    const [showTopSheet, setShowTopSheet] = useState(false);
+    const [topSheetOpen, setTopSheetOpen] = useState(false);
+
     const currentStepKey: WizardStep = WIZARD_STEPS[currentIndex] ?? "basics";
     const isLastStep = currentIndex === WIZARD_STEPS.length - 1;
 
@@ -80,6 +106,11 @@ export const RecipeFormScreen = observer(function RecipeFormScreenComponent({
         );
     }, [watchedIngredients, watchedSteps]);
 
+    const activeStepIndex = watchedSteps.findIndex(
+        (s) => s.id === activeStepId,
+    );
+    const activeStepNum = activeStepIndex >= 0 ? activeStepIndex + 1 : 1;
+
     useEffect(() => {
         if (liveUnused.length === 0) {
             setShowUnusedWarning(false);
@@ -89,6 +120,63 @@ export const RecipeFormScreen = observer(function RecipeFormScreenComponent({
     useEffect(() => {
         setShowUnusedWarning(false);
     }, [currentStepKey]);
+
+    // Close the floating panel when it goes back off-screen (cloud visible again)
+    useEffect(() => {
+        if (!showTopSheet) {
+            setTopSheetOpen(false);
+        }
+    }, [showTopSheet]);
+
+    const handleInsertIngredient = useCallback(
+        (ingredient: RecipeFormIngredient) => {
+            const steps = form.getValues("steps");
+            const stepIdx = steps.findIndex((s) => s.id === activeStepId);
+            if (stepIdx < 0) return;
+            const currentStep = steps[stepIdx];
+            if (currentStep === undefined) return;
+            const sel = selectionMapRef.current.get(currentStep.id) ?? {
+                start: currentStep.text.length,
+                end: currentStep.text.length,
+            };
+            const { step: updatedStep, cursor } = insertIngredient(
+                currentStep,
+                ingredient,
+                sel,
+            );
+            const hasTextError = form.getFieldState(
+                `steps.${stepIdx}.text`,
+            ).invalid;
+            form.setValue(`steps.${stepIdx}.text`, updatedStep.text, {
+                shouldDirty: true,
+                shouldValidate: hasTextError,
+            });
+            form.setValue(
+                `steps.${stepIdx}.ingredientIds`,
+                updatedStep.ingredientIds,
+                { shouldDirty: true },
+            );
+            insertVersionRef.current += 1;
+            setInsertTrigger({
+                stepId: currentStep.id,
+                cursor,
+                version: insertVersionRef.current,
+            });
+        },
+        [activeStepId, form],
+    );
+
+    const stepsEditorContextValue = useMemo(
+        () => ({
+            activeStepId,
+            activeStepNum,
+            setActiveStepId,
+            insertTrigger,
+            selectionMapRef,
+            onInsertIngredient: handleInsertIngredient,
+        }),
+        [activeStepId, activeStepNum, insertTrigger, handleInsertIngredient],
+    );
 
     const wizardSteps = WIZARD_STEPS.map((key) => ({
         key,
@@ -104,10 +192,44 @@ export const RecipeFormScreen = observer(function RecipeFormScreenComponent({
         setCurrentIndex(index);
         setHighestVisited((prev) => Math.max(prev, index));
         scrollRef.current?.scrollTo({ y: 0, animated: false });
+        scrollYRef.current = 0;
+        cloudBottomYRef.current = null;
+        setShowTopSheet(false);
     }
 
     function handleBack() {
         goToStep(currentIndex - 1);
+    }
+
+    function handleScroll(e: {
+        nativeEvent: { contentOffset: { y: number } };
+    }) {
+        scrollYRef.current = e.nativeEvent.contentOffset.y;
+        if (currentStepKey === "steps") {
+            const isOut =
+                cloudBottomYRef.current !== null &&
+                cloudBottomYRef.current < scrollYRef.current;
+            setShowTopSheet(isOut);
+        }
+    }
+
+    function handleCloudLayout() {
+        const cloud = cloudRef.current;
+        const scroll = scrollRef.current;
+        if (cloud === null || scroll === null) return;
+        const scrollNode = findNodeHandle(scroll);
+        if (scrollNode == null) return;
+        cloud.measureLayout(
+            scrollNode,
+            (_x, y, _w, height) => {
+                cloudBottomYRef.current = y + height;
+                if (currentStepKey === "steps") {
+                    const isOut = cloudBottomYRef.current < scrollYRef.current;
+                    setShowTopSheet(isOut);
+                }
+            },
+            () => {},
+        );
     }
 
     function scrollToCloud() {
@@ -167,93 +289,121 @@ export const RecipeFormScreen = observer(function RecipeFormScreenComponent({
         );
     }
 
+    const topSheetBarLabel = t("recipeForm.productCloud.barLabel", {
+        n: activeStepNum,
+    });
+
     return (
-        <FormProvider {...form}>
-            <RNView
-                style={[
-                    styles.container,
-                    { backgroundColor: colors.background },
-                ]}
-            >
-                <ScrollView
-                    ref={scrollRef}
-                    keyboardShouldPersistTaps="handled"
-                    automaticallyAdjustKeyboardInsets
-                    contentContainerStyle={styles.scrollContent}
+        <StepsEditorContext.Provider value={stepsEditorContextValue}>
+            <FormProvider {...form}>
+                <RNView
+                    style={[
+                        styles.container,
+                        { backgroundColor: colors.background },
+                    ]}
                 >
-                    <WizardProgress
-                        steps={wizardSteps}
-                        currentIndex={currentIndex}
-                        counterLabel={counterLabel}
-                        isStepPressable={(index) =>
-                            isEditMode || index <= highestVisited
-                        }
-                        onStepPress={goToStep}
-                    />
-                    {currentStepKey === "basics" && <BasicsStep />}
-                    {currentStepKey === "ingredients" && <IngredientsStep />}
-                    {currentStepKey === "steps" && (
-                        <StepsStep cloudRef={cloudRef} />
-                    )}
-                    {currentStepKey === "review" && <ReviewStep />}
-                    {showUnusedWarning && (
-                        <Banner
-                            tone="warning"
-                            title={t("recipeForm.unusedWarning.title", {
-                                count: liveUnused.length,
-                            })}
-                            message={liveUnused.map((i) => i.name).join(", ")}
-                            actions={
-                                <>
-                                    <Button
-                                        label={t(
-                                            "recipeForm.unusedWarning.addToSteps",
-                                        )}
-                                        variant="secondary"
-                                        onPress={handleAddToSteps}
-                                    />
-                                    <Button
-                                        label={t(
-                                            "recipeForm.unusedWarning.continueAnyway",
-                                        )}
-                                        variant="primary"
-                                        onPress={handleContinueAnyway}
-                                    />
-                                </>
+                    <ScrollView
+                        ref={scrollRef}
+                        onScroll={handleScroll}
+                        scrollEventThrottle={16}
+                        keyboardShouldPersistTaps="handled"
+                        automaticallyAdjustKeyboardInsets
+                        contentContainerStyle={styles.scrollContent}
+                    >
+                        <WizardProgress
+                            steps={wizardSteps}
+                            currentIndex={currentIndex}
+                            counterLabel={counterLabel}
+                            isStepPressable={(index) =>
+                                isEditMode || index <= highestVisited
                             }
+                            onStepPress={goToStep}
                         />
+                        {currentStepKey === "basics" && <BasicsStep />}
+                        {currentStepKey === "ingredients" && (
+                            <IngredientsStep />
+                        )}
+                        {currentStepKey === "steps" && (
+                            <StepsStep
+                                cloudRef={cloudRef}
+                                onCloudLayout={handleCloudLayout}
+                            />
+                        )}
+                        {currentStepKey === "review" && <ReviewStep />}
+                        {showUnusedWarning && (
+                            <RNView style={styles.bannerWrapper}>
+                                <Banner
+                                    tone="warning"
+                                    title={t("recipeForm.unusedWarning.title", {
+                                        count: liveUnused.length,
+                                    })}
+                                    message={liveUnused
+                                        .map((i) => i.name)
+                                        .join(", ")}
+                                    actions={
+                                        <>
+                                            <Button
+                                                label={t(
+                                                    "recipeForm.unusedWarning.addToSteps",
+                                                )}
+                                                variant="secondary"
+                                                size="md"
+                                                onPress={handleAddToSteps}
+                                            />
+                                            <Button
+                                                label={t(
+                                                    "recipeForm.unusedWarning.continueAnyway",
+                                                )}
+                                                variant="primary"
+                                                size="md"
+                                                onPress={handleContinueAnyway}
+                                            />
+                                        </>
+                                    }
+                                />
+                            </RNView>
+                        )}
+                        <RNView style={styles.buttonRow}>
+                            {currentIndex > 0 && (
+                                <Button
+                                    label={t("recipeForm.buttons.back")}
+                                    variant="secondary"
+                                    onPress={handleBack}
+                                    style={styles.backButton}
+                                />
+                            )}
+                            {isLastStep ? (
+                                <Button
+                                    label={t("recipeForm.buttons.save")}
+                                    variant="primary"
+                                    disabled
+                                    onPress={() => {}}
+                                    style={styles.nextButton}
+                                />
+                            ) : (
+                                <Button
+                                    label={t("recipeForm.buttons.next")}
+                                    variant="primary"
+                                    icon={ChevronRight}
+                                    iconPosition="end"
+                                    onPress={() => handleNext()}
+                                    style={styles.nextButton}
+                                />
+                            )}
+                        </RNView>
+                    </ScrollView>
+                    {currentStepKey === "steps" && showTopSheet && (
+                        <TopSheet
+                            open={topSheetOpen}
+                            onOpenChange={setTopSheetOpen}
+                            barLabel={topSheetBarLabel}
+                        >
+                            <ProductCloud />
+                        </TopSheet>
                     )}
-                    <RNView style={styles.buttonRow}>
-                        {currentIndex > 0 && (
-                            <Button
-                                label={t("recipeForm.buttons.back")}
-                                variant="secondary"
-                                onPress={handleBack}
-                                style={styles.backButton}
-                            />
-                        )}
-                        {isLastStep ? (
-                            <Button
-                                label={t("recipeForm.buttons.save")}
-                                variant="primary"
-                                disabled
-                                onPress={() => {}}
-                                style={styles.nextButton}
-                            />
-                        ) : (
-                            <Button
-                                label={t("recipeForm.buttons.next")}
-                                variant="primary"
-                                icon={ChevronRight}
-                                iconPosition="end"
-                                onPress={() => handleNext()}
-                                style={styles.nextButton}
-                            />
-                        )}
-                    </RNView>
-                </ScrollView>
-            </RNView>
-        </FormProvider>
+                </RNView>
+            </FormProvider>
+        </StepsEditorContext.Provider>
     );
 });
 
@@ -261,6 +411,9 @@ const styles = StyleSheet.create({
     container: { flex: 1 },
     scrollContent: {
         padding: spacing[16],
+    },
+    bannerWrapper: {
+        marginTop: spacing[16],
     },
     buttonRow: {
         flexDirection: "row",

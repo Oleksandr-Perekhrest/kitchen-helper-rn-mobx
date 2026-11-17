@@ -8,27 +8,20 @@ import { useWatch, useFormContext } from "react-hook-form";
 // local dependencies
 import { useTheme } from "../../theme";
 import { Chip, Icon, Text } from "../../ui";
-import type {
-    RecipeFormValues,
-    RecipeFormIngredient,
-} from "../../domain/recipeForm";
+import { useStepsEditor } from "./StepsEditorContext";
+import type { RecipeFormValues } from "../../domain/recipeForm";
 
 type Props = {
-    activeStepId: string | undefined;
-    activeStepNum: number;
-    onInsert: (ingredient: RecipeFormIngredient) => void;
     cloudRef?: RefObject<ElementRef<typeof View> | null>;
+    onLayout?: () => void;
 };
 
-export function ProductCloud({
-    activeStepId,
-    activeStepNum,
-    onInsert,
-    cloudRef,
-}: Props) {
+export function ProductCloud({ cloudRef, onLayout }: Props) {
     const { t } = useTranslation();
     const { colors } = useTheme();
     const { control } = useFormContext<RecipeFormValues>();
+    const { activeStepId, activeStepNum, onInsertIngredient } =
+        useStepsEditor();
 
     const ingredients = useWatch({ control, name: "ingredients" });
     const steps = useWatch({ control, name: "steps" });
@@ -45,7 +38,7 @@ export function ProductCloud({
     );
 
     return (
-        <View ref={cloudRef} style={styles.container}>
+        <View ref={cloudRef} onLayout={onLayout} style={styles.container}>
             <Text variant="label">
                 {t("recipeForm.productCloud.title", { n: activeStepNum })}
             </Text>
@@ -70,7 +63,7 @@ export function ProductCloud({
                             selected={inThisStep}
                             icon={inAnotherStep ? Link2 : undefined}
                             ariaLabel={ariaLabel}
-                            onPress={() => onInsert(ingredient)}
+                            onPress={() => onInsertIngredient(ingredient)}
                         />
                     );
                 })}

@@ -17,34 +17,21 @@ import { StepCard } from "./StepCard";
 import { useTheme } from "../../theme";
 import type { TimerKind } from "../../theme";
 import { ProductCloud } from "./ProductCloud";
-import type { InsertTrigger } from "./StepCard";
-import type {
-    RecipeFormValues,
-    RecipeFormIngredient,
-} from "../../domain/recipeForm";
-import {
-    emptyStep,
-    isFormErrorKey,
-    insertIngredient,
-} from "../../domain/recipeForm";
+import { useStepsEditor } from "./StepsEditorContext";
+import type { RecipeFormValues } from "../../domain/recipeForm";
+import { emptyStep, isFormErrorKey } from "../../domain/recipeForm";
 
 type Props = {
     cloudRef?: RefObject<ElementRef<typeof View> | null>;
+    onCloudLayout?: () => void;
 };
 
-export function StepsStep({ cloudRef }: Props) {
+export function StepsStep({ cloudRef, onCloudLayout }: Props) {
     const { t } = useTranslation();
     const { colors } = useTheme();
 
-    const {
-        control,
-        setValue,
-        getValues,
-        setFocus,
-        trigger,
-        clearErrors,
-        getFieldState,
-    } = useFormContext<RecipeFormValues>();
+    const { control, setValue, getValues, setFocus, trigger, clearErrors } =
+        useFormContext<RecipeFormValues>();
     const { errors } = useFormState<RecipeFormValues>({ control });
 
     const { fields, append, remove } = useFieldArray({
@@ -55,22 +42,14 @@ export function StepsStep({ cloudRef }: Props) {
 
     const watchedSteps = useWatch({ control, name: "steps" });
 
-    const [activeStepId, setActiveStepId] = useState<string | undefined>(
-        () => fields[0]?.id,
-    );
+    const { activeStepId, setActiveStepId } = useStepsEditor();
+
     const [editingTimerStepId, setEditingTimerStepId] = useState<string | null>(
-        null,
-    );
-    const [insertTrigger, setInsertTrigger] = useState<InsertTrigger | null>(
         null,
     );
 
     const pendingFocusIndex = useRef(-1);
     const pendingTimerFocusId = useRef<string | null>(null);
-    const insertVersionRef = useRef(0);
-    const selectionMapRef = useRef<Map<string, { start: number; end: number }>>(
-        new Map(),
-    );
     const timerMinRefMap = useRef<Map<string, ElementRef<typeof TextInput>>>(
         new Map(),
     );
@@ -100,12 +79,8 @@ export function StepsStep({ cloudRef }: Props) {
             ? t(rawListError)
             : undefined;
 
-    const activeStepIndex = fields.findIndex((f) => f.id === activeStepId);
-    const activeStepNum = activeStepIndex >= 0 ? activeStepIndex + 1 : 1;
-
-    const ingredients = getValues("ingredients");
-    const ingredientMap = new Map<string, RecipeFormIngredient>(
-        ingredients.map((i) => [i.id, i]),
+    const ingredientMap = new Map(
+        getValues("ingredients").map((i) => [i.id, i]),
     );
 
     function handleAddStep() {
@@ -147,46 +122,9 @@ export function StepsStep({ cloudRef }: Props) {
         setEditingTimerStepId(null);
     }
 
-    function handleInsertIngredient(ingredient: RecipeFormIngredient) {
-        if (activeStepIndex < 0) return;
-        const currentStep = getValues(`steps.${activeStepIndex}`);
-        const sel = selectionMapRef.current.get(currentStep.id) ?? {
-            start: currentStep.text.length,
-            end: currentStep.text.length,
-        };
-        const { step: updatedStep, cursor } = insertIngredient(
-            currentStep,
-            ingredient,
-            sel,
-        );
-        const hasTextError = getFieldState(
-            `steps.${activeStepIndex}.text`,
-        ).invalid;
-        setValue(`steps.${activeStepIndex}.text`, updatedStep.text, {
-            shouldDirty: true,
-            shouldValidate: hasTextError,
-        });
-        setValue(
-            `steps.${activeStepIndex}.ingredientIds`,
-            updatedStep.ingredientIds,
-            { shouldDirty: true },
-        );
-        insertVersionRef.current += 1;
-        setInsertTrigger({
-            stepId: currentStep.id,
-            cursor,
-            version: insertVersionRef.current,
-        });
-    }
-
     return (
         <View style={styles.container}>
-            <ProductCloud
-                cloudRef={cloudRef}
-                activeStepId={activeStepId}
-                activeStepNum={activeStepNum}
-                onInsert={handleInsertIngredient}
-            />
+            <ProductCloud cloudRef={cloudRef} onLayout={onCloudLayout} />
 
             {fields.length > 0 && (
                 <View>
@@ -211,8 +149,6 @@ export function StepsStep({ cloudRef }: Props) {
                                 watchedTimerKind={watchedTimerKind}
                                 watchedIngredientIds={watchedIngredientIds}
                                 ingredientMap={ingredientMap}
-                                insertTrigger={insertTrigger}
-                                selectionMapRef={selectionMapRef}
                                 timerMinRefMap={timerMinRefMap}
                                 onActivate={() => setActiveStepId(field.id)}
                                 onDelete={() => handleDelete(index)}

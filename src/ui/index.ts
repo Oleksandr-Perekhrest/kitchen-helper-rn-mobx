@@ -33,3 +33,5 @@ export type { WizardProgressProps, WizardProgressStep } from "./WizardProgress";
 export { WizardProgress } from "./WizardProgress";
 export type { OptionSheetOption, OptionSheetProps } from "./OptionSheet";
 export { OptionSheet } from "./OptionSheet";
+export type { TopSheetProps } from "./TopSheet";
+export { TopSheet } from "./TopSheet";
