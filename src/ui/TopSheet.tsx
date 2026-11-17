@@ -39,10 +39,16 @@ export function TopSheet({
     const { height: windowHeight } = useWindowDimensions();
     const maxHeight = windowHeight * maxHeightRatio;
 
+    // Single animated value pair — both on the JS driver so they compose
+    // reliably on Fabric (no cross-driver nesting issues).
     const heightAnim = useRef(new Animated.Value(0)).current;
     const opacityAnim = useRef(new Animated.Value(0)).current;
 
-    // Stable refs for PanResponder callbacks (created once on mount)
+    // Measured scroll-content height so the panel fits its content exactly
+    // (no empty gap for 3 chips, scrollable for 20 chips).
+    const contentHeightRef = useRef(0);
+
+    // Stable refs for PanResponder callbacks (created once on mount).
     const openRef = useRef(open);
     const onOpenChangeRef = useRef(onOpenChange);
 
@@ -55,19 +61,37 @@ export function TopSheet({
     }, [onOpenChange]);
 
     useEffect(() => {
+        // Use measured content height when available; fall back to cap so the
+        // panel is never empty on first open before onContentSizeChange fires.
+        const contentH = contentHeightRef.current;
+        const targetH = open
+            ? Math.min(contentH > 0 ? contentH : maxHeight, maxHeight)
+            : 0;
         Animated.parallel([
             Animated.timing(heightAnim, {
-                toValue: open ? maxHeight : 0,
+                toValue: targetH,
                 duration: 220,
                 useNativeDriver: false,
             }),
             Animated.timing(opacityAnim, {
                 toValue: open ? 1 : 0,
                 duration: 180,
-                useNativeDriver: true,
+                useNativeDriver: false,
             }),
         ]).start();
     }, [open, maxHeight, heightAnim, opacityAnim]);
+
+    function handleContentSizeChange(_w: number, h: number) {
+        contentHeightRef.current = h;
+        if (openRef.current) {
+            // Adjust height smoothly when chips are added or removed while open.
+            Animated.timing(heightAnim, {
+                toValue: Math.min(h, maxHeight),
+                duration: 150,
+                useNativeDriver: false,
+            }).start();
+        }
+    }
 
     const panResponder = useRef(
         PanResponder.create({
@@ -129,22 +153,26 @@ export function TopSheet({
                     />
                 </View>
             </View>
+            {/* Single animated container: height + opacity on the same JS driver. */}
             <Animated.View
-                style={[styles.contentWrapper, { height: heightAnim }]}
+                style={[
+                    styles.contentWrapper,
+                    {
+                        height: heightAnim,
+                        opacity: opacityAnim,
+                        backgroundColor: colors.surface,
+                    },
+                ]}
             >
-                <Animated.View style={{ opacity: opacityAnim }}>
-                    <ScrollView
-                        keyboardShouldPersistTaps="handled"
-                        scrollEnabled={open}
-                        style={[
-                            styles.scroll,
-                            { backgroundColor: colors.surface },
-                        ]}
-                        contentContainerStyle={styles.contentPadding}
-                    >
-                        {children}
-                    </ScrollView>
-                </Animated.View>
+                <ScrollView
+                    keyboardShouldPersistTaps="handled"
+                    scrollEnabled={open}
+                    style={styles.scroll}
+                    contentContainerStyle={styles.contentPadding}
+                    onContentSizeChange={handleContentSizeChange}
+                >
+                    {children}
+                </ScrollView>
             </Animated.View>
         </View>
     );
@@ -183,7 +211,9 @@ const styles = StyleSheet.create({
     contentWrapper: {
         overflow: "hidden",
     },
-    scroll: { flex: 1 },
+    scroll: {
+        flex: 1,
+    },
     contentPadding: {
         padding: 16,
     },
