@@ -103,6 +103,19 @@
       "stepTimerFormat": "Timer must be a positive whole number",
       "stepTimerMax": "Timer cannot exceed 1440 minutes",
       "stepIngredientRef": "Step references an unknown ingredient"
+    },
+    "stepsEditor": {
+      "stepN": "Step {{n}}",
+      "deleteStepA11y": "Delete step {{n}}",
+      "stepDescA11y": "Step {{n}} description",
+      "stepDescPlaceholder": "Describe what to do…",
+      "unlinkA11y": "Unlink {{name}}",
+      "addTimer": "Add timer",
+      "removeTimer": "Remove timer",
+      "timerEditorLabel": "Timer · {{kind}}",
+      "timerMinutesA11y": "Timer minutes, step {{n}}",
+      "timerMin": "min",
+      "addStep": "Add step"
     }
   },
   "cookingMode": {
@@ -149,6 +162,13 @@
     "pinch_one": "pinch",
     "pinch_other": "pinches",
     "toTaste": "to taste"
+  },
+  "timerKinds": {
+    "boil": "Boil",
+    "fry": "Fry",
+    "stew": "Stew",
+    "bake": "Bake",
+    "other": "Other"
   },
   "tags": {
     "breakfast": "Breakfast",

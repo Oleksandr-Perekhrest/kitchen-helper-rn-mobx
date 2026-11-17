@@ -107,6 +107,19 @@
       "stepTimerFormat": "Таймер має бути додатним цілим числом",
       "stepTimerMax": "Таймер не може перевищувати 1440 хвилин",
       "stepIngredientRef": "Крок посилається на невідомий інгредієнт"
+    },
+    "stepsEditor": {
+      "stepN": "Крок {{n}}",
+      "deleteStepA11y": "Видалити крок {{n}}",
+      "stepDescA11y": "Опис кроку {{n}}",
+      "stepDescPlaceholder": "Опишіть дію…",
+      "unlinkA11y": "Відвʼязати {{name}}",
+      "addTimer": "Додати таймер",
+      "removeTimer": "Прибрати таймер",
+      "timerEditorLabel": "Таймер · {{kind}}",
+      "timerMinutesA11y": "Хвилини таймера, крок {{n}}",
+      "timerMin": "хв",
+      "addStep": "Додати крок"
     }
   },
   "cookingMode": {
@@ -161,6 +174,13 @@
     "pinch_many": "дрібок",
     "pinch_other": "дрібки",
     "toTaste": "за смаком"
+  },
+  "timerKinds": {
+    "boil": "Варити",
+    "fry": "Смажити",
+    "stew": "Тушкувати",
+    "bake": "Пекти",
+    "other": "Інше"
   },
   "tags": {
     "breakfast": "Сніданок",
