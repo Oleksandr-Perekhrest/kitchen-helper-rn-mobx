@@ -1,14 +1,15 @@
 // outsource dependencies
 import { useTranslation } from "react-i18next";
 import { useWatch, useFormContext } from "react-hook-form";
-import { View, Pressable, StyleSheet } from "react-native";
+import { View, Image, Pressable, StyleSheet } from "react-native";
 
 // local dependencies
-import { useTheme } from "../../theme";
 import { tUnit } from "../../i18n/tUnit";
+import { radii, useTheme } from "../../theme";
+import { photoFileUri } from "../../storage/photos";
 import { formatQuantity } from "../../domain/scaling";
-import { highlightSegments } from "../../domain/highlight";
 import { formatDuration } from "../../i18n/formatDuration";
+import { highlightSegments } from "../../domain/highlight";
 import type { RecipeFormValues } from "../../domain/recipeForm";
 import { Text, Card, Banner, InfoChip, TimerBadge } from "../../ui";
 import { parseDecimal, unusedIngredients } from "../../domain/recipeForm";
@@ -28,6 +29,7 @@ export function ReviewStep({ onGoToStep }: Props) {
     const tags = useWatch({ control, name: "tags" });
     const steps = useWatch({ control, name: "steps" });
     const servings = useWatch({ control, name: "servings" });
+    const photoFile = useWatch({ control, name: "photoFile" });
     const ingredients = useWatch({ control, name: "ingredients" });
     const totalMinutes = useWatch({ control, name: "totalMinutes" });
     const caloriesPerServing = useWatch({
@@ -67,6 +69,15 @@ export function ReviewStep({ onGoToStep }: Props) {
 
     return (
         <View style={styles.container}>
+            {photoFile !== undefined && (
+                <Image
+                    source={{ uri: photoFileUri(photoFile) }}
+                    style={[styles.photo, { borderRadius: radii.lg }]}
+                    resizeMode="cover"
+                    accessible={false}
+                />
+            )}
+
             {/* Summary card */}
             <Card>
                 {title.length > 0 ? (
@@ -261,6 +272,11 @@ export function ReviewStep({ onGoToStep }: Props) {
 const styles = StyleSheet.create({
     container: {
         marginTop: 24,
+    },
+    photo: {
+        aspectRatio: 4 / 3,
+        overflow: "hidden",
+        marginBottom: 16,
     },
     tagRow: {
         flexDirection: "row",

@@ -10,15 +10,25 @@ import { Button } from "./Button";
 import { radii, useTheme } from "../theme";
 
 export type PhotoFieldProps = {
+    /** Field label text. */
     label: string;
+    /** URI of the current photo. When defined, displays the image; otherwise shows the placeholder icon. */
     photoUri?: string;
+    /** When `true`, disables all buttons and shows a loading indicator over the preview. Defaults to `false`. */
     busy?: boolean;
+    /** Label for the camera button. */
     cameraLabel: string;
+    /** Label for the gallery button. */
     galleryLabel: string;
+    /** Label for the remove button (shown only when a photo is set). */
     removeLabel: string;
+    /** Called when the user presses the camera button. */
     onCamera: () => void;
+    /** Called when the user presses the gallery button. */
     onGallery: () => void;
+    /** Called when the user presses the remove button. */
     onRemove: () => void;
+    /** Optional content rendered below the buttons (e.g. a Banner with an error or info message). */
     notice?: ReactNode;
 };
 
@@ -57,6 +67,12 @@ export function PhotoField({
                 )}
                 {busy && (
                     <View style={styles.busyOverlay}>
+                        <View
+                            style={[
+                                styles.busyOverlayBg,
+                                { backgroundColor: colors.surface },
+                            ]}
+                        />
                         <ActivityIndicator color={colors.primary} />
                     </View>
                 )}
@@ -121,6 +137,14 @@ const styles = StyleSheet.create({
         bottom: 0,
         alignItems: "center",
         justifyContent: "center",
+    },
+    busyOverlayBg: {
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        opacity: 0.75,
     },
     buttonRow: {
         flexDirection: "row",

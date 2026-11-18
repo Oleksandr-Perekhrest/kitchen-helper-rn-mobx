@@ -1,16 +1,81 @@
 // outsource dependencies
-import type { Ref, ElementRef } from "react";
 import { useTranslation } from "react-i18next";
-import { View, TextInput, StyleSheet } from "react-native";
-import { Controller, useFormContext } from "react-hook-form";
+import type { Ref, ReactNode, ElementRef } from "react";
+import { View, Linking, TextInput, StyleSheet } from "react-native";
+import { Controller, useController, useFormContext } from "react-hook-form";
 
 // local dependencies
 import { TAGS } from "../../domain/recipe";
-import { Chip, Text, TextField } from "../../ui";
+import { usePhotoPicker } from "./usePhotoPicker";
+import { photoFileUri } from "../../storage/photos";
 import { isFormErrorKey } from "../../domain/recipeForm";
+import type { PhotoPickerNotice } from "./usePhotoPicker";
 import type { RecipeFormValues } from "../../domain/recipeForm";
+import { Chip, Text, Banner, Button, TextField, PhotoField } from "../../ui";
 
 type TextInputRef = Ref<ElementRef<typeof TextInput>>;
+
+function noticeNode(
+    notice: PhotoPickerNotice | undefined,
+    t: ReturnType<typeof useTranslation>["t"],
+): ReactNode {
+    if (notice === undefined) return undefined;
+    if (notice === "permission") {
+        return (
+            <Banner
+                tone="warning"
+                message={t("recipeForm.photo.errors.permission")}
+                actions={
+                    <Button
+                        label={t("recipeForm.photo.openSettings")}
+                        variant="secondary"
+                        size="md"
+                        onPress={() => {
+                            void Linking.openSettings();
+                        }}
+                    />
+                }
+            />
+        );
+    }
+    if (notice === "cameraUnavailable") {
+        return (
+            <Banner
+                tone="warning"
+                message={t("recipeForm.photo.errors.cameraUnavailable")}
+            />
+        );
+    }
+    return (
+        <Banner tone="warning" message={t("recipeForm.photo.errors.generic")} />
+    );
+}
+
+function PhotoFieldController() {
+    const { t } = useTranslation();
+    const { control } = useFormContext<RecipeFormValues>();
+    const { field } = useController({ name: "photoFile", control });
+    const photoUri =
+        field.value !== undefined ? photoFileUri(field.value) : undefined;
+    const { busy, notice, onCamera, onGallery, onRemove } = usePhotoPicker(
+        (v) => field.onChange(v),
+    );
+
+    return (
+        <PhotoField
+            label={t("recipeForm.photo.label")}
+            photoUri={photoUri}
+            busy={busy}
+            cameraLabel={t("recipeForm.photo.camera")}
+            galleryLabel={t("recipeForm.photo.gallery")}
+            removeLabel={t("recipeForm.photo.remove")}
+            onCamera={onCamera}
+            onGallery={onGallery}
+            onRemove={onRemove}
+            notice={noticeNode(notice, t)}
+        />
+    );
+}
 
 export function BasicsStep() {
     const { t } = useTranslation();
@@ -18,6 +83,7 @@ export function BasicsStep() {
 
     return (
         <View style={styles.container}>
+            <PhotoFieldController />
             <Controller
                 name="title"
                 control={control}
