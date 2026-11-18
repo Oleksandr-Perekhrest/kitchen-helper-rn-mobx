@@ -8,6 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { usePreventRemove } from "@react-navigation/native";
 import { SearchX, ChevronRight } from "lucide-react-native";
 import { useForm, useWatch, FormProvider } from "react-hook-form";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRef, useMemo, useState, useEffect, useCallback } from "react";
 import {
     Platform,
@@ -54,6 +55,7 @@ export const RecipeFormScreen = observer(function RecipeFormScreenComponent({
 }: Props) {
     const { t } = useTranslation();
     const { colors } = useTheme();
+    const insets = useSafeAreaInsets();
     const { recipes, draft } = useStores();
     const { recipeId } = route.params;
 
@@ -478,7 +480,10 @@ export const RecipeFormScreen = observer(function RecipeFormScreenComponent({
                 scrollEventThrottle={16}
                 keyboardShouldPersistTaps="handled"
                 automaticallyAdjustKeyboardInsets
-                contentContainerStyle={styles.scrollContent}
+                contentContainerStyle={[
+                    styles.scrollContent,
+                    { paddingBottom: spacing[16] + insets.bottom },
+                ]}
             >
                 <WizardProgress
                     steps={wizardSteps}

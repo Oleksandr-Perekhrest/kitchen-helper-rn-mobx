@@ -3,6 +3,7 @@ import { observer } from "mobx-react-lite";
 import { useTranslation } from "react-i18next";
 import { useNavigation } from "@react-navigation/native";
 import { View, ScrollView, StyleSheet } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 // local dependencies
 import { useTheme } from "../theme";
@@ -21,6 +22,7 @@ export const SettingsScreen = observer(function SettingsScreenComponent(
     const { t } = useTranslation();
     const navigation = useNavigation();
     const { colors, spacing } = useTheme();
+    const insets = useSafeAreaInsets();
     const { settings } = useStores();
 
     const themeOptions: ReadonlyArray<{
@@ -44,7 +46,10 @@ export const SettingsScreen = observer(function SettingsScreenComponent(
     return (
         <ScrollView
             style={[styles.scroll, { backgroundColor: colors.background }]}
-            contentContainerStyle={{ padding: spacing[16] }}
+            contentContainerStyle={{
+                padding: spacing[16],
+                paddingBottom: spacing[16] + insets.bottom,
+            }}
         >
             <Text variant="headline">{t("settings.title")}</Text>
             <View style={styles.section}>
