@@ -35,3 +35,5 @@ export type { OptionSheetOption, OptionSheetProps } from "./OptionSheet";
 export { OptionSheet } from "./OptionSheet";
 export type { TopSheetProps } from "./TopSheet";
 export { TopSheet } from "./TopSheet";
+export type { PhotoFieldProps } from "./PhotoField";
+export { PhotoField } from "./PhotoField";
