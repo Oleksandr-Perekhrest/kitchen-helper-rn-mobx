@@ -71,7 +71,7 @@ export function emptyFormValues(): RecipeFormValues {
         totalMinutes: "",
         caloriesPerServing: "",
         tags: [],
-        ingredients: [],
+        ingredients: [emptyIngredient()],
         steps: [emptyStep()],
     };
 }

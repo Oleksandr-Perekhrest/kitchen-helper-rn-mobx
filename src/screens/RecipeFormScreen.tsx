@@ -8,8 +8,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { usePreventRemove } from "@react-navigation/native";
 import { SearchX, ChevronRight } from "lucide-react-native";
 import { useForm, useWatch, FormProvider } from "react-hook-form";
-import { ScrollView, StyleSheet, View as RNView } from "react-native";
 import { useRef, useMemo, useState, useEffect, useCallback } from "react";
+import {
+    Platform,
+    ScrollView,
+    StyleSheet,
+    View as RNView,
+    KeyboardAvoidingView,
+} from "react-native";
 
 // local dependencies
 import { spacing, useTheme } from "../theme";
@@ -92,6 +98,8 @@ export const RecipeFormScreen = observer(function RecipeFormScreenComponent({
     );
     const scrollRef = useRef<ElementRef<typeof ScrollView>>(null);
     const cloudRef = useRef<ElementRef<typeof View>>(null);
+    const kavWrapperRef = useRef<ElementRef<typeof View>>(null);
+    const [keyboardOffset, setKeyboardOffset] = useState(0);
 
     // Steps editor shared state — provided to StepsEditorContext
     const [activeStepId, setActiveStepId] = useState<string | undefined>(
@@ -272,6 +280,13 @@ export const RecipeFormScreen = observer(function RecipeFormScreenComponent({
         current: currentIndex + 1,
         total: WIZARD_STEPS.length,
     });
+
+    function handleOuterLayout() {
+        if (Platform.OS !== "android") return;
+        kavWrapperRef.current?.measureInWindow((_x, y) => {
+            setKeyboardOffset(y);
+        });
+    }
 
     function updateTopSheetVisibility(isOut: boolean) {
         if (isOut !== showTopSheetRef.current) {
@@ -455,141 +470,153 @@ export const RecipeFormScreen = observer(function RecipeFormScreenComponent({
         n: activeStepNum,
     });
 
+    const content = (
+        <>
+            <ScrollView
+                ref={scrollRef}
+                onScroll={handleScroll}
+                scrollEventThrottle={16}
+                keyboardShouldPersistTaps="handled"
+                automaticallyAdjustKeyboardInsets
+                contentContainerStyle={styles.scrollContent}
+            >
+                <WizardProgress
+                    steps={wizardSteps}
+                    currentIndex={currentIndex}
+                    counterLabel={counterLabel}
+                    isStepPressable={(index) =>
+                        isEditMode || index <= highestVisited
+                    }
+                    onStepPress={goToStep}
+                />
+                {showDraftBanner && (
+                    <RNView style={styles.bannerWrapper}>
+                        <Banner
+                            tone="info"
+                            message={t("recipeForm.draft.restored")}
+                            actions={
+                                <Button
+                                    label={t("recipeForm.draft.startOver")}
+                                    variant="secondary"
+                                    size="md"
+                                    onPress={handleStartOver}
+                                />
+                            }
+                        />
+                    </RNView>
+                )}
+                {currentStepKey === "basics" && <BasicsStep />}
+                {currentStepKey === "ingredients" && <IngredientsStep />}
+                {currentStepKey === "steps" && (
+                    <StepsStep
+                        cloudRef={cloudRef}
+                        onCloudLayout={handleCloudLayout}
+                    />
+                )}
+                {currentStepKey === "review" && (
+                    <ReviewStep onGoToStep={goToStep} />
+                )}
+                {showUnusedWarning && (
+                    <RNView style={styles.bannerWrapper}>
+                        <Banner
+                            tone="warning"
+                            title={t("recipeForm.unusedWarning.title", {
+                                count: liveUnused.length,
+                            })}
+                            message={liveUnused.map((i) => i.name).join(", ")}
+                            actions={
+                                <>
+                                    <Button
+                                        label={t(
+                                            "recipeForm.unusedWarning.addToSteps",
+                                        )}
+                                        variant="secondary"
+                                        size="md"
+                                        onPress={handleAddToSteps}
+                                    />
+                                    <Button
+                                        label={t(
+                                            "recipeForm.unusedWarning.continueAnyway",
+                                        )}
+                                        variant="primary"
+                                        size="md"
+                                        onPress={handleContinueAnyway}
+                                    />
+                                </>
+                            }
+                        />
+                    </RNView>
+                )}
+                {saveError && (
+                    <RNView style={styles.bannerWrapper}>
+                        <Banner
+                            tone="warning"
+                            message={t("recipeForm.review.saveError")}
+                        />
+                    </RNView>
+                )}
+                <RNView style={styles.buttonRow}>
+                    {currentIndex > 0 && (
+                        <Button
+                            label={t("recipeForm.buttons.back")}
+                            variant="secondary"
+                            onPress={handleBack}
+                            style={styles.backButton}
+                        />
+                    )}
+                    {isLastStep ? (
+                        <Button
+                            label={t("recipeForm.buttons.save")}
+                            variant="primary"
+                            disabled={saving}
+                            onPress={handleSave}
+                            style={styles.nextButton}
+                        />
+                    ) : (
+                        <Button
+                            label={t("recipeForm.buttons.next")}
+                            variant="primary"
+                            icon={ChevronRight}
+                            iconPosition="end"
+                            onPress={() => handleNext()}
+                            style={styles.nextButton}
+                        />
+                    )}
+                </RNView>
+            </ScrollView>
+            {currentStepKey === "steps" && showTopSheet && (
+                <TopSheet
+                    open={topSheetOpen}
+                    onOpenChange={setTopSheetOpen}
+                    barLabel={topSheetBarLabel}
+                >
+                    <ProductCloud />
+                </TopSheet>
+            )}
+        </>
+    );
+
     return (
         <StepsEditorContext.Provider value={stepsEditorContextValue}>
             <FormProvider {...form}>
                 <RNView
+                    ref={kavWrapperRef}
+                    onLayout={handleOuterLayout}
                     style={[
                         styles.container,
                         { backgroundColor: colors.background },
                     ]}
                 >
-                    <ScrollView
-                        ref={scrollRef}
-                        onScroll={handleScroll}
-                        scrollEventThrottle={16}
-                        keyboardShouldPersistTaps="handled"
-                        automaticallyAdjustKeyboardInsets
-                        contentContainerStyle={styles.scrollContent}
-                    >
-                        <WizardProgress
-                            steps={wizardSteps}
-                            currentIndex={currentIndex}
-                            counterLabel={counterLabel}
-                            isStepPressable={(index) =>
-                                isEditMode || index <= highestVisited
-                            }
-                            onStepPress={goToStep}
-                        />
-                        {showDraftBanner && (
-                            <RNView style={styles.bannerWrapper}>
-                                <Banner
-                                    tone="info"
-                                    message={t("recipeForm.draft.restored")}
-                                    actions={
-                                        <Button
-                                            label={t(
-                                                "recipeForm.draft.startOver",
-                                            )}
-                                            variant="secondary"
-                                            size="md"
-                                            onPress={handleStartOver}
-                                        />
-                                    }
-                                />
-                            </RNView>
-                        )}
-                        {currentStepKey === "basics" && <BasicsStep />}
-                        {currentStepKey === "ingredients" && (
-                            <IngredientsStep />
-                        )}
-                        {currentStepKey === "steps" && (
-                            <StepsStep
-                                cloudRef={cloudRef}
-                                onCloudLayout={handleCloudLayout}
-                            />
-                        )}
-                        {currentStepKey === "review" && (
-                            <ReviewStep onGoToStep={goToStep} />
-                        )}
-                        {showUnusedWarning && (
-                            <RNView style={styles.bannerWrapper}>
-                                <Banner
-                                    tone="warning"
-                                    title={t("recipeForm.unusedWarning.title", {
-                                        count: liveUnused.length,
-                                    })}
-                                    message={liveUnused
-                                        .map((i) => i.name)
-                                        .join(", ")}
-                                    actions={
-                                        <>
-                                            <Button
-                                                label={t(
-                                                    "recipeForm.unusedWarning.addToSteps",
-                                                )}
-                                                variant="secondary"
-                                                size="md"
-                                                onPress={handleAddToSteps}
-                                            />
-                                            <Button
-                                                label={t(
-                                                    "recipeForm.unusedWarning.continueAnyway",
-                                                )}
-                                                variant="primary"
-                                                size="md"
-                                                onPress={handleContinueAnyway}
-                                            />
-                                        </>
-                                    }
-                                />
-                            </RNView>
-                        )}
-                        {saveError && (
-                            <RNView style={styles.bannerWrapper}>
-                                <Banner
-                                    tone="warning"
-                                    message={t("recipeForm.review.saveError")}
-                                />
-                            </RNView>
-                        )}
-                        <RNView style={styles.buttonRow}>
-                            {currentIndex > 0 && (
-                                <Button
-                                    label={t("recipeForm.buttons.back")}
-                                    variant="secondary"
-                                    onPress={handleBack}
-                                    style={styles.backButton}
-                                />
-                            )}
-                            {isLastStep ? (
-                                <Button
-                                    label={t("recipeForm.buttons.save")}
-                                    variant="primary"
-                                    disabled={saving}
-                                    onPress={handleSave}
-                                    style={styles.nextButton}
-                                />
-                            ) : (
-                                <Button
-                                    label={t("recipeForm.buttons.next")}
-                                    variant="primary"
-                                    icon={ChevronRight}
-                                    iconPosition="end"
-                                    onPress={() => handleNext()}
-                                    style={styles.nextButton}
-                                />
-                            )}
-                        </RNView>
-                    </ScrollView>
-                    {currentStepKey === "steps" && showTopSheet && (
-                        <TopSheet
-                            open={topSheetOpen}
-                            onOpenChange={setTopSheetOpen}
-                            barLabel={topSheetBarLabel}
+                    {Platform.OS === "android" ? (
+                        <KeyboardAvoidingView
+                            behavior="padding"
+                            keyboardVerticalOffset={keyboardOffset}
+                            style={styles.flex1}
                         >
-                            <ProductCloud />
-                        </TopSheet>
+                            {content}
+                        </KeyboardAvoidingView>
+                    ) : (
+                        content
                     )}
                 </RNView>
             </FormProvider>
@@ -599,6 +626,7 @@ export const RecipeFormScreen = observer(function RecipeFormScreenComponent({
 
 const styles = StyleSheet.create({
     container: { flex: 1 },
+    flex1: { flex: 1 },
     scrollContent: {
         padding: spacing[16],
     },

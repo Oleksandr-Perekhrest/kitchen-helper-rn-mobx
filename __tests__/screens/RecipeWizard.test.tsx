@@ -18,12 +18,7 @@ describe("RecipeWizard", () => {
         await user.type(titleInput, "Pasta Night");
         await user.press(screen.getByRole("button", { name: "Next" }));
 
-        // Ingredients: add one row, fill name and amount
-        await screen.findByRole("button", { name: "Add ingredient" });
-        await user.press(
-            screen.getByRole("button", { name: "Add ingredient" }),
-        );
-
+        // Ingredients: form starts with one empty row; fill it directly
         const nameInput = await screen.findByLabelText("Name, row 1");
         await user.type(nameInput, "Flour");
 
