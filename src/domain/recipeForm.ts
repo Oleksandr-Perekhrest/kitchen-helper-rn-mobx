@@ -45,7 +45,7 @@ export type RecipeFormValues = {
     totalMinutes: string;
     caloriesPerServing: string;
     tags: Tag[];
-    photoUri?: string;
+    photoFile?: string;
     ingredients: RecipeFormIngredient[];
     steps: RecipeFormStep[];
 };
@@ -82,7 +82,7 @@ export const RecipeFormValuesShapeSchema = z.object({
     totalMinutes: z.string(),
     caloriesPerServing: z.string(),
     tags: z.array(z.enum(TAGS)),
-    photoUri: z.string().optional(),
+    photoFile: z.string().optional(),
     ingredients: z.array(
         z.object({
             id: z.string(),
@@ -121,7 +121,7 @@ export function fromRecipe(recipe: Recipe): RecipeFormValues {
                 ? String(recipe.caloriesPerServing)
                 : "",
         tags: recipe.tags,
-        photoUri: recipe.photoUri,
+        photoFile: recipe.photoFile,
         ingredients: recipe.ingredients.map((i) => ({
             id: i.id,
             name: i.name,
@@ -362,7 +362,7 @@ export const recipeFormSchema = z
         totalMinutes: z.string(),
         caloriesPerServing: z.string(),
         tags: z.array(z.enum(TAGS)),
-        photoUri: z.string().optional(),
+        photoFile: z.string().optional(),
         ingredients: z.array(formIngredientSchema),
         steps: z.array(formStepSchema),
     })
@@ -457,7 +457,9 @@ export function toRecipe(
         ...(caloriesPerServing !== undefined ? { caloriesPerServing } : {}),
         tags: values.tags,
         favorite: options.existing?.favorite ?? false,
-        ...(values.photoUri !== undefined ? { photoUri: values.photoUri } : {}),
+        ...(values.photoFile !== undefined
+            ? { photoFile: values.photoFile }
+            : {}),
         ingredients,
         steps,
         createdAt: options.existing?.createdAt ?? nowIso,

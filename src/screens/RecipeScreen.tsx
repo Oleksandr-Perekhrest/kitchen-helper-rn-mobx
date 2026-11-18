@@ -24,6 +24,7 @@ import {
 // local dependencies
 import { useTheme } from "../theme";
 import { tUnit } from "../i18n/tUnit";
+import { photoFileUri } from "../storage/photos";
 import { useStores } from "../stores/StoreProvider";
 import { formatDuration } from "../i18n/formatDuration";
 import { highlightSegments } from "../domain/highlight";
@@ -146,9 +147,9 @@ export const RecipeScreen = observer(function RecipeScreenComponent({
                         { backgroundColor: colors.primarySoft },
                     ]}
                 >
-                    {recipe.photoUri !== undefined ? (
+                    {recipe.photoFile !== undefined ? (
                         <Image
-                            source={{ uri: recipe.photoUri }}
+                            source={{ uri: photoFileUri(recipe.photoFile) }}
                             style={styles.photo}
                             resizeMode="cover"
                             accessible={false}

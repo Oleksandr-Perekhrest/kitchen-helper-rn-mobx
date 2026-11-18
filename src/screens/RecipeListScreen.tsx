@@ -12,6 +12,7 @@ import { TAGS } from "../domain/recipe";
 import type { Tag } from "../domain/recipe";
 import { spacing, useTheme } from "../theme";
 import type { Recipe } from "../domain/recipe";
+import { photoFileUri } from "../storage/photos";
 import { useStores } from "../stores/StoreProvider";
 import { filterRecipes } from "../domain/recipeFilter";
 import { formatDuration } from "../i18n/formatDuration";
@@ -68,7 +69,11 @@ export const RecipeListScreen = observer(function RecipeListScreenComponent({
                     title={item.title}
                     duration={duration}
                     servings={servings}
-                    photoUri={item.photoUri}
+                    photoUri={
+                        item.photoFile !== undefined
+                            ? photoFileUri(item.photoFile)
+                            : undefined
+                    }
                     favorite={item.favorite}
                     accessibilityLabel={a11yParts.join(", ")}
                     onPress={() =>

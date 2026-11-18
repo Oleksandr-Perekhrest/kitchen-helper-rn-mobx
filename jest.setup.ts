@@ -16,6 +16,18 @@ jest.mock("react-native-localize", () =>
 jest.mock("./src/storage/mmkvStorage", () => ({
     createMmkvStorage: () => mockCreateMemoryStorage(),
 }));
+// react-native-file-access has no native module in Jest; provide a fixed
+// DocumentDir so src/storage/photos.ts can be imported and its module-level
+// PHOTOS_DIR constant resolves without crashing.
+jest.mock("react-native-file-access", () => ({
+    Dirs: { DocumentDir: "/mock/documents" },
+    FileSystem: {
+        exists: jest.fn(() => Promise.resolve(true)),
+        mkdir: jest.fn(() => Promise.resolve("/mock/documents/photos")),
+        cp: jest.fn(() => Promise.resolve()),
+        unlink: jest.fn(() => Promise.resolve()),
+    },
+}));
 
 // Disable native screen components so NavigationContainer renders in Jest
 enableScreens(false);
