@@ -152,3 +152,45 @@ describe("toggleFavorite persistence", () => {
         store2.dispose();
     });
 });
+
+describe("RecipesStore.remove", () => {
+    it("removes only the recipe with that id", () => {
+        const store = new RecipesStore();
+        const other = {
+            ...VALID_RECIPE,
+            id: "aaaa0001-0001-4001-a001-0000000000ff",
+        };
+        store.replaceAll([VALID_RECIPE, other]);
+        store.remove(VALID_RECIPE.id);
+        expect(store.recipes.map((r) => r.id)).toEqual([other.id]);
+    });
+
+    it("does nothing for an unknown id", () => {
+        const store = new RecipesStore();
+        store.replaceAll([VALID_RECIPE]);
+        store.remove("aaaa0001-0001-4001-a001-0000000000ee");
+        expect(store.recipes).toHaveLength(1);
+    });
+});
+
+describe("remove persistence", () => {
+    it("a deleted demo recipe is not re-seeded after a restart", () => {
+        const storage = createMemoryStorage();
+        const options = {
+            deviceLanguages: ["en"],
+            now: () => new Date(NOW),
+        };
+        const first = createRootStore(storage, options);
+        const removedId = first.recipes.recipes[0]?.id ?? "";
+        const countBefore = first.recipes.recipes.length;
+        first.recipes.remove(removedId);
+        first.dispose();
+
+        const second = createRootStore(storage, options);
+        expect(second.recipes.recipes).toHaveLength(countBefore - 1);
+        expect(second.recipes.recipes.map((r) => r.id)).not.toContain(
+            removedId,
+        );
+        second.dispose();
+    });
+});

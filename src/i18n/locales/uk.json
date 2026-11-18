@@ -50,7 +50,15 @@
     "steps_few": "{{count}} кроки",
     "steps_many": "{{count}} кроків",
     "steps_other": "{{count}} кроку",
-    "calories": "{{count}} ккал / порц."
+    "calories": "{{count}} ккал / порц.",
+    "deleteRecipe": "Видалити рецепт",
+    "deleteRecipeA11y": "Видалити рецепт {{title}}",
+    "deleteConfirm": {
+      "title": "Видалити „{{title}}”?",
+      "message": "Цю дію не можна скасувати.",
+      "cancel": "Скасувати",
+      "confirm": "Видалити"
+    }
   },
   "duration": {
     "hours": "{{hours}} год",
@@ -59,7 +67,110 @@
   },
   "recipeForm": {
     "titleNew": "Новий рецепт",
-    "titleEdit": "Редагувати рецепт"
+    "titleEdit": "Редагувати рецепт",
+    "counter": "{{current}} з {{total}}",
+    "steps": {
+      "basics": "Основне",
+      "ingredients": "Продукти",
+      "steps": "Кроки",
+      "review": "Перевірка"
+    },
+    "fields": {
+      "title": "Назва",
+      "caloriesPerServing": "Калорійність на порцію · необовʼязково",
+      "caloriesHint": "ккал",
+      "tags": "Теги"
+    },
+    "buttons": {
+      "back": "Назад",
+      "next": "Далі",
+      "save": "Зберегти рецепт"
+    },
+    "ingredients": {
+      "headerFor": "Продукти на",
+      "namePlaceholder": "Назва",
+      "amountPlaceholder": "Кількість",
+      "addIngredient": "Додати продукт",
+      "unitSheetTitle": "Одиниця виміру",
+      "emptyHint": "Поки що немає продуктів",
+      "amountA11y": "К-сть, рядок {{row}}",
+      "unitA11y": "Одиниця, рядок {{row}}: {{unit}}",
+      "nameA11y": "Назва, рядок {{row}}",
+      "deleteA11y": "Видалити інгредієнт {{row}}"
+    },
+    "errors": {
+      "titleRequired": "Введіть назву рецепту",
+      "titleMaxLength": "Назва має містити не більше 100 символів",
+      "servingsInteger": "Кількість порцій має бути цілим числом",
+      "servingsMin": "Мінімальна кількість порцій — 1",
+      "servingsMax": "Максимальна кількість порцій — 50",
+      "totalMinutesFormat": "Введіть ціле число хвилин",
+      "caloriesPerServingFormat": "Введіть ціле число калорій",
+      "tagsUnique": "Теги мають бути унікальними",
+      "ingredientNameRequired": "Введіть назву інгредієнта",
+      "ingredientAmountInvalid": "Введіть додатне число для кількості",
+      "ingredientsMinOne": "Потрібен щонайменше один продукт",
+      "stepsMinOne": "Додайте принаймні один крок",
+      "stepTextRequired": "Введіть опис кроку",
+      "stepTimerFormat": "Таймер має бути додатним цілим числом",
+      "stepTimerMax": "Таймер не може перевищувати 1440 хвилин",
+      "stepIngredientRef": "Крок посилається на невідомий інгредієнт"
+    },
+    "stepsEditor": {
+      "stepN": "Крок {{n}}",
+      "deleteStepA11y": "Видалити крок {{n}}",
+      "stepDescA11y": "Опис кроку {{n}}",
+      "stepDescPlaceholder": "Опишіть дію…",
+      "unlinkA11y": "Відвʼязати {{name}}",
+      "addTimer": "Додати таймер",
+      "removeTimer": "Прибрати таймер",
+      "saveTimer": "Зберегти таймер",
+      "editTimerPlaqueA11y": "Редагувати таймер: {{kind}} · {{n}} хв",
+      "timerMinutesA11y": "Хвилини таймера, крок {{n}}",
+      "timerMin": "хв",
+      "addStep": "Додати крок"
+    },
+    "productCloud": {
+      "title": "Продукти · натисни, щоб вставити в крок {{n}}",
+      "barLabel": "Продукти · вставити в крок {{n}}",
+      "inThisStep": "у цьому кроці",
+      "inAnotherStep": "в іншому",
+      "notUsed": "ще ні",
+      "inThisStepA11y": "{{name}}, у цьому кроці. Вставити в текст кроку",
+      "inAnotherStepA11y": "{{name}}, в іншому кроці. Вставити в текст кроку",
+      "notUsedA11y": "{{name}}, не використано. Вставити в текст кроку"
+    },
+    "unusedWarning": {
+      "title_one": "1 продукт не використано в кроках",
+      "title_few": "{{count}} продукти не використано в кроках",
+      "title_many": "{{count}} продуктів не використано в кроках",
+      "title_other": "{{count}} продукти не використано в кроках",
+      "addToSteps": "Додати в кроки",
+      "continueAnyway": "Все одно далі"
+    },
+    "draft": {
+      "restored": "Відновлено чернетку",
+      "startOver": "Почати заново"
+    },
+    "discardChanges": {
+      "title": "Відкинути зміни?",
+      "message": "Зміни не буде збережено.",
+      "keepEditing": "Залишитися",
+      "discard": "Відкинути"
+    },
+    "review": {
+      "untitled": "Без назви",
+      "editBasics": "Змінити основне",
+      "edit": "Змінити",
+      "unusedBanner": "Не використано в кроках: {{names}}. Рецепт можна зберегти й так.",
+      "ingredientsHeader_one": "Продукти · {{count}} порція",
+      "ingredientsHeader_few": "Продукти · {{count}} порції",
+      "ingredientsHeader_many": "Продукти · {{count}} порцій",
+      "ingredientsHeader_other": "Продукти · {{count}} порції",
+      "editIngredients": "Змінити продукти",
+      "editSteps": "Змінити кроки",
+      "saveError": "Не вдалося зберегти рецепт"
+    }
   },
   "cookingMode": {
     "title": "Готування"
@@ -113,6 +224,13 @@
     "pinch_many": "дрібок",
     "pinch_other": "дрібки",
     "toTaste": "за смаком"
+  },
+  "timerKinds": {
+    "boil": "Варити",
+    "fry": "Смажити",
+    "stew": "Тушкувати",
+    "bake": "Пекти",
+    "other": "Інше"
   },
   "tags": {
     "breakfast": "Сніданок",

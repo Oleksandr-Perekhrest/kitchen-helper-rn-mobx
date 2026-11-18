@@ -15,6 +15,7 @@ export const BUTTON_VARIANTS = [
     "soft",
     "neutral",
     "danger",
+    "dangerText",
 ] as const;
 
 export type ButtonVariant = (typeof BUTTON_VARIANTS)[number];
@@ -28,12 +29,16 @@ export type ButtonProps = {
     variant?: ButtonVariant;
     /** Button size. Defaults to `"lg"`. */
     size?: "lg" | "md";
-    /** Optional leading Lucide icon. */
+    /** Optional Lucide icon. */
     icon?: LucideIcon;
+    /** Where to place the icon relative to the label. Defaults to `"start"`. */
+    iconPosition?: "start" | "end";
     /** Whether the button is disabled. */
     disabled?: boolean;
     /** Additional container styles. */
     style?: StyleProp<ViewStyle>;
+    /** Overrides the default aria-label (which equals `label`). */
+    accessibilityLabel?: string;
 };
 
 type VariantStyle = {
@@ -49,8 +54,10 @@ export function Button({
     variant = "primary",
     size = "lg",
     icon,
+    iconPosition = "start",
     disabled = false,
     style,
+    accessibilityLabel,
 }: ButtonProps) {
     const { colors } = useTheme();
 
@@ -83,6 +90,11 @@ export function Button({
             borderWidth: 1,
             tone: "danger",
         },
+        dangerText: {
+            backgroundColor: "transparent",
+            borderWidth: 0,
+            tone: "danger",
+        },
     };
 
     const { backgroundColor, borderColor, borderWidth, tone } =
@@ -97,7 +109,7 @@ export function Button({
             disabled={disabled}
             onPress={onPress}
             role="button"
-            aria-label={label}
+            aria-label={accessibilityLabel ?? label}
             aria-disabled={disabled}
             style={({ pressed }) => [
                 styles.base,
@@ -108,12 +120,15 @@ export function Button({
                 style,
             ]}
         >
-            {icon && (
+            {icon && iconPosition === "start" && (
                 <Icon icon={icon} size={iconSize} tone={tone} strokeWidth={2} />
             )}
             <Text variant={textVariant} tone={tone}>
                 {label}
             </Text>
+            {icon && iconPosition === "end" && (
+                <Icon icon={icon} size={iconSize} tone={tone} strokeWidth={2} />
+            )}
         </Pressable>
     );
 }

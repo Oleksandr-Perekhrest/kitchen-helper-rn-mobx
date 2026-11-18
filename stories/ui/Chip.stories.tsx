@@ -99,6 +99,10 @@ export const RadioGroup: Story = {
     render: () => <RadioGroupStory />,
 };
 
+export const ButtonRole: Story = {
+    args: { role: "button", label: "Сіль" },
+};
+
 const styles = StyleSheet.create({
     tagGroup: {
         flexDirection: "row",

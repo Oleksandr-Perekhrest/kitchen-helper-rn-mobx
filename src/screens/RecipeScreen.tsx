@@ -3,11 +3,19 @@ import { observer } from "mobx-react-lite";
 import { useTranslation } from "react-i18next";
 import { useState, useLayoutEffect } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { View, Image, Pressable, ScrollView, StyleSheet } from "react-native";
+import {
+    View,
+    Alert,
+    Image,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+} from "react-native";
 import {
     Star,
     Play,
     Clock,
+    Trash2,
     Pencil,
     SearchX,
     UtensilsCrossed,
@@ -15,13 +23,21 @@ import {
 
 // local dependencies
 import { useTheme } from "../theme";
-import { TIMER_ICONS } from "../ui/timerIcons";
+import { tUnit } from "../i18n/tUnit";
 import { useStores } from "../stores/StoreProvider";
 import { formatDuration } from "../i18n/formatDuration";
 import { highlightSegments } from "../domain/highlight";
 import type { RootStackScreenProps } from "../navigation/types";
 import { formatQuantity, scaleIngredients } from "../domain/scaling";
-import { Text, Icon, Button, Stepper, EmptyState, IconButton } from "../ui";
+import {
+    Text,
+    Icon,
+    Button,
+    Stepper,
+    EmptyState,
+    IconButton,
+    TimerBadge,
+} from "../ui";
 
 const HORIZONTAL_PAD = 16;
 const PHOTO_HEIGHT = 220;
@@ -219,9 +235,7 @@ export const RecipeScreen = observer(function RecipeScreenComponent({
                             amountText = t("units.toTaste");
                         } else if (ingredient.amount !== undefined) {
                             const { amount, unit } = ingredient;
-                            // Dynamic unit key — all non-toTaste Unit values map to valid units.* i18n
-                            // keys; TypeScript cannot verify template-literal keys with plural suffixes.
-                            amountText = `${formatQuantity(amount, i18n.language)} ${t(`units.${unit}` as "units.g", { count: amount })}`;
+                            amountText = `${formatQuantity(amount, i18n.language)} ${tUnit(t, unit, amount)}`;
                         } else {
                             amountText = "";
                         }
@@ -325,47 +339,49 @@ export const RecipeScreen = observer(function RecipeScreenComponent({
                                         )}
                                     </Text>
                                     {step.timer !== undefined && (
-                                        <View
-                                            style={[
-                                                styles.stepTimerBadge,
-                                                {
-                                                    borderColor:
-                                                        colors.timer[
-                                                            step.timer.kind
-                                                        ],
-                                                },
-                                            ]}
-                                        >
-                                            <Icon
-                                                icon={
-                                                    TIMER_ICONS[step.timer.kind]
-                                                }
-                                                size={14}
-                                                color={
-                                                    colors.timer[
-                                                        step.timer.kind
-                                                    ]
-                                                }
-                                            />
-                                            <Text
-                                                variant="caption"
-                                                style={{
-                                                    color: colors.timer[
-                                                        step.timer.kind
-                                                    ],
-                                                }}
-                                            >
-                                                {formatDuration(
-                                                    t,
-                                                    step.timer.minutes,
-                                                )}
-                                            </Text>
-                                        </View>
+                                        <TimerBadge
+                                            kind={step.timer.kind}
+                                            timeLabel={formatDuration(
+                                                t,
+                                                step.timer.minutes,
+                                            )}
+                                        />
                                     )}
                                 </View>
                             </View>
                         );
                     })}
+                    <Button
+                        label={t("recipe.deleteRecipe")}
+                        icon={Trash2}
+                        variant="dangerText"
+                        size="md"
+                        accessibilityLabel={t("recipe.deleteRecipeA11y", {
+                            title: recipe.title,
+                        })}
+                        onPress={() => {
+                            const { id, title } = recipe;
+                            Alert.alert(
+                                t("recipe.deleteConfirm.title", { title }),
+                                t("recipe.deleteConfirm.message"),
+                                [
+                                    {
+                                        text: t("recipe.deleteConfirm.cancel"),
+                                        style: "cancel",
+                                    },
+                                    {
+                                        text: t("recipe.deleteConfirm.confirm"),
+                                        style: "destructive",
+                                        onPress: () => {
+                                            navigation.goBack();
+                                            recipes.remove(id);
+                                        },
+                                    },
+                                ],
+                            );
+                        }}
+                        style={styles.deleteButton}
+                    />
                 </View>
             </ScrollView>
 
@@ -499,16 +515,6 @@ const styles = StyleSheet.create({
     highlight: {
         fontWeight: "600",
     },
-    stepTimerBadge: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 4,
-        height: 28,
-        paddingHorizontal: 10,
-        borderRadius: 14,
-        borderWidth: 1,
-        alignSelf: "flex-start",
-    },
     bottomBar: {
         paddingHorizontal: HORIZONTAL_PAD,
         paddingTop: 12,
@@ -527,5 +533,9 @@ const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "center",
         borderRadius: 22,
+    },
+    deleteButton: {
+        alignSelf: "center",
+        marginTop: 32,
     },
 });

@@ -1,4 +1,5 @@
 // outsource dependencies
+import type { ReactNode } from "react";
 import { View, StyleSheet } from "react-native";
 import type { LucideIcon } from "lucide-react-native";
 import { Info, TriangleAlert } from "lucide-react-native";
@@ -20,6 +21,8 @@ export type BannerProps = {
     tone?: BannerTone;
     /** Override the default leading icon (TriangleAlert for warning, Info for info). */
     icon?: LucideIcon;
+    /** Optional action buttons rendered below the message in a wrapping row. */
+    actions?: ReactNode;
 };
 
 export function Banner({
@@ -27,6 +30,7 @@ export function Banner({
     title,
     tone = "warning",
     icon,
+    actions,
 }: BannerProps) {
     const { colors } = useTheme();
 
@@ -59,6 +63,9 @@ export function Banner({
                 <Text variant="body" style={textStyle}>
                     {message}
                 </Text>
+                {actions !== undefined && (
+                    <View style={styles.actions}>{actions}</View>
+                )}
             </View>
         </View>
     );
@@ -77,5 +84,11 @@ const styles = StyleSheet.create({
     content: {
         flex: 1,
         gap: 2,
+    },
+    actions: {
+        flexDirection: "row",
+        flexWrap: "wrap",
+        gap: 8,
+        marginTop: 8,
     },
 });

@@ -14,6 +14,12 @@ import {
     RECIPES_STORAGE_KEY,
 } from "./RecipesStore";
 import {
+    DraftStore,
+    parseDraft,
+    DRAFT_VERSION,
+    DRAFT_STORAGE_KEY,
+} from "./DraftStore";
+import {
     SettingsStore,
     parseSettings,
     SETTINGS_VERSION,
@@ -23,6 +29,7 @@ import {
 export type RootStore = {
     settings: SettingsStore;
     recipes: RecipesStore;
+    draft: DraftStore;
     dispose: () => void;
 };
 
@@ -37,6 +44,7 @@ export function createRootStore(
 ): RootStore {
     const settings = new SettingsStore();
     const recipes = new RecipesStore();
+    const draft = new DraftStore();
 
     // Key absent means the app has never written recipe data (true first launch).
     // Once persist() writes the key (even as an empty array after user deletes all),
@@ -71,6 +79,17 @@ export function createRootStore(
         parse: parseRecipes,
     });
 
+    const disposeDraft = persist({
+        storage,
+        key: DRAFT_STORAGE_KEY,
+        version: DRAFT_VERSION,
+        snapshot: () => toJS(draft.draft),
+        apply: (data) => {
+            draft.draft = data;
+        },
+        parse: parseDraft,
+    });
+
     if (isFirstLaunch) {
         const now = (options.now ?? (() => new Date()))();
         const language = resolveLanguage(
@@ -98,9 +117,11 @@ export function createRootStore(
     return {
         settings,
         recipes,
+        draft,
         dispose: () => {
             disposeSettings();
             disposeRecipes();
+            disposeDraft();
         },
     };
 }
