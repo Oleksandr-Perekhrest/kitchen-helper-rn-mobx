@@ -25,10 +25,10 @@ export async function savePhoto(sourceUri: string): Promise<string> {
 
 export async function deletePhoto(fileName: string): Promise<void> {
     const path = `${PHOTOS_DIR}/${fileName}`;
-    const exists = await FileSystem.exists(path);
-    if (!exists) return;
     try {
-        await FileSystem.unlink(path);
+        if (await FileSystem.exists(path)) {
+            await FileSystem.unlink(path);
+        }
     } catch (err) {
         console.warn("[photos] deletePhoto failed:", err);
     }
