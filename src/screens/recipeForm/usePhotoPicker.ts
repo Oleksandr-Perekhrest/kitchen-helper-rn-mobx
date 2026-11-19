@@ -54,7 +54,6 @@ export function usePhotoPicker(
             setBusy(false);
         }
     }
-
     function onCamera(): void {
         setNotice(undefined);
         void launchCamera({
@@ -62,7 +61,9 @@ export function usePhotoPicker(
             maxWidth: 1600,
             maxHeight: 1600,
             quality: 0.8,
-        }).then(handlePick);
+        })
+            .then(handlePick)
+            .catch(() => setNotice("generic"));
     }
 
     function onGallery(): void {
@@ -72,9 +73,10 @@ export function usePhotoPicker(
             maxWidth: 1600,
             maxHeight: 1600,
             quality: 0.8,
-        }).then(handlePick);
+        })
+            .then(handlePick)
+            .catch(() => setNotice("generic"));
     }
-
     // The form never deletes photo files here: the store deletes the old file when
     // the recipe is saved, and unreferenced files will be cleaned up separately.
     function onRemove(): void {
