@@ -6,12 +6,14 @@ import { View, StyleSheet } from "react-native";
 import { Text } from "../ui";
 import { useTheme } from "../theme";
 import type { RootStackScreenProps } from "../navigation/types";
+import { useKeepAwakeWhileFocused } from "../hooks/useKeepAwakeWhileFocused";
 
 type Props = RootStackScreenProps<"CookingMode">;
 
 export function CookingModeScreen({ route }: Props) {
     const { t } = useTranslation();
     const { colors, spacing } = useTheme();
+    useKeepAwakeWhileFocused("cooking-mode");
     const { recipeId } = route.params;
     return (
         <View
