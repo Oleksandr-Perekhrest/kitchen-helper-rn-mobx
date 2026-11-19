@@ -1,12 +1,30 @@
 // outsource dependencies
-import { it, jest, expect, describe } from "@jest/globals";
+import { it, jest, expect, describe, beforeEach } from "@jest/globals";
 
 // local dependencies
 import type { Recipe } from "../../src/domain/recipe";
-import { createRootStore } from "../../src/stores/RootStore";
+import { deletePhoto } from "../../src/storage/photos";
+import { emptyFormValues } from "../../src/domain/recipeForm";
 import { RECIPE_SCHEMA_VERSION } from "../../src/domain/recipe";
 import { createMemoryStorage } from "../../src/storage/memoryStorage";
 import { RecipesStore, parseRecipes } from "../../src/stores/RecipesStore";
+import {
+    createRootStore,
+    referencedPhotoFiles,
+} from "../../src/stores/RootStore";
+
+jest.mock("../../src/storage/photos", () => ({
+    deletePhoto: jest.fn(() => Promise.resolve()),
+    savePhoto: jest.fn(() => Promise.resolve("mock.jpg")),
+    photoFileUri: jest.fn((f: string) => `file:///mock/${f}`),
+    deleteUnreferencedPhotos: jest.fn(() => Promise.resolve()),
+}));
+
+const mockDeletePhoto = jest.mocked(deletePhoto);
+
+beforeEach(() => {
+    jest.clearAllMocks();
+});
 
 // ─── fixture ──────────────────────────────────────────────────────────────────
 
@@ -43,6 +61,12 @@ const VALID_RECIPE: Recipe = {
     ],
     createdAt: NOW,
     updatedAt: NOW,
+};
+
+const RECIPE_WITH_PHOTO: Recipe = {
+    ...VALID_RECIPE,
+    id: "aaaa0001-0001-4001-a001-000000000010",
+    photoFile: "photo.jpg",
 };
 
 // missing required "steps" field — invalid by schema
@@ -192,5 +216,87 @@ describe("remove persistence", () => {
             removedId,
         );
         second.dispose();
+    });
+});
+
+// ─── RecipesStore photo deletion ──────────────────────────────────────────────
+
+describe("RecipesStore.remove photo", () => {
+    it("deletes the photo file when removing a recipe that has one", () => {
+        const store = new RecipesStore();
+        store.add(RECIPE_WITH_PHOTO);
+        store.remove(RECIPE_WITH_PHOTO.id);
+        expect(mockDeletePhoto).toHaveBeenCalledWith("photo.jpg");
+    });
+
+    it("does not call deletePhoto when removing a recipe without a photo", () => {
+        const store = new RecipesStore();
+        store.add(VALID_RECIPE);
+        store.remove(VALID_RECIPE.id);
+        expect(mockDeletePhoto).not.toHaveBeenCalled();
+    });
+});
+
+describe("RecipesStore.update photo", () => {
+    it("deletes the old photo when updating with a different photoFile", () => {
+        const store = new RecipesStore();
+        store.add(RECIPE_WITH_PHOTO);
+        store.update({ ...RECIPE_WITH_PHOTO, photoFile: "new.jpg" });
+        expect(mockDeletePhoto).toHaveBeenCalledWith("photo.jpg");
+    });
+
+    it("does not call deletePhoto when updating with the same photoFile", () => {
+        const store = new RecipesStore();
+        store.add(RECIPE_WITH_PHOTO);
+        store.update({ ...RECIPE_WITH_PHOTO, title: "Updated title" });
+        expect(mockDeletePhoto).not.toHaveBeenCalled();
+    });
+
+    it("does not call deletePhoto when updating a recipe without a photo", () => {
+        const store = new RecipesStore();
+        store.add(VALID_RECIPE);
+        store.update({ ...VALID_RECIPE, title: "Updated" });
+        expect(mockDeletePhoto).not.toHaveBeenCalled();
+    });
+});
+
+// ─── referencedPhotoFiles ─────────────────────────────────────────────────────
+
+describe("referencedPhotoFiles", () => {
+    it("returns photo files from recipes and draft, excluding undefined", () => {
+        const store = createRootStore(createMemoryStorage(), {
+            deviceLanguages: [],
+        });
+        store.recipes.replaceAll([
+            {
+                ...VALID_RECIPE,
+                id: "aaaa0001-0001-4001-a001-000000000020",
+                photoFile: "photo1.jpg",
+            },
+            { ...VALID_RECIPE, id: "aaaa0001-0001-4001-a001-000000000021" },
+            {
+                ...VALID_RECIPE,
+                id: "aaaa0001-0001-4001-a001-000000000022",
+                photoFile: "photo2.jpg",
+            },
+        ]);
+        store.draft.save({ ...emptyFormValues(), photoFile: "draft.jpg" }, 0);
+        const files = referencedPhotoFiles(store);
+        expect(files).toEqual(
+            new Set(["photo1.jpg", "photo2.jpg", "draft.jpg"]),
+        );
+        store.dispose();
+    });
+
+    it("returns an empty set when there are no photos", () => {
+        const store = createRootStore(createMemoryStorage(), {
+            deviceLanguages: [],
+        });
+        store.recipes.replaceAll([
+            { ...VALID_RECIPE, id: "aaaa0001-0001-4001-a001-000000000030" },
+        ]);
+        const files = referencedPhotoFiles(store);
+        expect(files.size).toBe(0);
+        store.dispose();
     });
 });

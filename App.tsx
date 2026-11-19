@@ -7,14 +7,15 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 
 // local dependencies
 import { useTheme, ThemeProvider } from "./src/theme";
-import { createRootStore } from "./src/stores/RootStore";
 import { resolveLanguage } from "./src/i18n/resolveLanguage";
 import { createMmkvStorage } from "./src/storage/mmkvStorage";
 import { RootNavigator } from "./src/navigation/RootNavigator";
+import { deleteUnreferencedPhotos } from "./src/storage/photos";
 import { i18n, initI18n, getDeviceLanguages } from "./src/i18n";
 import { useStores, StoreProvider } from "./src/stores/StoreProvider";
 import { applyNativeColorScheme } from "./src/theme/nativeColorScheme";
 import { useNavigationTheme } from "./src/navigation/useNavigationTheme";
+import { createRootStore, referencedPhotoFiles } from "./src/stores/RootStore";
 
 function AppShell() {
     const { scheme } = useTheme();
@@ -56,6 +57,7 @@ function App() {
         const deviceLanguages = getDeviceLanguages();
         const s = createRootStore(createMmkvStorage(), { deviceLanguages });
         initI18n(resolveLanguage(s.settings.language, deviceLanguages));
+        void deleteUnreferencedPhotos(referencedPhotoFiles(s));
         return s;
     });
     return (

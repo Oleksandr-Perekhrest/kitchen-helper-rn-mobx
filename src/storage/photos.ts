@@ -34,6 +34,25 @@ export async function deletePhoto(fileName: string): Promise<void> {
     }
 }
 
+// Files become unreferenced when a form with a newly picked photo is discarded
+// or the app is killed before saving; deleting at startup is safe because no form is open yet.
+export async function deleteUnreferencedPhotos(
+    referenced: ReadonlySet<string>,
+): Promise<void> {
+    try {
+        const dirExists = await FileSystem.exists(PHOTOS_DIR);
+        if (!dirExists) return;
+        const files = await FileSystem.ls(PHOTOS_DIR);
+        for (const file of files) {
+            if (!referenced.has(file)) {
+                await deletePhoto(file);
+            }
+        }
+    } catch (err) {
+        console.warn("[photos] deleteUnreferencedPhotos failed:", err);
+    }
+}
+
 export function photoFileUri(fileName: string): string {
     return `file://${PHOTOS_DIR}/${fileName}`;
 }
