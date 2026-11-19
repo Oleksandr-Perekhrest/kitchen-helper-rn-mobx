@@ -2,8 +2,9 @@ import React
 import React_RCTAppDelegate
 import ReactAppDependencyProvider
 import UIKit
+internal import Expo
 
-class SceneDelegate: RCTDefaultReactNativeFactoryDelegate, UIWindowSceneDelegate {
+class SceneDelegate: ExpoReactNativeFactoryDelegate, UIWindowSceneDelegate {
   var window: UIWindow?
   var reactNativeFactory: RCTReactNativeFactory?
 
@@ -17,9 +18,10 @@ class SceneDelegate: RCTDefaultReactNativeFactoryDelegate, UIWindowSceneDelegate
     }
 
     dependencyProvider = RCTAppDependencyProvider()
-    reactNativeFactory = RCTReactNativeFactory(delegate: self)
+    // ExpoReactNativeFactory installs global.expo into the JS runtime; without it every Expo module crashes on import.
+    reactNativeFactory = ExpoReactNativeFactory(delegate: self)
     window = UIWindow(windowScene: windowScene)
-    
+
     #if DEBUG
     let devMenuConfiguration = RCTDevMenuConfiguration(
       devMenuEnabled: true,
@@ -28,14 +30,12 @@ class SceneDelegate: RCTDefaultReactNativeFactoryDelegate, UIWindowSceneDelegate
     )
     reactNativeFactory?.devMenuConfiguration = devMenuConfiguration
     #endif
-    
+
     reactNativeFactory?.startReactNative(
       withModuleName: "Cookalong",
       in: window,
       connectionOptions: connectionOptions
     )
-
-   
   }
 
   func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
