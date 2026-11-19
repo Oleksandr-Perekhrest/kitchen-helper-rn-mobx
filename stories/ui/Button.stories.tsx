@@ -23,7 +23,7 @@ const meta = {
         },
         size: {
             control: "select",
-            options: ["lg", "md"],
+            options: ["lg", "md", "xl"],
         },
         icon: { control: false },
     },
@@ -72,6 +72,10 @@ export const IconEnd: Story = {
         icon: ArrowRight,
         iconPosition: "end",
     },
+};
+
+export const SizeXl: Story = {
+    args: { size: "xl" },
 };
 
 export const Disabled: Story = {

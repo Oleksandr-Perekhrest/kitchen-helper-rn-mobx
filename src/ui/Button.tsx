@@ -27,8 +27,8 @@ export type ButtonProps = {
     onPress: () => void;
     /** Visual style of the button. Defaults to `"primary"`. */
     variant?: ButtonVariant;
-    /** Button size. Defaults to `"lg"`. */
-    size?: "lg" | "md";
+    /** Button size. `"md"` = 44 px, `"lg"` = 56 px, `"xl"` = 76 px. Defaults to `"lg"`. */
+    size?: "lg" | "md" | "xl";
     /** Optional Lucide icon. */
     icon?: LucideIcon;
     /** Where to place the icon relative to the label. Defaults to `"start"`. */
@@ -100,9 +100,11 @@ export function Button({
     const { backgroundColor, borderColor, borderWidth, tone } =
         variantMap[variant];
 
+    const isXl = size === "xl";
     const isLg = size === "lg";
-    const iconSize = isLg ? 22 : 18;
-    const textVariant = isLg ? "button" : "buttonSm";
+    const iconSize = isXl ? 24 : isLg ? 22 : 18;
+    const textVariant = isLg || isXl ? "button" : "buttonSm";
+    const borderRadius = isXl ? radii.lg : radii.full;
 
     return (
         <Pressable
@@ -113,8 +115,8 @@ export function Button({
             aria-disabled={disabled}
             style={({ pressed }) => [
                 styles.base,
-                isLg ? styles.sizeLg : styles.sizeMd,
-                { backgroundColor, borderColor, borderWidth },
+                isXl ? styles.sizeXl : isLg ? styles.sizeLg : styles.sizeMd,
+                { backgroundColor, borderColor, borderWidth, borderRadius },
                 pressed && !disabled && styles.pressed,
                 disabled && styles.disabled,
                 style,
@@ -139,15 +141,18 @@ const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "center",
         gap: 8,
-        borderRadius: radii.full,
+    },
+    sizeMd: {
+        height: 44,
+        paddingHorizontal: 16,
     },
     sizeLg: {
         height: 56,
         paddingHorizontal: 24,
     },
-    sizeMd: {
-        height: 44,
-        paddingHorizontal: 16,
+    sizeXl: {
+        height: 76,
+        paddingHorizontal: 24,
     },
     pressed: {
         opacity: 0.85,

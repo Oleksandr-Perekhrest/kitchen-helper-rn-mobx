@@ -403,6 +403,7 @@ export const RecipeScreen = observer(function RecipeScreenComponent({
                     onPress={() =>
                         navigation.navigate("CookingMode", {
                             recipeId: recipe.id,
+                            servings,
                         })
                     }
                     style={styles.cookButton}
