@@ -177,7 +177,12 @@
     }
   },
   "cookingMode": {
-    "title": "Cooking"
+    "title": "Cooking",
+    "close": "Finish cooking",
+    "progress": "Step {{current}} of {{total}}",
+    "back": "Back",
+    "next": "Next",
+    "done": "Done"
   },
   "timers": {
     "title": "Timers"

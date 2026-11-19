@@ -75,7 +75,7 @@ export function RootNavigator() {
             <Stack.Screen
                 name="CookingMode"
                 component={CookingModeScreen}
-                options={{ title: t("cookingMode.title") }}
+                options={{ headerShown: false }}
             />
             <Stack.Screen
                 name="Timers"

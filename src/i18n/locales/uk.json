@@ -185,7 +185,12 @@
     }
   },
   "cookingMode": {
-    "title": "Готування"
+    "title": "Готування",
+    "close": "Завершити готування",
+    "progress": "Крок {{current}} з {{total}}",
+    "back": "Назад",
+    "next": "Далі",
+    "done": "Готово"
   },
   "timers": {
     "title": "Таймери"

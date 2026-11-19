@@ -19,6 +19,8 @@
     "@hookform/resolvers": "5.9.2",
     "@react-navigation/native": "7.5.1",
     "@react-navigation/native-stack": "7.21.0",
+    "expo": "~58.0.26",
+    "expo-keep-awake": "~58.0.4",
     "i18next": "26.7.1",
     "intl-pluralrules": "^2.0.1",
     "lucide-react-native": "1.66.0",

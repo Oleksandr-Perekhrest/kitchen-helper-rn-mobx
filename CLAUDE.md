@@ -48,6 +48,7 @@ cd ios && bundle exec pod install
 - zod 4 — data model schemas in `src/domain`; persisted data is validated with these schemas on read (invalid records are dropped, not rejected wholesale)
 - web-only Storybook 10 with @storybook/react-native-web-vite (`stories/`, addons Docs and a11y, default viewport "Cookalong · 390×844")
 - i18next 26 + react-i18next + react-native-localize — EN and UK locales bundled as JSON resources; `resolveLanguage` resolves `LanguagePreference` → `AppLanguage`; typed keys via `src/i18n/i18next.d.ts` augmentation
+- Expo Modules SDK 58 — used only as a native module provider (no Expo CLI, no `expo start` or `expo run`; Metro and Babel remain the RN defaults); `expo-*` packages are added with the version range listed in `node_modules/expo/bundledNativeModules.json`
 
 **Planned — do not add any of these until a task explicitly asks:**
 
