@@ -3,6 +3,78 @@ PODS:
     - ReactNativeDependencies
   - DoubleConversion (1.1.6):
     - ReactNativeDependencies
+  - EXConstants (58.0.16):
+    - ExpoModulesCore
+  - Expo (58.0.26):
+    - ExpoModulesCore
+    - ExpoModulesJSI
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-bridging
+    - React-Core
+    - React-Core-prebuilt
+    - React-cxxstableapi
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTAppDelegate
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactAppDependencyProvider
+    - ReactCodegen
+    - ReactCommon/turbomodule/core
+    - ReactNativeDependencies
+    - Yoga
+  - ExpoAsset (58.0.21):
+    - ExpoModulesCore
+  - ExpoDomWebView (58.0.2):
+    - ExpoModulesCore
+  - ExpoFileSystem (58.0.14):
+    - ExpoModulesCore
+  - ExpoFont (58.0.12):
+    - ExpoModulesCore
+  - ExpoKeepAwake (58.0.4):
+    - ExpoModulesCore
+  - ExpoLogBox (58.0.15):
+    - React-Core
+  - ExpoModulesCore (58.1.0):
+    - ExpoModulesJSI
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-bridging
+    - React-Core
+    - React-Core-prebuilt
+    - React-cxxstableapi
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-jsinspector
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/core
+    - ReactNativeDependencies
+    - Yoga
+  - ExpoModulesJSI (58.0.23):
+    - React-Core
+    - ReactCommon
+  - ExpoModulesWorklets (58.1.0):
+    - ExpoModulesCore
+    - ExpoModulesJSI
   - fast_float (8.0.0):
     - ReactNativeDependencies
   - FBLazyVector (0.88.1):
@@ -2039,6 +2111,17 @@ PODS:
 DEPENDENCIES:
   - boost (from `build/rndeps-facades/boost`)
   - DoubleConversion (from `build/rndeps-facades/DoubleConversion`)
+  - EXConstants (from `../node_modules/expo-constants/ios`)
+  - Expo (from `../node_modules/expo`)
+  - ExpoAsset (from `../node_modules/expo-asset/ios`)
+  - "ExpoDomWebView (from `../node_modules/@expo/dom-webview/ios`)"
+  - ExpoFileSystem (from `../node_modules/expo-file-system/ios`)
+  - ExpoFont (from `../node_modules/expo-font/ios`)
+  - ExpoKeepAwake (from `../node_modules/expo-keep-awake/ios`)
+  - "ExpoLogBox (from `../node_modules/@expo/log-box`)"
+  - ExpoModulesCore (from `../node_modules/expo-modules-core`)
+  - ExpoModulesJSI (from `../node_modules/expo-modules-jsi/apple`)
+  - ExpoModulesWorklets (from `../node_modules/expo-modules-core`)
   - fast_float (from `build/rndeps-facades/fast_float`)
   - FBLazyVector (from `build/rncore-facades/FBLazyVector`)
   - fmt (from `build/rndeps-facades/fmt`)
@@ -2143,6 +2226,28 @@ EXTERNAL SOURCES:
     :path: build/rndeps-facades/boost
   DoubleConversion:
     :path: build/rndeps-facades/DoubleConversion
+  EXConstants:
+    :path: "../node_modules/expo-constants/ios"
+  Expo:
+    :path: "../node_modules/expo"
+  ExpoAsset:
+    :path: "../node_modules/expo-asset/ios"
+  ExpoDomWebView:
+    :path: "../node_modules/@expo/dom-webview/ios"
+  ExpoFileSystem:
+    :path: "../node_modules/expo-file-system/ios"
+  ExpoFont:
+    :path: "../node_modules/expo-font/ios"
+  ExpoKeepAwake:
+    :path: "../node_modules/expo-keep-awake/ios"
+  ExpoLogBox:
+    :path: "../node_modules/@expo/log-box"
+  ExpoModulesCore:
+    :path: "../node_modules/expo-modules-core"
+  ExpoModulesJSI:
+    :path: "../node_modules/expo-modules-jsi/apple"
+  ExpoModulesWorklets:
+    :path: "../node_modules/expo-modules-core"
   fast_float:
     :path: build/rndeps-facades/fast_float
   FBLazyVector:
@@ -2332,6 +2437,17 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   boost: 2a9d6e1d9873337543f08d9dbc007b288f4e113b
   DoubleConversion: e85e4faac763226bfd1cc4c6a98d8355149b27a5
+  EXConstants: ceb37cba5719d97c5262d7618cd47280a0033646
+  Expo: 07ca0b6cc6bebcb46d9b75d0925ae8b05366c2c3
+  ExpoAsset: 8b26eba004d9fad6bf15eff338af18143fecda94
+  ExpoDomWebView: 0d5f78af2d77c988ed5032ec33c0729d3f27936d
+  ExpoFileSystem: 2886aceeeb19a7012f8e6be538f2b597e46eb2d8
+  ExpoFont: 5471ff1ce8e24deb7bb1061a535e6661688e2dbd
+  ExpoKeepAwake: e1a0e96d021c062c2f454c9d5b2a7c7bf8459279
+  ExpoLogBox: b8b45166261495bfea7743267194b543104f49a7
+  ExpoModulesCore: 81b0e027f6a4f95b0b59746439c9d8b8456da200
+  ExpoModulesJSI: 731946f68e4c4b7c2cbdc91e78a9d3736a62e1c0
+  ExpoModulesWorklets: 4a499e1dfacc0472dd1491f4bf7b6ed093c66dc9
   fast_float: 908e5ee35999f3d91af4b962ac951acac591866c
   FBLazyVector: 67f73ac20aa6866d00d4319696528211c75a37f8
   fmt: c7776a2a4b1d7ce88b809a1e4d1f7add0f2369df
@@ -2427,6 +2543,6 @@ SPEC CHECKSUMS:
   Yoga: 58b502c52b14ad3c4468805d461fc37d275c2a42
   ZIPFoundation: dfd3d681c4053ff7e2f7350bc4e53b5dba3f5351
 
-PODFILE CHECKSUM: 18dc5a242bc1c475d9aa7fc0558e60e7469cea86
+PODFILE CHECKSUM: b0d99e31feb117a200f4638a41f992c75747c9e8
 
 COCOAPODS: 1.15.2
