@@ -9,23 +9,6 @@ import {
     deleteUnreferencedPhotos,
 } from "../../src/storage/photos";
 
-jest.mock("react-native-file-access", () => {
-    // outsource dependencies
-    // react-native-file-access sorts before @jest/globals by line length so the
-    // imported jest binding is uninitialized when this hoisted factory runs; use require.
-    const { jest: j } = require("@jest/globals");
-    return {
-        Dirs: { DocumentDir: "/mock/documents" },
-        FileSystem: {
-            exists: j.fn(() => Promise.resolve(true)),
-            mkdir: j.fn(() => Promise.resolve("/mock/documents/photos")),
-            cp: j.fn(() => Promise.resolve()),
-            unlink: j.fn(() => Promise.resolve()),
-            ls: j.fn(() => Promise.resolve([])),
-        },
-    };
-});
-
 const mockExists = jest.mocked(FileSystem.exists);
 const mockMkdir = jest.mocked(FileSystem.mkdir);
 const mockCp = jest.mocked(FileSystem.cp);
@@ -63,8 +46,13 @@ describe("savePhoto", () => {
 
 describe("deletePhoto", () => {
     it("does not throw when unlink fails", async () => {
+        const warn = jest
+            .spyOn(console, "warn")
+            .mockImplementation(() => undefined);
         mockUnlink.mockRejectedValueOnce(new Error("disk error"));
         await expect(deletePhoto("photo.jpg")).resolves.toBeUndefined();
+        expect(warn).toHaveBeenCalledTimes(1);
+        warn.mockRestore();
     });
 
     it("does not call unlink when the file does not exist", async () => {
@@ -97,9 +85,14 @@ describe("deleteUnreferencedPhotos", () => {
     });
 
     it("does not throw when listing fails", async () => {
+        const warn = jest
+            .spyOn(console, "warn")
+            .mockImplementation(() => undefined);
         mockLs.mockRejectedValueOnce(new Error("permission denied"));
         await expect(
             deleteUnreferencedPhotos(new Set()),
         ).resolves.toBeUndefined();
+        expect(warn).toHaveBeenCalledTimes(1);
+        warn.mockRestore();
     });
 });

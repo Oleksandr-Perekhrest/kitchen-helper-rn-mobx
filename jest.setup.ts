@@ -32,6 +32,7 @@ jest.mock("react-native-file-access", () => ({
         mkdir: jest.fn(() => Promise.resolve("/mock/documents/photos")),
         cp: jest.fn(() => Promise.resolve()),
         unlink: jest.fn(() => Promise.resolve()),
+        ls: jest.fn(() => Promise.resolve([])),
     },
 }));
 
