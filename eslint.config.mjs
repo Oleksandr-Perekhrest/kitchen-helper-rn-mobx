@@ -29,6 +29,13 @@ export default [
             "ft-flow/use-flow-type": "off",
         },
     },
+    {
+        // Fire-and-forget calls (e.g. deleting a photo file) are marked with
+        // `void promise` as a statement; the RN preset warns on any `void`.
+        rules: {
+            "no-void": ["error", { allowAsStatement: true }],
+        },
+    },
 
     {
         plugins: {

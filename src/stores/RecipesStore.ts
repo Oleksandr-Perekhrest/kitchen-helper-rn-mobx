@@ -3,6 +3,7 @@ import { makeAutoObservable } from "mobx";
 
 // local dependencies
 import type { Recipe } from "../domain/recipe";
+import { deletePhoto } from "../storage/photos";
 import { RecipeSchema, RECIPE_SCHEMA_VERSION } from "../domain/recipe";
 
 export const RECIPES_STORAGE_KEY = "recipes";
@@ -58,6 +59,14 @@ export class RecipesStore {
     update(recipe: Recipe) {
         const idx = this.recipes.findIndex((r) => r.id === recipe.id);
         if (idx !== -1) {
+            const existing = this.recipes[idx];
+            if (
+                existing !== undefined &&
+                existing.photoFile !== recipe.photoFile &&
+                existing.photoFile !== undefined
+            ) {
+                void deletePhoto(existing.photoFile);
+            }
             this.recipes[idx] = {
                 ...recipe,
                 updatedAt: new Date().toISOString(),
@@ -66,6 +75,10 @@ export class RecipesStore {
     }
 
     remove(id: string) {
+        const recipe = this.recipes.find((r) => r.id === id);
+        if (recipe?.photoFile !== undefined) {
+            void deletePhoto(recipe.photoFile);
+        }
         this.recipes = this.recipes.filter((r) => r.id !== id);
     }
 

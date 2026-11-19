@@ -125,3 +125,16 @@ export function createRootStore(
         },
     };
 }
+
+export function referencedPhotoFiles(store: RootStore): Set<string> {
+    const files = new Set<string>();
+    for (const recipe of store.recipes.recipes) {
+        if (recipe.photoFile !== undefined) {
+            files.add(recipe.photoFile);
+        }
+    }
+    if (store.draft.draft?.values.photoFile !== undefined) {
+        files.add(store.draft.draft.values.photoFile);
+    }
+    return files;
+}

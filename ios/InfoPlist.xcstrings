@@ -18,6 +18,24 @@
           }
         }
       }
+    },
+    "NSCameraUsageDescription" : {
+      "comment" : "Privacy - Camera Usage Description",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Cookalong uses the camera to take a photo of your dish for a recipe."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Готуємо використовує камеру, щоб сфотографувати страву для рецепта."
+          }
+        }
+      }
     }
   },
   "version" : "1.2"

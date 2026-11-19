@@ -96,7 +96,7 @@ export const RecipeSchema = z
         caloriesPerServing: z.number().int().positive().optional(),
         tags: z.array(z.enum(TAGS)),
         favorite: z.boolean(),
-        photoUri: z.string().optional(),
+        photoFile: z.string().optional(),
         ingredients: z.array(IngredientSchema),
         steps: z.array(StepSchema).min(1),
         createdAt: z.iso.datetime(),

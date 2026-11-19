@@ -77,6 +77,18 @@
       "caloriesHint": "kcal",
       "tags": "Tags"
     },
+    "photo": {
+      "label": "Dish photo",
+      "camera": "Camera",
+      "gallery": "Gallery",
+      "remove": "Remove photo",
+      "openSettings": "Open Settings",
+      "errors": {
+        "permission": "No access to the camera. You can allow it in Settings.",
+        "cameraUnavailable": "The camera is not available on this device.",
+        "generic": "Couldn't add the photo."
+      }
+    },
     "buttons": {
       "back": "Back",
       "next": "Next",
