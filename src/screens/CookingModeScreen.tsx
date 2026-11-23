@@ -16,8 +16,11 @@ import {
 // local dependencies
 import { useTheme } from "../theme";
 import { useStores } from "../stores/StoreProvider";
-import { Text, Button, EmptyState, IconButton } from "../ui";
+import { scaleIngredients } from "../domain/scaling";
+import { highlightSegments } from "../domain/highlight";
 import type { RootStackScreenProps } from "../navigation/types";
+import { formatIngredientAmount } from "../i18n/formatIngredientAmount";
+import { Text, Button, EmptyState, IconButton, IngredientChip } from "../ui";
 import { useKeepAwakeWhileFocused } from "../hooks/useKeepAwakeWhileFocused";
 
 const HORIZONTAL_PAD = 20;
@@ -28,12 +31,12 @@ export const CookingModeScreen = observer(function CookingModeScreenComponent({
     navigation,
     route,
 }: Props) {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const { colors } = useTheme();
     const { recipes } = useStores();
     const insets = useSafeAreaInsets();
     useKeepAwakeWhileFocused("cooking-mode");
-    const { recipeId } = route.params;
+    const { recipeId, servings } = route.params;
 
     const recipe = recipes.byId.get(recipeId);
     const [stepIndex, setStepIndex] = useState(0);
@@ -55,12 +58,30 @@ export const CookingModeScreen = observer(function CookingModeScreenComponent({
     }
 
     const steps = recipe.steps;
+    const scaledIngredients = scaleIngredients(
+        recipe.ingredients,
+        recipe.servings,
+        servings,
+    );
+
     const isFirst = stepIndex === 0;
     const isLast = stepIndex === steps.length - 1;
     const currentStep = steps[stepIndex];
     if (currentStep === undefined) {
         return null;
     }
+
+    const terms = currentStep.ingredientIds
+        .map(
+            (id) => recipe.ingredients.find((ing) => ing.id === id)?.name ?? "",
+        )
+        .filter((name) => name !== "");
+    const segments = highlightSegments(currentStep.text, terms);
+
+    const stepIngredients = currentStep.ingredientIds.flatMap((id) => {
+        const ing = scaledIngredients.find((i) => i.id === id);
+        return ing !== undefined ? [ing] : [];
+    });
 
     const goBack = () => setStepIndex((i) => Math.max(0, i - 1));
     const goNext = () => {
@@ -114,7 +135,41 @@ export const CookingModeScreen = observer(function CookingModeScreenComponent({
                 style={styles.scrollView}
                 contentContainerStyle={styles.scrollContent}
             >
-                <Text variant="step">{currentStep.text}</Text>
+                <Text variant="step">
+                    {segments.map((seg, si) =>
+                        seg.highlighted ? (
+                            <Text
+                                key={si}
+                                variant="step"
+                                style={[
+                                    styles.highlight,
+                                    {
+                                        backgroundColor: colors.primarySoft,
+                                    },
+                                ]}
+                            >
+                                {seg.text}
+                            </Text>
+                        ) : (
+                            seg.text
+                        ),
+                    )}
+                </Text>
+                {stepIngredients.length > 0 && (
+                    <View style={styles.chipRow}>
+                        {stepIngredients.map((ing) => (
+                            <IngredientChip
+                                key={ing.id}
+                                amount={formatIngredientAmount(
+                                    t,
+                                    i18n.language,
+                                    ing,
+                                )}
+                                name={ing.name}
+                            />
+                        ))}
+                    </View>
+                )}
             </ScrollView>
 
             <View
@@ -183,6 +238,15 @@ const styles = StyleSheet.create({
         gap: 12,
         paddingTop: 16,
         paddingHorizontal: HORIZONTAL_PAD,
+    },
+    highlight: {
+        fontWeight: "800",
+    },
+    chipRow: {
+        flexDirection: "row",
+        flexWrap: "wrap",
+        gap: 8,
+        marginTop: 16,
     },
     backButton: {
         flex: 1,
