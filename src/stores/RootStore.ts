@@ -67,11 +67,13 @@ export function createRootStore(
             themePreference: settings.themePreference,
             language: settings.language,
             voiceEnabled: settings.voiceEnabled,
+            timerSoundEnabled: settings.timerSoundEnabled,
         }),
         apply: (data) => {
             settings.setThemePreference(data.themePreference);
             settings.setLanguage(data.language);
             settings.setVoiceEnabled(data.voiceEnabled);
+            settings.setTimerSoundEnabled(data.timerSoundEnabled);
         },
         parse: parseSettings,
     });

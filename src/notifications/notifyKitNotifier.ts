@@ -8,12 +8,12 @@ import notifee, {
 } from "react-native-notify-kit";
 
 // local dependencies
-import { TIMER_CHANNEL_ID } from "./types";
 import type { TimerNotifier } from "./types";
+import { TIMER_CHANNEL_ID, TIMER_SILENT_CHANNEL_ID } from "./types";
 
 export function createNotifyKitNotifier(): TimerNotifier {
     return {
-        async prepare({ channelName }) {
+        async prepare({ channelName, silentChannelName }) {
             try {
                 await notifee.createChannel({
                     id: TIMER_CHANNEL_ID,
@@ -21,6 +21,12 @@ export function createNotifyKitNotifier(): TimerNotifier {
                     importance: AndroidImportance.HIGH,
                     sound: "default",
                     vibration: true,
+                });
+                await notifee.createChannel({
+                    id: TIMER_SILENT_CHANNEL_ID,
+                    name: silentChannelName,
+                    importance: AndroidImportance.HIGH,
+                    vibration: false,
                 });
             } catch (e) {
                 console.warn("[notifications] createChannel failed", e);
@@ -69,7 +75,7 @@ export function createNotifyKitNotifier(): TimerNotifier {
             }
         },
 
-        async schedule({ id, fireAt, title, body }) {
+        async schedule({ id, fireAt, title, body, sound }) {
             if (fireAt <= Date.now()) return;
             try {
                 await notifee.createTriggerNotification(
@@ -78,15 +84,17 @@ export function createNotifyKitNotifier(): TimerNotifier {
                         title,
                         body,
                         android: {
-                            channelId: TIMER_CHANNEL_ID,
+                            channelId: sound
+                                ? TIMER_CHANNEL_ID
+                                : TIMER_SILENT_CHANNEL_ID,
                             pressAction: { id: "default" },
                         },
                         ios: {
-                            sound: "default",
+                            ...(sound ? { sound: "default" } : {}),
                             foregroundPresentationOptions: {
                                 banner: true,
                                 list: true,
-                                sound: true,
+                                sound,
                             },
                         },
                     },

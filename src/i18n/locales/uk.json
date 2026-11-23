@@ -222,6 +222,10 @@
     "voice": {
       "label": "Голосовий помічник",
       "description": "Голосові команди в режимі готування: далі, назад, повтори, таймер."
+    },
+    "timerSound": {
+      "label": "Звук і вібрація таймерів",
+      "description": "Звук і вібрація, коли таймер завершився."
     }
   },
   "navigation": {
@@ -263,6 +267,7 @@
   },
   "notifications": {
     "channelName": "Таймери",
+    "silentChannelName": "Таймери (без звуку)",
     "timerDone": "{{kind}} — час вийшов",
     "exactAlarm": {
       "title": "Сигнал вчасно",

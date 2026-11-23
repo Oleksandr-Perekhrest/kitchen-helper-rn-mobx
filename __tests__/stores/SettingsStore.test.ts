@@ -11,11 +11,13 @@ describe("parseSettings", () => {
                 themePreference: "dark",
                 language: "uk",
                 voiceEnabled: false,
+                timerSoundEnabled: false,
             };
             expect(parseSettings(data, 1)).toEqual({
                 themePreference: "dark",
                 language: "uk",
                 voiceEnabled: false,
+                timerSoundEnabled: false,
             });
         });
 
@@ -26,6 +28,7 @@ describe("parseSettings", () => {
                         themePreference: "light",
                         language: "en",
                         voiceEnabled: true,
+                        timerSoundEnabled: true,
                     },
                     1,
                 ),
@@ -33,6 +36,7 @@ describe("parseSettings", () => {
                 themePreference: "light",
                 language: "en",
                 voiceEnabled: true,
+                timerSoundEnabled: true,
             });
             expect(
                 parseSettings(
@@ -40,6 +44,7 @@ describe("parseSettings", () => {
                         themePreference: "system",
                         language: "system",
                         voiceEnabled: false,
+                        timerSoundEnabled: false,
                     },
                     1,
                 ),
@@ -47,6 +52,7 @@ describe("parseSettings", () => {
                 themePreference: "system",
                 language: "system",
                 voiceEnabled: false,
+                timerSoundEnabled: false,
             });
         });
     });
@@ -103,12 +109,14 @@ describe("parseSettings", () => {
                 themePreference: "invalid-theme",
                 language: "uk",
                 voiceEnabled: false,
+                timerSoundEnabled: false,
             };
             const result = parseSettings(data, 1);
             expect(result).toEqual({
                 themePreference: "system",
                 language: "uk",
                 voiceEnabled: false,
+                timerSoundEnabled: false,
             });
         });
 
@@ -117,12 +125,14 @@ describe("parseSettings", () => {
                 themePreference: "dark",
                 language: "fr",
                 voiceEnabled: true,
+                timerSoundEnabled: true,
             };
             const result = parseSettings(data, 1);
             expect(result).toEqual({
                 themePreference: "dark",
                 language: "system",
                 voiceEnabled: true,
+                timerSoundEnabled: true,
             });
         });
 
@@ -131,12 +141,30 @@ describe("parseSettings", () => {
                 themePreference: "light",
                 language: "en",
                 voiceEnabled: "yes",
+                timerSoundEnabled: true,
             };
             const result = parseSettings(data, 1);
             expect(result).toEqual({
                 themePreference: "light",
                 language: "en",
                 voiceEnabled: true,
+                timerSoundEnabled: true,
+            });
+        });
+
+        it("falls back timerSoundEnabled to true while keeping other valid fields", () => {
+            const data = {
+                themePreference: "light",
+                language: "en",
+                voiceEnabled: true,
+                timerSoundEnabled: "yes",
+            };
+            const result = parseSettings(data, 1);
+            expect(result).toEqual({
+                themePreference: "light",
+                language: "en",
+                voiceEnabled: true,
+                timerSoundEnabled: true,
             });
         });
 
@@ -146,6 +174,7 @@ describe("parseSettings", () => {
                 themePreference: "system",
                 language: "system",
                 voiceEnabled: true,
+                timerSoundEnabled: true,
             });
         });
     });

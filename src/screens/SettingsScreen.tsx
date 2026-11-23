@@ -85,6 +85,23 @@ export const SettingsScreen = observer(function SettingsScreenComponent(
                     {t("settings.voice.description")}
                 </Text>
             </View>
+            <View style={styles.section}>
+                <View style={styles.voiceRow}>
+                    <Text variant="label">
+                        {t("settings.timerSound.label")}
+                    </Text>
+                    <Switch
+                        value={settings.timerSoundEnabled}
+                        onValueChange={(value) =>
+                            settings.setTimerSoundEnabled(value)
+                        }
+                        accessibilityLabel={t("settings.timerSound.label")}
+                    />
+                </View>
+                <Text variant="caption" tone="textMuted">
+                    {t("settings.timerSound.description")}
+                </Text>
+            </View>
             {__DEV__ && (
                 <View style={styles.section}>
                     <Button

@@ -5,6 +5,7 @@ import { reaction, compareStructural } from "mobx";
 // local dependencies
 import type { TimersStore } from "./TimersStore";
 import type { RecipesStore } from "./RecipesStore";
+import type { SettingsStore } from "./SettingsStore";
 import type { TimerNotifier } from "../notifications/types";
 
 export function diffTimerSchedules(
@@ -37,6 +38,7 @@ type Options = {
     timers: TimersStore;
     recipes: RecipesStore;
     notifier: TimerNotifier;
+    settings: SettingsStore;
     t: TFunction;
     now?: () => number;
     onExactAlarmsDenied?: () => void;
@@ -48,6 +50,7 @@ export function startTimerNotificationsSync(options: Options): () => void {
         timers,
         recipes,
         notifier,
+        settings,
         now = Date.now,
         onExactAlarmsDenied,
     } = options;
@@ -133,6 +136,7 @@ export function startTimerNotificationsSync(options: Options): () => void {
                         fireAt: endsAt,
                         title,
                         body,
+                        sound: settings.timerSoundEnabled,
                     });
                 });
             }
@@ -140,5 +144,42 @@ export function startTimerNotificationsSync(options: Options): () => void {
         { equals: compareStructural, fireImmediately: true },
     );
 
-    return dispose;
+    const disposeSound = reaction(
+        () => settings.timerSoundEnabled,
+        (sound) => {
+            const nowMs = now();
+            for (const timer of timers.list) {
+                const { id, endsAt } = timer;
+                if (endsAt === null || endsAt <= nowMs) continue;
+                const kindLabel = t(`timerKinds.${timer.kind}`);
+                const recipe =
+                    timer.step !== undefined
+                        ? recipes.byId.get(timer.step.recipeId)
+                        : undefined;
+                const title =
+                    recipe !== undefined
+                        ? recipe.title
+                        : (timer.label ?? kindLabel);
+                const body = t("notifications.timerDone", {
+                    kind: kindLabel,
+                });
+                const pending = permissionPromise;
+                chain(id, async () => {
+                    if (pending !== null) await pending;
+                    await notifier.schedule({
+                        id,
+                        fireAt: endsAt,
+                        title,
+                        body,
+                        sound,
+                    });
+                });
+            }
+        },
+    );
+
+    return () => {
+        dispose();
+        disposeSound();
+    };
 }

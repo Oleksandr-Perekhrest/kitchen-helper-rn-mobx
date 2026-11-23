@@ -63,6 +63,7 @@ function App() {
         const notifier = createNotifyKitNotifier();
         void notifier.prepare({
             channelName: i18n.t("notifications.channelName"),
+            silentChannelName: i18n.t("notifications.silentChannelName"),
         });
         // The app root never unmounts, so the dispose function is not kept.
         startTimerNotificationsSync({
@@ -70,6 +71,7 @@ function App() {
             notifier,
             timers: s.timers,
             recipes: s.recipes,
+            settings: s.settings,
             onExactAlarmsDenied: () =>
                 showExactAlarmPrompt({ notifier, t: i18n.t }),
         });

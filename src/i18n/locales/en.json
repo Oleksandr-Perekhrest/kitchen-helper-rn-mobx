@@ -214,6 +214,10 @@
     "voice": {
       "label": "Voice assistant",
       "description": "Voice commands in cooking mode: next, back, repeat, timer."
+    },
+    "timerSound": {
+      "label": "Timer sound and vibration",
+      "description": "Play a sound and vibrate when a timer finishes."
     }
   },
   "navigation": {
@@ -247,6 +251,7 @@
   },
   "notifications": {
     "channelName": "Timers",
+    "silentChannelName": "Timers (silent)",
     "timerDone": "{{kind}} — time's up",
     "exactAlarm": {
       "title": "Ring on time",
