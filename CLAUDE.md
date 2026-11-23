@@ -49,11 +49,11 @@ cd ios && bundle exec pod install
 - web-only Storybook 10 with @storybook/react-native-web-vite (`stories/`, addons Docs and a11y, default viewport "Cookalong · 390×844")
 - i18next 26 + react-i18next + react-native-localize — EN and UK locales bundled as JSON resources; `resolveLanguage` resolves `LanguagePreference` → `AppLanguage`; typed keys via `src/i18n/i18next.d.ts` augmentation
 - Expo Modules SDK 58 — used only as a native module provider (no Expo CLI, no `expo start` or `expo run`; Metro and Babel remain the RN defaults); `expo-*` packages are added with the version range listed in `node_modules/expo/bundledNativeModules.json`
+- react-native-notify-kit 10 — maintained Notifee-compatible fork; used only via `src/notifications` (stores must not import it directly)
 
 **Planned — do not add any of these until a task explicitly asks:**
 
 - React Hook Form
-- react-native-notify-kit
 - expo-speech-recognition (Expo used only as a module provider)
 
 Entry point: `index.js` → `App.tsx`. iOS bundle target: `Cookalong` (`ios/Cookalong/`). Android package: `com.operekhrest.cookalong`.
@@ -69,6 +69,7 @@ Entry point: `index.js` → `App.tsx`. iOS bundle target: `Cookalong` (`ios/Cook
 - `src/storage` — `KeyValueStorage` interface, MMKV adapter (`mmkvStorage.ts`), in-memory adapter for tests (`memoryStorage.ts`)
 - `src/i18n` — i18next setup: `index.ts` (init + `getDeviceLanguages`), `resolveLanguage.ts`, `i18next.d.ts` (typed keys), `locales/en.json` and `locales/uk.json`
 - `src/stores` — MobX stores (`SettingsStore`, `RecipesStore`, `TimersStore`, `DraftStore`, `RootStore`), `persist` helper, `StoreProvider` context; `SettingsStore`, `RecipesStore`, `TimersStore`, and `DraftStore` are all persisted to MMKV via `persist`
+- `src/notifications` — `TimerNotifier` interface (`types.ts`) and notify-kit adapter (`notifyKitNotifier.ts`); stores must not import react-native-notify-kit directly
 - `src/dev` — dev-only screens and tools; reachable only when `__DEV__` is true; English literals allowed, no i18n required
 - `stories/` — Storybook stories mirroring `src/`
 - `__tests__/` — tests mirroring `src/`

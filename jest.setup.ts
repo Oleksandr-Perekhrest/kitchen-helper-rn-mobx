@@ -36,6 +36,11 @@ jest.mock("react-native-file-access", () => ({
     },
 }));
 
+// react-native-notify-kit/jest-mock.js uses ESM; Babel must transform it (see transformIgnorePatterns).
+jest.mock("react-native-notify-kit", () =>
+    jest.requireActual("react-native-notify-kit/jest-mock"),
+);
+
 // expo-modules-core has no native module in Jest; mock keep-awake functions
 jest.mock("expo-keep-awake", () => ({
     activateKeepAwakeAsync: jest.fn(() => Promise.resolve()),
