@@ -39,3 +39,5 @@ export type { PhotoFieldProps } from "./PhotoField";
 export { PhotoField } from "./PhotoField";
 export type { IngredientChipProps } from "./IngredientChip";
 export { IngredientChip } from "./IngredientChip";
+export type { StepTimerCardProps } from "./StepTimerCard";
+export { StepTimerCard } from "./StepTimerCard";

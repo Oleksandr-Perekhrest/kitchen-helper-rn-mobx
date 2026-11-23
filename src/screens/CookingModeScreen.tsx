@@ -15,13 +15,27 @@ import {
 
 // local dependencies
 import { useTheme } from "../theme";
+import { useNow } from "../hooks/useNow";
 import { useStores } from "../stores/StoreProvider";
 import { scaleIngredients } from "../domain/scaling";
 import { highlightSegments } from "../domain/highlight";
 import type { RootStackScreenProps } from "../navigation/types";
 import { formatIngredientAmount } from "../i18n/formatIngredientAmount";
-import { Text, Button, EmptyState, IconButton, IngredientChip } from "../ui";
 import { useKeepAwakeWhileFocused } from "../hooks/useKeepAwakeWhileFocused";
+import {
+    isDone,
+    isRunning,
+    getRemainingMs,
+    formatRemaining,
+} from "../domain/timer";
+import {
+    Text,
+    Button,
+    EmptyState,
+    IconButton,
+    StepTimerCard,
+    IngredientChip,
+} from "../ui";
 
 const HORIZONTAL_PAD = 20;
 
@@ -33,10 +47,11 @@ export const CookingModeScreen = observer(function CookingModeScreenComponent({
 }: Props) {
     const { t, i18n } = useTranslation();
     const { colors } = useTheme();
-    const { recipes } = useStores();
+    const { recipes, timers } = useStores();
     const insets = useSafeAreaInsets();
     useKeepAwakeWhileFocused("cooking-mode");
     const { recipeId, servings } = route.params;
+    const now = useNow(timers.hasRunning);
 
     const recipe = recipes.byId.get(recipeId);
     const [stepIndex, setStepIndex] = useState(0);
@@ -82,6 +97,25 @@ export const CookingModeScreen = observer(function CookingModeScreenComponent({
         const ing = scaledIngredients.find((i) => i.id === id);
         return ing !== undefined ? [ing] : [];
     });
+
+    const stepTimer = currentStep.timer;
+    const timer =
+        stepTimer !== undefined ? timers.get(currentStep.id) : undefined;
+    let timerStatus: "idle" | "running" | "paused" | "done" = "idle";
+    let timerTimeText =
+        stepTimer !== undefined
+            ? formatRemaining(stepTimer.minutes * 60_000)
+            : "";
+    if (timer !== undefined) {
+        timerTimeText = formatRemaining(getRemainingMs(timer, now));
+        if (isDone(timer, now)) {
+            timerStatus = "done";
+        } else if (isRunning(timer)) {
+            timerStatus = "running";
+        } else {
+            timerStatus = "paused";
+        }
+    }
 
     const goBack = () => setStepIndex((i) => Math.max(0, i - 1));
     const goNext = () => {
@@ -170,6 +204,31 @@ export const CookingModeScreen = observer(function CookingModeScreenComponent({
                         ))}
                     </View>
                 )}
+                {stepTimer !== undefined && (
+                    <View style={styles.timerCardWrapper}>
+                        <StepTimerCard
+                            kind={stepTimer.kind}
+                            kindLabel={t(`timerKinds.${stepTimer.kind}`)}
+                            timeText={timerTimeText}
+                            status={timerStatus}
+                            onStart={() =>
+                                timers.start({
+                                    recipeId,
+                                    stepId: currentStep.id,
+                                    kind: stepTimer.kind,
+                                    minutes: stepTimer.minutes,
+                                })
+                            }
+                            onPause={() => timers.pause(currentStep.id)}
+                            onResume={() => timers.resume(currentStep.id)}
+                            onRestart={() => timers.restart(currentStep.id)}
+                            onStop={() => timers.remove(currentStep.id)}
+                            onAdjust={(delta) =>
+                                timers.adjust(currentStep.id, delta)
+                            }
+                        />
+                    </View>
+                )}
             </ScrollView>
 
             <View
@@ -247,6 +306,9 @@ const styles = StyleSheet.create({
         flexWrap: "wrap",
         gap: 8,
         marginTop: 16,
+    },
+    timerCardWrapper: {
+        marginTop: 20,
     },
     backButton: {
         flex: 1,
