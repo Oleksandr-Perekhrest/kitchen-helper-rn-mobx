@@ -68,7 +68,7 @@ Entry point: `index.js` → `App.tsx`. iOS bundle target: `Cookalong` (`ios/Cook
 - `src/domain` — data model and zod schemas (no React, no MobX); `recipe.ts` exports `RecipeSchema`, `UNITS`, `TAGS`, and inferred types
 - `src/storage` — `KeyValueStorage` interface, MMKV adapter (`mmkvStorage.ts`), in-memory adapter for tests (`memoryStorage.ts`)
 - `src/i18n` — i18next setup: `index.ts` (init + `getDeviceLanguages`), `resolveLanguage.ts`, `i18next.d.ts` (typed keys), `locales/en.json` and `locales/uk.json`
-- `src/stores` — MobX stores (`SettingsStore`, `RecipesStore`, `RootStore`), `persist` helper, `StoreProvider` context
+- `src/stores` — MobX stores (`SettingsStore`, `RecipesStore`, `TimersStore`, `DraftStore`, `RootStore`), `persist` helper, `StoreProvider` context; `SettingsStore`, `RecipesStore`, `TimersStore`, and `DraftStore` are all persisted to MMKV via `persist`
 - `src/dev` — dev-only screens and tools; reachable only when `__DEV__` is true; English literals allowed, no i18n required
 - `stories/` — Storybook stories mirroring `src/`
 - `__tests__/` — tests mirroring `src/`

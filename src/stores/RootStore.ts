@@ -3,7 +3,6 @@ import { toJS } from "mobx";
 
 // local dependencies
 import { persist } from "./persist";
-import { TimersStore } from "./TimersStore";
 import { RecipeSchema } from "../domain/recipe";
 import { getDemoRecipes } from "../data/demoRecipes";
 import type { KeyValueStorage } from "../storage/types";
@@ -20,6 +19,12 @@ import {
     DRAFT_VERSION,
     DRAFT_STORAGE_KEY,
 } from "./DraftStore";
+import {
+    TimersStore,
+    parseTimers,
+    TIMERS_VERSION,
+    TIMERS_STORAGE_KEY,
+} from "./TimersStore";
 import {
     SettingsStore,
     parseSettings,
@@ -93,6 +98,15 @@ export function createRootStore(
         parse: parseDraft,
     });
 
+    const disposeTimers = persist({
+        storage,
+        key: TIMERS_STORAGE_KEY,
+        version: TIMERS_VERSION,
+        snapshot: () => toJS(timers.list),
+        apply: (data) => timers.replaceAll(data),
+        parse: parseTimers,
+    });
+
     if (isFirstLaunch) {
         const now = (options.now ?? (() => new Date()))();
         const language = resolveLanguage(
@@ -126,6 +140,7 @@ export function createRootStore(
             disposeSettings();
             disposeRecipes();
             disposeDraft();
+            disposeTimers();
         },
     };
 }

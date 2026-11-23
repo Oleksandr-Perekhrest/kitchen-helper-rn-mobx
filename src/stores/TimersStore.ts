@@ -5,6 +5,7 @@ import { makeAutoObservable } from "mobx";
 import type { TimerKind } from "../theme";
 import { createId } from "../domain/recipeForm";
 import type { TimerState } from "../domain/timer";
+import { TimerStateSchema } from "../domain/timer";
 import {
     pauseTimer,
     createTimer,
@@ -12,6 +13,37 @@ import {
     adjustTimer,
     restartTimer,
 } from "../domain/timer";
+
+export const TIMERS_STORAGE_KEY = "timers";
+export const TIMERS_VERSION = 1;
+
+export function parseTimers(
+    data: unknown,
+    version: number,
+): TimerState[] | null {
+    if (version !== TIMERS_VERSION) return null;
+    if (!Array.isArray(data)) return null;
+
+    const valid: TimerState[] = [];
+    let dropped = 0;
+
+    for (const item of data) {
+        const result = TimerStateSchema.safeParse(item);
+        if (result.success) {
+            valid.push(result.data);
+        } else {
+            dropped += 1;
+        }
+    }
+
+    if (__DEV__ && dropped > 0) {
+        console.warn(
+            `[TimersStore] dropped ${dropped} invalid timer(s) on load`,
+        );
+    }
+
+    return valid;
+}
 
 type StartInput = {
     kind: TimerKind;
@@ -48,6 +80,10 @@ export class TimersStore {
         const id = createId();
         this.timers.set(id, createTimer(input, this.clock(), id));
         return id;
+    }
+
+    replaceAll(timers: TimerState[]) {
+        this.timers = new Map(timers.map((t) => [t.id, t]));
     }
 
     pause(id: string) {
