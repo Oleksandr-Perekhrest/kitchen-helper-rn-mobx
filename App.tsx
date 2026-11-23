@@ -16,6 +16,8 @@ import { useStores, StoreProvider } from "./src/stores/StoreProvider";
 import { applyNativeColorScheme } from "./src/theme/nativeColorScheme";
 import { useNavigationTheme } from "./src/navigation/useNavigationTheme";
 import { createRootStore, referencedPhotoFiles } from "./src/stores/RootStore";
+import { createNotifyKitNotifier } from "./src/notifications/notifyKitNotifier";
+import { startTimerNotificationsSync } from "./src/stores/timerNotificationsSync";
 
 function AppShell() {
     const { scheme } = useTheme();
@@ -57,6 +59,17 @@ function App() {
         const deviceLanguages = getDeviceLanguages();
         const s = createRootStore(createMmkvStorage(), { deviceLanguages });
         initI18n(resolveLanguage(s.settings.language, deviceLanguages));
+        const notifier = createNotifyKitNotifier();
+        void notifier.prepare({
+            channelName: i18n.t("notifications.channelName"),
+        });
+        // The app root never unmounts, so the dispose function is not kept.
+        startTimerNotificationsSync({
+            t: i18n.t,
+            notifier,
+            timers: s.timers,
+            recipes: s.recipes,
+        });
         void deleteUnreferencedPhotos(referencedPhotoFiles(s));
         return s;
     });

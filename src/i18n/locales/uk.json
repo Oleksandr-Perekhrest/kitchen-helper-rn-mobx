@@ -261,6 +261,10 @@
     "bake": "Пекти",
     "other": "Інше"
   },
+  "notifications": {
+    "channelName": "Таймери",
+    "timerDone": "{{kind}} — час вийшов"
+  },
   "tags": {
     "breakfast": "Сніданок",
     "soup": "Супи",

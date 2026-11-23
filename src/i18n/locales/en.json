@@ -245,6 +245,10 @@
     "bake": "Bake",
     "other": "Other"
   },
+  "notifications": {
+    "channelName": "Timers",
+    "timerDone": "{{kind}} — time's up"
+  },
   "tags": {
     "breakfast": "Breakfast",
     "soup": "Soups",
