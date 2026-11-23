@@ -23,13 +23,13 @@ import {
 
 // local dependencies
 import { useTheme } from "../theme";
-import { tUnit } from "../i18n/tUnit";
 import { photoFileUri } from "../storage/photos";
 import { useStores } from "../stores/StoreProvider";
+import { scaleIngredients } from "../domain/scaling";
 import { formatDuration } from "../i18n/formatDuration";
 import { highlightSegments } from "../domain/highlight";
 import type { RootStackScreenProps } from "../navigation/types";
-import { formatQuantity, scaleIngredients } from "../domain/scaling";
+import { formatIngredientAmount } from "../i18n/formatIngredientAmount";
 import {
     Text,
     Icon,
@@ -231,15 +231,11 @@ export const RecipeScreen = observer(function RecipeScreenComponent({
                     </View>
 
                     {scaledIngredients.map((ingredient, index) => {
-                        let amountText: string;
-                        if (ingredient.unit === "toTaste") {
-                            amountText = t("units.toTaste");
-                        } else if (ingredient.amount !== undefined) {
-                            const { amount, unit } = ingredient;
-                            amountText = `${formatQuantity(amount, i18n.language)} ${tUnit(t, unit, amount)}`;
-                        } else {
-                            amountText = "";
-                        }
+                        const amountText = formatIngredientAmount(
+                            t,
+                            i18n.language,
+                            ingredient,
+                        );
                         return (
                             <View key={ingredient.id}>
                                 <View style={styles.ingredientRow}>
@@ -403,6 +399,7 @@ export const RecipeScreen = observer(function RecipeScreenComponent({
                     onPress={() =>
                         navigation.navigate("CookingMode", {
                             recipeId: recipe.id,
+                            servings,
                         })
                     }
                     style={styles.cookButton}

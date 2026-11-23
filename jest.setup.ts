@@ -36,5 +36,12 @@ jest.mock("react-native-file-access", () => ({
     },
 }));
 
+// expo-modules-core has no native module in Jest; mock keep-awake functions
+jest.mock("expo-keep-awake", () => ({
+    activateKeepAwakeAsync: jest.fn(() => Promise.resolve()),
+    deactivateKeepAwake: jest.fn(() => Promise.resolve()),
+    useKeepAwake: jest.fn(),
+}));
+
 // Disable native screen components so NavigationContainer renders in Jest
 enableScreens(false);

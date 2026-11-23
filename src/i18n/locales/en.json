@@ -177,7 +177,24 @@
     }
   },
   "cookingMode": {
-    "title": "Cooking"
+    "title": "Cooking",
+    "close": "Finish cooking",
+    "progress": "Step {{current}} of {{total}}",
+    "back": "Back",
+    "next": "Next",
+    "done": "Done",
+    "timer": {
+      "start": "Start",
+      "pause": "Pause",
+      "resume": "Resume",
+      "restart": "Restart",
+      "running": "running",
+      "paused": "paused",
+      "done": "done",
+      "minusMinute": "Minus one minute",
+      "plusMinute": "Plus one minute",
+      "stop": "Stop and reset"
+    }
   },
   "timers": {
     "title": "Timers"

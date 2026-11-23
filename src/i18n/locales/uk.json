@@ -185,7 +185,24 @@
     }
   },
   "cookingMode": {
-    "title": "Готування"
+    "title": "Готування",
+    "close": "Завершити готування",
+    "progress": "Крок {{current}} з {{total}}",
+    "back": "Назад",
+    "next": "Далі",
+    "done": "Готово",
+    "timer": {
+      "start": "Старт",
+      "pause": "Пауза",
+      "resume": "Продовжити",
+      "restart": "Запустити заново",
+      "running": "іде",
+      "paused": "пауза",
+      "done": "готово",
+      "minusMinute": "Мінус хвилина",
+      "plusMinute": "Плюс хвилина",
+      "stop": "Зупинити й скинути"
+    }
   },
   "timers": {
     "title": "Таймери"
