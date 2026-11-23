@@ -39,10 +39,18 @@ type Options = {
     notifier: TimerNotifier;
     t: TFunction;
     now?: () => number;
+    onExactAlarmsDenied?: () => void;
 };
 
 export function startTimerNotificationsSync(options: Options): () => void {
-    const { t, timers, recipes, notifier, now = Date.now } = options;
+    const {
+        t,
+        timers,
+        recipes,
+        notifier,
+        now = Date.now,
+        onExactAlarmsDenied,
+    } = options;
 
     let prev: ReadonlyMap<string, number | null> = new Map();
     let permissionPromise: Promise<unknown> | null = null;
@@ -86,6 +94,13 @@ export function startTimerNotificationsSync(options: Options): () => void {
             if (upcoming.length > 0 && permissionPromise === null) {
                 permissionPromise = notifier
                     .requestPermission()
+                    .then(async () => {
+                        const canSchedule =
+                            await notifier.canScheduleExactAlarms();
+                        if (!canSchedule) {
+                            onExactAlarmsDenied?.();
+                        }
+                    })
                     .catch(() => undefined);
             }
 

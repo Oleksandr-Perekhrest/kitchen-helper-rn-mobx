@@ -247,7 +247,13 @@
   },
   "notifications": {
     "channelName": "Timers",
-    "timerDone": "{{kind}} — time's up"
+    "timerDone": "{{kind}} — time's up",
+    "exactAlarm": {
+      "title": "Ring on time",
+      "message": "To make timers ring on time while the phone is locked, allow exact alarms for Cookalong.",
+      "later": "Later",
+      "open": "Open Settings"
+    }
   },
   "tags": {
     "breakfast": "Breakfast",

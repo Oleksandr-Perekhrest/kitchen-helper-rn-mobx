@@ -15,6 +15,7 @@ import { i18n, initI18n, getDeviceLanguages } from "./src/i18n";
 import { useStores, StoreProvider } from "./src/stores/StoreProvider";
 import { applyNativeColorScheme } from "./src/theme/nativeColorScheme";
 import { useNavigationTheme } from "./src/navigation/useNavigationTheme";
+import { showExactAlarmPrompt } from "./src/notifications/exactAlarmPrompt";
 import { createRootStore, referencedPhotoFiles } from "./src/stores/RootStore";
 import { createNotifyKitNotifier } from "./src/notifications/notifyKitNotifier";
 import { startTimerNotificationsSync } from "./src/stores/timerNotificationsSync";
@@ -69,6 +70,8 @@ function App() {
             notifier,
             timers: s.timers,
             recipes: s.recipes,
+            onExactAlarmsDenied: () =>
+                showExactAlarmPrompt({ notifier, t: i18n.t }),
         });
         void deleteUnreferencedPhotos(referencedPhotoFiles(s));
         return s;

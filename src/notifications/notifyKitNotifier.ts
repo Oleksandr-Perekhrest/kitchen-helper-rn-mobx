@@ -4,6 +4,7 @@ import notifee, {
     TriggerType,
     AndroidImportance,
     AuthorizationStatus,
+    AndroidNotificationSetting,
 } from "react-native-notify-kit";
 
 // local dependencies
@@ -38,6 +39,33 @@ export function createNotifyKitNotifier(): TimerNotifier {
             } catch (e) {
                 console.warn("[notifications] requestPermission failed", e);
                 return false;
+            }
+        },
+
+        async canScheduleExactAlarms() {
+            try {
+                const settings = await notifee.getNotificationSettings();
+                return (
+                    settings.android.alarm !==
+                    AndroidNotificationSetting.DISABLED
+                );
+            } catch (e) {
+                console.warn(
+                    "[notifications] canScheduleExactAlarms failed",
+                    e,
+                );
+                return true;
+            }
+        },
+
+        async openExactAlarmSettings() {
+            try {
+                await notifee.openAlarmPermissionSettings();
+            } catch (e) {
+                console.warn(
+                    "[notifications] openExactAlarmSettings failed",
+                    e,
+                );
             }
         },
 
