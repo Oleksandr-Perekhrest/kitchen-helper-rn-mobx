@@ -2006,6 +2006,53 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
+  - RNNotifee (10.10.0):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-bridging
+    - React-Core
+    - React-Core-prebuilt
+    - React-cxxstableapi
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/core
+    - ReactNativeDependencies
+    - RNNotifee/NotifeeCore (= 10.10.0)
+    - Yoga
+  - RNNotifee/NotifeeCore (10.10.0):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-bridging
+    - React-Core
+    - React-Core-prebuilt
+    - React-cxxstableapi
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/core
+    - ReactNativeDependencies
+    - Yoga
   - RNScreens (4.30.1):
     - hermes-engine
     - RCTRequired
@@ -2211,6 +2258,7 @@ DEPENDENCIES:
   - ReactNativeDependencies (from `../node_modules/react-native/third-party-podspecs/ReactNativeDependencies.podspec`)
   - ReactNativeFileAccess (from `../node_modules/react-native-file-access`)
   - RNLocalize (from `../node_modules/react-native-localize`)
+  - RNNotifee (from `../node_modules/react-native-notify-kit`)
   - RNScreens (from `../node_modules/react-native-screens`)
   - RNSVG (from `../node_modules/react-native-svg`)
   - SocketRocket (from `build/rndeps-facades/SocketRocket`)
@@ -2425,6 +2473,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-file-access"
   RNLocalize:
     :path: "../node_modules/react-native-localize"
+  RNNotifee:
+    :path: "../node_modules/react-native-notify-kit"
   RNScreens:
     :path: "../node_modules/react-native-screens"
   RNSVG:
@@ -2537,6 +2587,7 @@ SPEC CHECKSUMS:
   ReactNativeDependencies: a5164c3ebbe90d992022b5d9cbabbf770a6d7d05
   ReactNativeFileAccess: 4837e59748dfca5510350bf2bedcb6c93c1c3d08
   RNLocalize: 5189c34897ff63b8014cb0f706ea745554d2f9d6
+  RNNotifee: b69b7ce669820e9b2c7afc61eb270787a2e39baf
   RNScreens: 67fd45f1f30aa2849ab847156c133bd592a26533
   RNSVG: ff258e92ebf710458755537fb151a47973dfbad9
   SocketRocket: d57b1af80c029e12a75cd9b218287c67381e4593
