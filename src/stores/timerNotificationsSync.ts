@@ -38,10 +38,11 @@ type Options = {
     recipes: RecipesStore;
     notifier: TimerNotifier;
     t: TFunction;
+    now?: () => number;
 };
 
 export function startTimerNotificationsSync(options: Options): () => void {
-    const { t, timers, recipes, notifier } = options;
+    const { t, timers, recipes, notifier, now = Date.now } = options;
 
     let prev: ReadonlyMap<string, number | null> = new Map();
     let permissionPromise: Promise<unknown> | null = null;
@@ -72,7 +73,17 @@ export function startTimerNotificationsSync(options: Options): () => void {
             const { schedule, cancel } = diffTimerSchedules(prev, next);
             prev = next;
 
-            if (schedule.length > 0 && permissionPromise === null) {
+            // Finished timers are kept after restart by design; skip them so
+            // restoring state doesn't prompt for permission or schedule past fires.
+            const nowMs = now();
+            const upcoming = schedule.filter((id) => {
+                const endsAt = timers.get(id)?.endsAt;
+                return (
+                    endsAt !== undefined && endsAt !== null && endsAt > nowMs
+                );
+            });
+
+            if (upcoming.length > 0 && permissionPromise === null) {
                 permissionPromise = notifier
                     .requestPermission()
                     .catch(() => undefined);
@@ -82,7 +93,7 @@ export function startTimerNotificationsSync(options: Options): () => void {
                 chain(id, () => notifier.cancel(id));
             }
 
-            for (const id of schedule) {
+            for (const id of upcoming) {
                 const timer = timers.get(id);
                 if (timer === undefined) continue;
                 const endsAt = timer.endsAt;
