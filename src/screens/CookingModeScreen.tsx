@@ -100,7 +100,7 @@ export const CookingModeScreen = observer(function CookingModeScreenComponent({
 
     const stepTimer = currentStep.timer;
     const timer =
-        stepTimer !== undefined ? timers.get(currentStep.id) : undefined;
+        stepTimer !== undefined ? timers.findByStep(currentStep.id) : undefined;
     let timerStatus: "idle" | "running" | "paused" | "done" = "idle";
     let timerTimeText =
         stepTimer !== undefined
@@ -213,19 +213,33 @@ export const CookingModeScreen = observer(function CookingModeScreenComponent({
                             status={timerStatus}
                             onStart={() =>
                                 timers.start({
-                                    recipeId,
-                                    stepId: currentStep.id,
+                                    step: {
+                                        recipeId,
+                                        stepId: currentStep.id,
+                                    },
                                     kind: stepTimer.kind,
                                     minutes: stepTimer.minutes,
                                 })
                             }
-                            onPause={() => timers.pause(currentStep.id)}
-                            onResume={() => timers.resume(currentStep.id)}
-                            onRestart={() => timers.restart(currentStep.id)}
-                            onStop={() => timers.remove(currentStep.id)}
-                            onAdjust={(delta) =>
-                                timers.adjust(currentStep.id, delta)
-                            }
+                            onPause={() => {
+                                if (timer !== undefined) timers.pause(timer.id);
+                            }}
+                            onResume={() => {
+                                if (timer !== undefined)
+                                    timers.resume(timer.id);
+                            }}
+                            onRestart={() => {
+                                if (timer !== undefined)
+                                    timers.restart(timer.id);
+                            }}
+                            onStop={() => {
+                                if (timer !== undefined)
+                                    timers.remove(timer.id);
+                            }}
+                            onAdjust={(delta) => {
+                                if (timer !== undefined)
+                                    timers.adjust(timer.id, delta);
+                            }}
                         />
                     </View>
                 )}

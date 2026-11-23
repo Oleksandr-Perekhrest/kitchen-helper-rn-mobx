@@ -4,27 +4,35 @@ import type { TimerKind } from "../theme";
 export const MAX_TIMER_MS = 1440 * 60_000;
 
 export type TimerState = {
-    recipeId: string;
-    stepId: string;
+    id: string;
     kind: TimerKind;
+    label?: string;
+    step?: { recipeId: string; stepId: string };
+    createdAt: number;
     durationMs: number;
     endsAt: number | null;
     remainingMs: number;
 };
 
 type CreateTimerInput = {
-    recipeId: string;
-    stepId: string;
     kind: TimerKind;
     minutes: number;
+    label?: string;
+    step?: { recipeId: string; stepId: string };
 };
 
-export function createTimer(input: CreateTimerInput, now: number): TimerState {
+export function createTimer(
+    input: CreateTimerInput,
+    now: number,
+    id: string,
+): TimerState {
     const durationMs = input.minutes * 60_000;
     return {
-        recipeId: input.recipeId,
-        stepId: input.stepId,
+        id,
         kind: input.kind,
+        label: input.label,
+        step: input.step,
+        createdAt: now,
         durationMs,
         endsAt: now + durationMs,
         remainingMs: durationMs,

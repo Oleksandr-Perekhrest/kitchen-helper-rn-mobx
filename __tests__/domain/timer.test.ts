@@ -22,8 +22,9 @@ const MINUTES = 20;
 const DURATION_MS = MINUTES * 60_000;
 
 const RUNNING = createTimer(
-    { recipeId: "r1", stepId: "s1", kind: "boil", minutes: MINUTES },
+    { step: { recipeId: "r1", stepId: "s1" }, kind: "boil", minutes: MINUTES },
     NOW,
+    "timer-1",
 );
 
 const PAUSED = {
@@ -49,9 +50,10 @@ describe("createTimer", () => {
         expect(RUNNING.remainingMs).toBe(DURATION_MS);
     });
 
-    it("copies recipeId, stepId, kind", () => {
-        expect(RUNNING.recipeId).toBe("r1");
-        expect(RUNNING.stepId).toBe("s1");
+    it("copies id, step, kind", () => {
+        expect(RUNNING.id).toBe("timer-1");
+        expect(RUNNING.step?.recipeId).toBe("r1");
+        expect(RUNNING.step?.stepId).toBe("s1");
         expect(RUNNING.kind).toBe("boil");
     });
 });

@@ -3,6 +3,7 @@ import { makeAutoObservable } from "mobx";
 
 // local dependencies
 import type { TimerKind } from "../theme";
+import { createId } from "../domain/recipeForm";
 import type { TimerState } from "../domain/timer";
 import {
     pauseTimer,
@@ -13,10 +14,10 @@ import {
 } from "../domain/timer";
 
 type StartInput = {
-    recipeId: string;
-    stepId: string;
     kind: TimerKind;
     minutes: number;
+    label?: string;
+    step?: { recipeId: string; stepId: string };
 };
 
 export class TimersStore {
@@ -28,41 +29,59 @@ export class TimersStore {
         makeAutoObservable<TimersStore, "clock">(this, { clock: false });
     }
 
-    get(stepId: string): TimerState | undefined {
-        return this.timers.get(stepId);
+    get(id: string): TimerState | undefined {
+        return this.timers.get(id);
     }
 
-    start(input: StartInput) {
-        if (this.timers.has(input.stepId)) return;
-        this.timers.set(input.stepId, createTimer(input, this.clock()));
+    findByStep(stepId: string): TimerState | undefined {
+        for (const timer of this.timers.values()) {
+            if (timer.step?.stepId === stepId) return timer;
+        }
+        return undefined;
     }
 
-    pause(stepId: string) {
-        const timer = this.timers.get(stepId);
+    start(input: StartInput): string {
+        if (input.step !== undefined) {
+            const existing = this.findByStep(input.step.stepId);
+            if (existing !== undefined) return existing.id;
+        }
+        const id = createId();
+        this.timers.set(id, createTimer(input, this.clock(), id));
+        return id;
+    }
+
+    pause(id: string) {
+        const timer = this.timers.get(id);
         if (timer === undefined) return;
-        this.timers.set(stepId, pauseTimer(timer, this.clock()));
+        this.timers.set(id, pauseTimer(timer, this.clock()));
     }
 
-    resume(stepId: string) {
-        const timer = this.timers.get(stepId);
+    resume(id: string) {
+        const timer = this.timers.get(id);
         if (timer === undefined) return;
-        this.timers.set(stepId, resumeTimer(timer, this.clock()));
+        this.timers.set(id, resumeTimer(timer, this.clock()));
     }
 
-    adjust(stepId: string, deltaMinutes: number) {
-        const timer = this.timers.get(stepId);
+    adjust(id: string, deltaMinutes: number) {
+        const timer = this.timers.get(id);
         if (timer === undefined) return;
-        this.timers.set(stepId, adjustTimer(timer, deltaMinutes, this.clock()));
+        this.timers.set(id, adjustTimer(timer, deltaMinutes, this.clock()));
     }
 
-    restart(stepId: string) {
-        const timer = this.timers.get(stepId);
+    restart(id: string) {
+        const timer = this.timers.get(id);
         if (timer === undefined) return;
-        this.timers.set(stepId, restartTimer(timer, this.clock()));
+        this.timers.set(id, restartTimer(timer, this.clock()));
     }
 
-    remove(stepId: string) {
-        this.timers.delete(stepId);
+    remove(id: string) {
+        this.timers.delete(id);
+    }
+
+    get list(): TimerState[] {
+        return [...this.timers.values()].sort(
+            (a, b) => a.createdAt - b.createdAt,
+        );
     }
 
     get hasRunning(): boolean {
