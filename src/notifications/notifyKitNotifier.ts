@@ -1,4 +1,5 @@
 // outsource dependencies
+import { Platform } from "react-native";
 import notifee, {
     AlarmType,
     TriggerType,
@@ -9,11 +10,17 @@ import notifee, {
 
 // local dependencies
 import type { TimerNotifier } from "./types";
-import { TIMER_CHANNEL_ID, TIMER_SILENT_CHANNEL_ID } from "./types";
+import {
+    TIMER_GROUP_ID,
+    TIMER_CHANNEL_ID,
+    TIMER_SUMMARY_ID,
+    TIMER_SILENT_CHANNEL_ID,
+    TIMER_ONGOING_CHANNEL_ID,
+} from "./types";
 
 export function createNotifyKitNotifier(): TimerNotifier {
     return {
-        async prepare({ channelName, silentChannelName }) {
+        async prepare({ channelName, silentChannelName, ongoingChannelName }) {
             try {
                 await notifee.createChannel({
                     id: TIMER_CHANNEL_ID,
@@ -26,6 +33,12 @@ export function createNotifyKitNotifier(): TimerNotifier {
                     id: TIMER_SILENT_CHANNEL_ID,
                     name: silentChannelName,
                     importance: AndroidImportance.HIGH,
+                    vibration: false,
+                });
+                await notifee.createChannel({
+                    id: TIMER_ONGOING_CHANNEL_ID,
+                    name: ongoingChannelName,
+                    importance: AndroidImportance.LOW,
                     vibration: false,
                 });
             } catch (e) {
@@ -116,6 +129,64 @@ export function createNotifyKitNotifier(): TimerNotifier {
                 await notifee.cancelNotification(id);
             } catch (e) {
                 console.warn("[notifications] cancel failed", e);
+            }
+        },
+
+        async showOngoing({ id, title, body, endsAt }) {
+            if (Platform.OS !== "android") return;
+            try {
+                await notifee.displayNotification({
+                    id,
+                    title,
+                    body,
+                    android: {
+                        channelId: TIMER_ONGOING_CHANNEL_ID,
+                        ongoing: true,
+                        autoCancel: false,
+                        onlyAlertOnce: true,
+                        groupId: TIMER_GROUP_ID,
+                        pressAction: { id: "default" },
+                        ...(typeof endsAt === "number"
+                            ? {
+                                  showChronometer: true,
+                                  chronometerDirection: "down",
+                                  timestamp: endsAt,
+                              }
+                            : {}),
+                    },
+                });
+            } catch (e) {
+                console.warn("[notifications] showOngoing failed", e);
+            }
+        },
+
+        async showSummary({ title }) {
+            if (Platform.OS !== "android") return;
+            try {
+                await notifee.displayNotification({
+                    id: TIMER_SUMMARY_ID,
+                    title,
+                    android: {
+                        channelId: TIMER_ONGOING_CHANNEL_ID,
+                        groupId: TIMER_GROUP_ID,
+                        groupSummary: true,
+                        ongoing: true,
+                        autoCancel: false,
+                        onlyAlertOnce: true,
+                        pressAction: { id: "default" },
+                    },
+                });
+            } catch (e) {
+                console.warn("[notifications] showSummary failed", e);
+            }
+        },
+
+        async cancelSummary() {
+            if (Platform.OS !== "android") return;
+            try {
+                await notifee.cancelNotification(TIMER_SUMMARY_ID);
+            } catch (e) {
+                console.warn("[notifications] cancelSummary failed", e);
             }
         },
     };

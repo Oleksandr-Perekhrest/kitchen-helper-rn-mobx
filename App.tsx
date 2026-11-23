@@ -64,6 +64,7 @@ function App() {
         void notifier.prepare({
             channelName: i18n.t("notifications.channelName"),
             silentChannelName: i18n.t("notifications.silentChannelName"),
+            ongoingChannelName: i18n.t("notifications.ongoingChannelName"),
         });
         // The app root never unmounts, so the dispose function is not kept.
         startTimerNotificationsSync({

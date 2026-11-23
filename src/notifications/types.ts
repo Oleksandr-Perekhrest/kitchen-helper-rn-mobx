@@ -1,10 +1,14 @@
 export const TIMER_CHANNEL_ID = "timers";
 export const TIMER_SILENT_CHANNEL_ID = "timers-silent";
+export const TIMER_ONGOING_CHANNEL_ID = "timers-ongoing";
+export const TIMER_GROUP_ID = "active-timers";
+export const TIMER_SUMMARY_ID = "timers-summary";
 
 export interface TimerNotifier {
     prepare(options: {
         channelName: string;
         silentChannelName: string;
+        ongoingChannelName: string;
     }): Promise<void>;
     requestPermission(): Promise<boolean>;
     canScheduleExactAlarms(): Promise<boolean>;
@@ -17,4 +21,12 @@ export interface TimerNotifier {
         sound: boolean;
     }): Promise<void>;
     cancel(id: string): Promise<void>;
+    showOngoing(input: {
+        id: string;
+        title: string;
+        body: string;
+        endsAt: number | null;
+    }): Promise<void>;
+    showSummary(input: { title: string }): Promise<void>;
+    cancelSummary(): Promise<void>;
 }

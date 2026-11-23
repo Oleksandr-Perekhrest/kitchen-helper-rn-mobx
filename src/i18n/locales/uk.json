@@ -268,7 +268,13 @@
   "notifications": {
     "channelName": "Таймери",
     "silentChannelName": "Таймери (без звуку)",
+    "ongoingChannelName": "Активні таймери",
     "timerDone": "{{kind}} — час вийшов",
+    "paused": "На паузі · {{time}}",
+    "activeCount_one": "{{count}} таймер",
+    "activeCount_few": "{{count}} таймери",
+    "activeCount_many": "{{count}} таймерів",
+    "activeCount_other": "{{count}} таймера",
     "exactAlarm": {
       "title": "Сигнал вчасно",
       "message": "Щоб таймер спрацював вчасно, коли телефон заблоковано, дозволь точні будильники для Cookalong.",
