@@ -245,9 +245,10 @@ const styles = StyleSheet.create({
         fontWeight: "700",
     },
     timeText: {
-        fontFamily: "Manrope",
         fontSize: 28,
+        lineHeight: 34,
         fontWeight: "800",
+        fontFamily: "Manrope",
         fontVariant: ["tabular-nums"],
     },
     bottomRow: {
