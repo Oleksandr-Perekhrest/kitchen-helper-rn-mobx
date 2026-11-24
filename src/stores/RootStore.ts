@@ -4,6 +4,7 @@ import { toJS } from "mobx";
 // local dependencies
 import { persist } from "./persist";
 import { RecipeSchema } from "../domain/recipe";
+import { SnackbarStore } from "./SnackbarStore";
 import { getDemoRecipes } from "../data/demoRecipes";
 import type { KeyValueStorage } from "../storage/types";
 import { RECIPE_SCHEMA_VERSION } from "../domain/recipe";
@@ -37,6 +38,7 @@ export type RootStore = {
     recipes: RecipesStore;
     draft: DraftStore;
     timers: TimersStore;
+    snackbar: SnackbarStore;
     dispose: () => void;
 };
 
@@ -53,6 +55,7 @@ export function createRootStore(
     const recipes = new RecipesStore();
     const draft = new DraftStore();
     const timers = new TimersStore();
+    const snackbar = new SnackbarStore();
 
     // Key absent means the app has never written recipe data (true first launch).
     // Once persist() writes the key (even as an empty array after user deletes all),
@@ -138,11 +141,13 @@ export function createRootStore(
         recipes,
         draft,
         timers,
+        snackbar,
         dispose: () => {
             disposeSettings();
             disposeRecipes();
             disposeDraft();
             disposeTimers();
+            snackbar.dispose();
         },
     };
 }

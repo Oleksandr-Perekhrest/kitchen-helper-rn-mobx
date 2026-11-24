@@ -24,6 +24,7 @@ import { TimerPillsRow } from "./cookingMode/TimerPillsRow";
 import type { RootStackScreenProps } from "../navigation/types";
 import { resolveOpenTarget } from "../notifications/openTarget";
 import { formatIngredientAmount } from "../i18n/formatIngredientAmount";
+import { useSnackbarBottomOffset } from "../hooks/useSnackbarBottomOffset";
 import { useKeepAwakeWhileFocused } from "../hooks/useKeepAwakeWhileFocused";
 import {
     isDone,
@@ -63,6 +64,8 @@ export const CookingModeScreen = observer(function CookingModeScreenComponent({
         return idx >= 0 ? idx : 0;
     });
     const [pillsHeight, setPillsHeight] = useState(0);
+    const [bottomBarHeight, setBottomBarHeight] = useState(0);
+    useSnackbarBottomOffset(bottomBarHeight + 12);
     const scrollRef = useRef<ComponentRef<typeof ScrollView>>(null);
     useEffect(() => {
         scrollRef.current?.scrollTo({ y: 0, animated: false });
@@ -304,6 +307,9 @@ export const CookingModeScreen = observer(function CookingModeScreenComponent({
             </View>
 
             <View
+                onLayout={(e: LayoutChangeEvent) =>
+                    setBottomBarHeight(e.nativeEvent.layout.height)
+                }
                 style={[
                     styles.bottomBar,
                     { paddingBottom: insets.bottom + 28 },

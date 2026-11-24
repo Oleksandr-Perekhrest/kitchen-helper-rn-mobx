@@ -1,13 +1,14 @@
 // outsource dependencies
-import { StatusBar } from "react-native";
 import { observer } from "mobx-react-lite";
 import { useState, useEffect } from "react";
+import { View, StatusBar, StyleSheet } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 // local dependencies
 import { useTheme, ThemeProvider } from "./src/theme";
 import { resolveLanguage } from "./src/i18n/resolveLanguage";
+import { SnackbarHost } from "./src/components/SnackbarHost";
 import { createMmkvStorage } from "./src/storage/mmkvStorage";
 import { RootNavigator } from "./src/navigation/RootNavigator";
 import { deleteUnreferencedPhotos } from "./src/storage/photos";
@@ -31,7 +32,7 @@ function AppShell() {
     const { scheme } = useTheme();
     const navTheme = useNavigationTheme();
     return (
-        <>
+        <View style={styles.shell}>
             {/* Matters on Android; on iOS the status bar follows the native color scheme. */}
             <StatusBar
                 barStyle={scheme === "dark" ? "light-content" : "dark-content"}
@@ -43,9 +44,14 @@ function AppShell() {
             >
                 <RootNavigator />
             </NavigationContainer>
-        </>
+            <SnackbarHost />
+        </View>
     );
 }
+
+const styles = StyleSheet.create({
+    shell: { flex: 1 },
+});
 
 const ThemedApp = observer(function ThemedAppComponent() {
     const { settings } = useStores();

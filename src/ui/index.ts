@@ -45,3 +45,5 @@ export type { TimerCardProps } from "./TimerCard";
 export { TimerCard } from "./TimerCard";
 export type { TimerKindPickerProps } from "./TimerKindPicker";
 export { TimerKindPicker } from "./TimerKindPicker";
+export type { SnackbarProps } from "./Snackbar";
+export { Snackbar } from "./Snackbar";
