@@ -209,6 +209,19 @@
     "pill": {
       "step": "Крок {{n}}",
       "recipeStep": "{{recipe}} · крок {{n}}"
+    },
+    "activeCount_one": "{{count}} активний",
+    "activeCount_few": "{{count}} активні",
+    "activeCount_many": "{{count}} активних",
+    "activeCount_other": "{{count}} активні",
+    "card": {
+      "custom": "Свій таймер",
+      "delete": "Видалити таймер",
+      "open": "Відкрити крок:"
+    },
+    "empty": {
+      "title": "Таймерів ще немає",
+      "description": "Запусти таймер на кроці рецепта або задай свій тут."
     }
   },
   "settings": {
@@ -234,7 +247,11 @@
   },
   "navigation": {
     "timersButton": "Таймери",
-    "settingsButton": "Налаштування"
+    "settingsButton": "Налаштування",
+    "timersButtonCount_one": "Таймери, {{count}} таймер",
+    "timersButtonCount_few": "Таймери, {{count}} таймери",
+    "timersButtonCount_many": "Таймери, {{count}} таймерів",
+    "timersButtonCount_other": "Таймери, {{count}} таймери"
   },
   "units": {
     "g": "г",

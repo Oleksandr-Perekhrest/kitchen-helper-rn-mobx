@@ -41,3 +41,5 @@ export type { IngredientChipProps } from "./IngredientChip";
 export { IngredientChip } from "./IngredientChip";
 export type { StepTimerCardProps } from "./StepTimerCard";
 export { StepTimerCard } from "./StepTimerCard";
+export type { TimerCardProps } from "./TimerCard";
+export { TimerCard } from "./TimerCard";

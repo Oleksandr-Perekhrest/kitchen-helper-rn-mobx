@@ -201,6 +201,17 @@
     "pill": {
       "step": "Step {{n}}",
       "recipeStep": "{{recipe}} · step {{n}}"
+    },
+    "activeCount_one": "{{count}} active",
+    "activeCount_other": "{{count}} active",
+    "card": {
+      "custom": "Custom timer",
+      "delete": "Delete timer",
+      "open": "Open step:"
+    },
+    "empty": {
+      "title": "No timers yet",
+      "description": "Start a timer from a recipe step or set your own one here."
     }
   },
   "settings": {
@@ -226,7 +237,9 @@
   },
   "navigation": {
     "timersButton": "Timers",
-    "settingsButton": "Settings"
+    "settingsButton": "Settings",
+    "timersButtonCount_one": "Timers, {{count}} timer",
+    "timersButtonCount_other": "Timers, {{count}} timers"
   },
   "units": {
     "g": "g",

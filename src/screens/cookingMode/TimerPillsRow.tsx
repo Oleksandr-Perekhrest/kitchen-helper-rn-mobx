@@ -9,7 +9,12 @@ import { ScrollView, StyleSheet } from "react-native";
 import { TimerPill } from "../../ui";
 import type { TimerState } from "../../domain/timer";
 import { useStores } from "../../stores/StoreProvider";
-import { isDone, getRemainingMs, formatRemaining } from "../../domain/timer";
+import {
+    isDone,
+    getRemainingMs,
+    formatRemaining,
+    orderTimersForDisplay,
+} from "../../domain/timer";
 
 const AUTO_COLLAPSE_MS = 4000;
 
@@ -38,18 +43,7 @@ export const TimerPillsRow = observer(function TimerPillsRowComponent({
     const pills = timers.list.filter(
         (timer) => timer.step?.stepId !== currentStepId,
     );
-    const sortedPills = [...pills].sort((a, b) => {
-        const aDone = isDone(a, now);
-        const bDone = isDone(b, now);
-        if (aDone && !bDone) return -1;
-        if (!aDone && bDone) return 1;
-        if (aDone && bDone) {
-            const aEnd = a.endsAt ?? 0;
-            const bEnd = b.endsAt ?? 0;
-            return aEnd - bEnd;
-        }
-        return 0;
-    });
+    const sortedPills = orderTimersForDisplay(pills, now);
 
     const finishedCount = sortedPills.reduce(
         (count, timer) => (isDone(timer, now) ? count + 1 : count),
