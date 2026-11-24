@@ -1,7 +1,8 @@
 // outsource dependencies
+import type { ComponentRef } from "react";
 import { observer } from "mobx-react-lite";
-import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { useRef, useState, useEffect } from "react";
 import { ScrollView, StyleSheet } from "react-native";
 
 // local dependencies
@@ -16,6 +17,7 @@ type Props = {
     recipeId: string;
     currentStepId: string;
     now: number;
+    horizontalPadding: number;
     onOpenStep: (stepId: string) => void;
     onOpenTarget: (timerId: string) => void;
 };
@@ -24,18 +26,45 @@ export const TimerPillsRow = observer(function TimerPillsRowComponent({
     recipeId,
     currentStepId,
     now,
+    horizontalPadding,
     onOpenStep,
     onOpenTarget,
 }: Props) {
     const { t } = useTranslation();
     const { recipes, timers } = useStores();
     const [expandedId, setExpandedId] = useState<string | null>(null);
+    const scrollRef = useRef<ComponentRef<typeof ScrollView>>(null);
 
     const pills = timers.list.filter(
         (timer) => timer.step?.stepId !== currentStepId,
     );
+    const sortedPills = [...pills].sort((a, b) => {
+        const aDone = isDone(a, now);
+        const bDone = isDone(b, now);
+        if (aDone && !bDone) return -1;
+        if (!aDone && bDone) return 1;
+        if (aDone && bDone) {
+            const aEnd = a.endsAt ?? 0;
+            const bEnd = b.endsAt ?? 0;
+            return aEnd - bEnd;
+        }
+        return 0;
+    });
+
+    const finishedCount = sortedPills.reduce(
+        (count, timer) => (isDone(timer, now) ? count + 1 : count),
+        0,
+    );
+    const prevFinishedCountRef = useRef(finishedCount);
+    useEffect(() => {
+        if (finishedCount > prevFinishedCountRef.current) {
+            scrollRef.current?.scrollTo({ x: 0, animated: true });
+        }
+        prevFinishedCountRef.current = finishedCount;
+    }, [finishedCount]);
+
     const expandedPresent =
-        expandedId !== null && pills.some((p) => p.id === expandedId);
+        expandedId !== null && sortedPills.some((p) => p.id === expandedId);
 
     useEffect(() => {
         if (expandedId !== null && !expandedPresent) {
@@ -49,7 +78,7 @@ export const TimerPillsRow = observer(function TimerPillsRowComponent({
         return () => clearTimeout(timeout);
     }, [expandedId]);
 
-    if (pills.length === 0) return null;
+    if (sortedPills.length === 0) return null;
 
     const buildLabel = (timer: TimerState): string => {
         const kindLabel = t(`timerKinds.${timer.kind}`);
@@ -89,12 +118,16 @@ export const TimerPillsRow = observer(function TimerPillsRowComponent({
 
     return (
         <ScrollView
+            ref={scrollRef}
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.row}
+            contentContainerStyle={[
+                styles.row,
+                { paddingHorizontal: horizontalPadding },
+            ]}
             style={styles.scroll}
         >
-            {pills.map((timer) => (
+            {sortedPills.map((timer) => (
                 <TimerPill
                     key={timer.id}
                     kind={timer.kind}
@@ -117,5 +150,6 @@ const styles = StyleSheet.create({
     },
     row: {
         gap: 8,
+        paddingVertical: 8,
     },
 });

@@ -141,6 +141,7 @@ export function TimerPill({
 const styles = StyleSheet.create({
     wrapper: {
         alignSelf: "flex-start",
+        borderRadius: PILL_RADIUS,
     },
     pill: {
         flexDirection: "row",

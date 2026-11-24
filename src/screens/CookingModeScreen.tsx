@@ -186,7 +186,7 @@ export const CookingModeScreen = observer(function CookingModeScreenComponent({
                     contentContainerStyle={[
                         styles.scrollContent,
                         pillsHeight > 0 && {
-                            paddingBottom: 24 + pillsHeight + 12,
+                            paddingBottom: 24 + pillsHeight + 4,
                         },
                     ]}
                 >
@@ -277,6 +277,7 @@ export const CookingModeScreen = observer(function CookingModeScreenComponent({
                         recipeId={recipeId}
                         currentStepId={currentStep.id}
                         now={now}
+                        horizontalPadding={HORIZONTAL_PAD}
                         onOpenStep={(sId) => {
                             const idx = steps.findIndex((s) => s.id === sId);
                             if (idx >= 0) setStepIndex(idx);
@@ -370,8 +371,7 @@ const styles = StyleSheet.create({
         position: "absolute",
         left: 0,
         right: 0,
-        bottom: 12,
-        paddingHorizontal: HORIZONTAL_PAD,
+        bottom: 4,
         pointerEvents: "box-none",
     },
     bottomBar: {
