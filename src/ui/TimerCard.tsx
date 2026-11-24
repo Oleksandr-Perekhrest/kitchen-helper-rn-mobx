@@ -141,7 +141,7 @@ export function TimerCard({
         <View
             style={[
                 styles.container,
-                { backgroundColor: colors.surface, borderColor: colors.border },
+                { backgroundColor: colors.surface, borderColor: timerColor },
             ]}
         >
             {header}

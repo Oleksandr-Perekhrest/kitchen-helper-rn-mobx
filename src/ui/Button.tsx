@@ -35,6 +35,8 @@ export type ButtonProps = {
     iconPosition?: "start" | "end";
     /** Whether the button is disabled. */
     disabled?: boolean;
+    /** Overrides the background colour of the `"primary"` variant. Text and icon colour stay `onPrimary`. */
+    color?: string;
     /** Additional container styles. */
     style?: StyleProp<ViewStyle>;
     /** Overrides the default aria-label (which equals `label`). */
@@ -56,6 +58,7 @@ export function Button({
     icon,
     iconPosition = "start",
     disabled = false,
+    color,
     style,
     accessibilityLabel,
 }: ButtonProps) {
@@ -63,7 +66,7 @@ export function Button({
 
     const variantMap: Record<ButtonVariant, VariantStyle> = {
         primary: {
-            backgroundColor: colors.primary,
+            backgroundColor: color ?? colors.primary,
             borderWidth: 0,
             tone: "onPrimary",
         },

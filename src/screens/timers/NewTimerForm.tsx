@@ -5,16 +5,17 @@ import { useTranslation } from "react-i18next";
 import { View, Keyboard, StyleSheet } from "react-native";
 
 // local dependencies
-import { TIMER_KINDS } from "../../theme";
+import { useTheme } from "../../theme";
 import type { TimerKind } from "../../theme";
 import { useStores } from "../../stores/StoreProvider";
-import { Chip, Text, Button, TextField, TIMER_ICONS } from "../../ui";
+import { Chip, Text, Button, TextField, TimerKindPicker } from "../../ui";
 
 const DURATION_PRESETS = [1, 3, 5, 10, 15, 20] as const;
 
 export function NewTimerForm() {
     const { t } = useTranslation();
     const { timers } = useStores();
+    const { colors } = useTheme();
 
     const [minutes, setMinutes] = useState<number>(10);
     const [kind, setKind] = useState<TimerKind>("other");
@@ -48,20 +49,11 @@ export function NewTimerForm() {
                 </View>
             </View>
 
-            <View role="radiogroup" aria-label={t("timers.new.kindLabel")}>
-                <View style={styles.chipRow}>
-                    {TIMER_KINDS.map((k) => (
-                        <Chip
-                            key={k}
-                            role="radio"
-                            label={t(`timerKinds.${k}`)}
-                            icon={TIMER_ICONS[k]}
-                            selected={kind === k}
-                            onPress={() => setKind(k)}
-                        />
-                    ))}
-                </View>
-            </View>
+            <TimerKindPicker
+                value={kind}
+                onChange={setKind}
+                accessibilityLabel={t("timers.new.kindLabel")}
+            />
 
             <TextField
                 label={t("timers.new.nameLabel")}
@@ -76,6 +68,7 @@ export function NewTimerForm() {
             <Button
                 label={t("timers.new.start", { count: minutes })}
                 icon={Play}
+                color={colors.timer[kind]}
                 onPress={handleStart}
                 style={styles.button}
             />
