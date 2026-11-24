@@ -19,7 +19,9 @@ import { useNow } from "../hooks/useNow";
 import { useStores } from "../stores/StoreProvider";
 import { scaleIngredients } from "../domain/scaling";
 import { highlightSegments } from "../domain/highlight";
+import { TimerPillsRow } from "./cookingMode/TimerPillsRow";
 import type { RootStackScreenProps } from "../navigation/types";
+import { resolveOpenTarget } from "../notifications/openTarget";
 import { formatIngredientAmount } from "../i18n/formatIngredientAmount";
 import { useKeepAwakeWhileFocused } from "../hooks/useKeepAwakeWhileFocused";
 import {
@@ -256,6 +258,35 @@ export const CookingModeScreen = observer(function CookingModeScreenComponent({
                 )}
             </ScrollView>
 
+            <View style={styles.pillsWrapper}>
+                <TimerPillsRow
+                    recipeId={recipeId}
+                    currentStepId={currentStep.id}
+                    now={now}
+                    onOpenStep={(sId) => {
+                        const idx = steps.findIndex((s) => s.id === sId);
+                        if (idx >= 0) setStepIndex(idx);
+                    }}
+                    onOpenTarget={(timerId) => {
+                        const target = resolveOpenTarget(
+                            timerId,
+                            timers,
+                            recipes,
+                        );
+                        if (target.screen === "CookingMode") {
+                            navigation.navigate("CookingMode", {
+                                recipeId: target.recipeId,
+                                servings: target.servings,
+                                stepId: target.stepId,
+                                openedAt: Date.now(),
+                            });
+                        } else {
+                            navigation.navigate("Timers");
+                        }
+                    }}
+                />
+            </View>
+
             <View
                 style={[
                     styles.bottomBar,
@@ -316,6 +347,10 @@ const styles = StyleSheet.create({
         paddingTop: 24,
         paddingBottom: 24,
         paddingHorizontal: HORIZONTAL_PAD,
+    },
+    pillsWrapper: {
+        paddingHorizontal: HORIZONTAL_PAD,
+        marginBottom: 12,
     },
     bottomBar: {
         flexDirection: "row",

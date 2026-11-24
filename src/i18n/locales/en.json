@@ -197,7 +197,11 @@
     }
   },
   "timers": {
-    "title": "Timers"
+    "title": "Timers",
+    "pill": {
+      "step": "Step {{n}}",
+      "recipeStep": "{{recipe}} · step {{n}}"
+    }
   },
   "settings": {
     "title": "Settings",

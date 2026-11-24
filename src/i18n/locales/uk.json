@@ -205,7 +205,11 @@
     }
   },
   "timers": {
-    "title": "Таймери"
+    "title": "Таймери",
+    "pill": {
+      "step": "Крок {{n}}",
+      "recipeStep": "{{recipe}} · крок {{n}}"
+    }
   },
   "settings": {
     "title": "Налаштування",
