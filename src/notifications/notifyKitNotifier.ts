@@ -96,6 +96,7 @@ export function createNotifyKitNotifier(): TimerNotifier {
                         id,
                         title,
                         body,
+                        data: { timerId: id },
                         android: {
                             channelId: sound
                                 ? TIMER_CHANNEL_ID
@@ -139,6 +140,7 @@ export function createNotifyKitNotifier(): TimerNotifier {
                     id,
                     title,
                     body,
+                    data: { timerId: id },
                     android: {
                         channelId: TIMER_ONGOING_CHANNEL_ID,
                         ongoing: true,
