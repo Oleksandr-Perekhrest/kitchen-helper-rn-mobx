@@ -1,6 +1,6 @@
 // outsource dependencies
 import { useRef, useEffect } from "react";
-import { Platform, Animated, Pressable, StyleSheet } from "react-native";
+import { View, Platform, Animated, Pressable, StyleSheet } from "react-native";
 
 // local dependencies
 import { Icon } from "./Icon";
@@ -31,6 +31,8 @@ export type TimerPillProps = {
     kindLabel: string;
 };
 
+const PILL_RADIUS = 26;
+
 export function TimerPill({
     kind,
     timeText,
@@ -40,26 +42,30 @@ export function TimerPill({
     onPress,
     kindLabel,
 }: TimerPillProps) {
-    const { colors, scheme } = useTheme();
+    const { colors, scheme, shadows } = useTheme();
     const timerColor = colors.timer[kind];
-    const opacity = useRef(new Animated.Value(1)).current;
+    const ringOpacity = useRef(new Animated.Value(0)).current;
     const reduceMotion = useReduceMotion();
 
     useEffect(() => {
-        if (!finished || reduceMotion) {
-            opacity.setValue(1);
+        if (!finished) {
+            ringOpacity.setValue(0);
+            return;
+        }
+        if (reduceMotion) {
+            ringOpacity.setValue(1);
             return;
         }
 
         const pulse = Animated.loop(
             Animated.sequence([
-                Animated.timing(opacity, {
-                    toValue: 0.55,
+                Animated.timing(ringOpacity, {
+                    toValue: 1,
                     duration: 600,
                     useNativeDriver: Platform.OS !== "web",
                 }),
-                Animated.timing(opacity, {
-                    toValue: 1,
+                Animated.timing(ringOpacity, {
+                    toValue: 0,
                     duration: 600,
                     useNativeDriver: Platform.OS !== "web",
                 }),
@@ -70,12 +76,14 @@ export function TimerPill({
 
         return () => {
             pulse.stop();
-            opacity.setValue(1);
+            ringOpacity.setValue(0);
         };
-    }, [finished, reduceMotion, opacity]);
+    }, [finished, reduceMotion, ringOpacity]);
 
-    const bgColor = withAlpha(timerColor, scheme === "dark" ? 0.24 : 0.14);
-    const showBorder = finished && reduceMotion;
+    const tintColor = withAlpha(timerColor, scheme === "dark" ? 0.24 : 0.14);
+    const baseColor = expanded
+        ? colors.surface
+        : withAlpha(colors.surface, 0.85);
 
     const ariaLabel =
         expanded && label !== undefined
@@ -83,7 +91,7 @@ export function TimerPill({
             : `${kindLabel}: ${timeText}`;
 
     return (
-        <Animated.View style={[styles.wrapper, { opacity }]}>
+        <View style={[styles.wrapper, { boxShadow: shadows.raised }]}>
             <Pressable
                 onPress={onPress}
                 role="button"
@@ -91,12 +99,12 @@ export function TimerPill({
                 aria-expanded={expanded}
                 style={({ pressed }) => [
                     styles.pill,
-                    { backgroundColor: bgColor },
-                    showBorder && { borderWidth: 2, borderColor: timerColor },
+                    { backgroundColor: baseColor },
                     pressed && styles.pressed,
                     expanded && styles.expanded,
                 ]}
             >
+                <View style={[styles.tint, { backgroundColor: tintColor }]} />
                 <Icon
                     icon={TIMER_ICONS[kind]}
                     size={22}
@@ -117,8 +125,16 @@ export function TimerPill({
                         </Text>
                     )}
                 </Text>
+                {finished && (
+                    <Animated.View
+                        style={[
+                            styles.ring,
+                            { borderColor: timerColor, opacity: ringOpacity },
+                        ]}
+                    />
+                )}
             </Pressable>
-        </Animated.View>
+        </View>
     );
 }
 
@@ -131,7 +147,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
         height: 52,
         paddingHorizontal: 14,
-        borderRadius: 26,
+        borderRadius: PILL_RADIUS,
         gap: 8,
     },
     expanded: {
@@ -144,5 +160,24 @@ const styles = StyleSheet.create({
     },
     pressed: {
         opacity: 0.85,
+    },
+    tint: {
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        borderRadius: PILL_RADIUS,
+        pointerEvents: "none",
+    },
+    ring: {
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        borderRadius: PILL_RADIUS,
+        borderWidth: 2,
+        pointerEvents: "none",
     },
 });

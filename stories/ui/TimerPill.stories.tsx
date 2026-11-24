@@ -5,8 +5,8 @@ import { useArgs } from "storybook/preview-api";
 import type { Meta, StoryObj } from "@storybook/react-native-web-vite";
 
 // local dependencies
-import { TimerPill } from "../../src/ui";
 import { TIMER_KINDS } from "../../src/theme";
+import { Text, TimerPill } from "../../src/ui";
 import type { TimerKind } from "../../src/theme";
 
 const meta = {
@@ -93,10 +93,64 @@ export const AllKinds: Story = {
     },
 };
 
+const BODY_PARAGRAPH =
+    "Наріжте цибулю дрібними кубиками та розігрійте сковороду на середньому вогні. Додайте олію, дочекайтеся, поки вона почне мерехтіти, і висипте цибулю. Помішуйте час від часу, щоб вона рівномірно підрум’янилася, і стежте, щоб не підгоріла по краях. Коли колір стане золотистим і з’явиться характерний солодкуватий аромат, зменшіть вогонь і готуйте ще дві хвилини, продовжуючи перемішувати лопаткою. Паралельно підготуйте решту інгредієнтів: натріть моркву, подрібніть часник і відміряйте необхідну кількість спецій.";
+
+export const OverContent: Story = {
+    render: function Render(args) {
+        return (
+            <View style={styles.overStack}>
+                <Text variant="body" style={styles.bodyText}>
+                    {BODY_PARAGRAPH}
+                </Text>
+                <View style={styles.floatCollapsed}>
+                    <TimerPill
+                        {...args}
+                        kind="fry"
+                        kindLabel="Смажити"
+                        timeText="4:10"
+                        expanded={false}
+                        finished={false}
+                    />
+                </View>
+                <View style={styles.floatExpanded}>
+                    <TimerPill
+                        {...args}
+                        kind="boil"
+                        kindLabel="Варити"
+                        timeText="0:00"
+                        label="Варити макарони al dente"
+                        expanded
+                        finished
+                    />
+                </View>
+            </View>
+        );
+    },
+};
+
 const styles = StyleSheet.create({
     row: {
         flexDirection: "row",
         flexWrap: "wrap",
         gap: 8,
+    },
+    overStack: {
+        position: "relative",
+        padding: 16,
+        minHeight: 360,
+    },
+    bodyText: {
+        lineHeight: 22,
+    },
+    floatCollapsed: {
+        position: "absolute",
+        top: 24,
+        right: 16,
+    },
+    floatExpanded: {
+        position: "absolute",
+        bottom: 24,
+        left: 16,
     },
 });
