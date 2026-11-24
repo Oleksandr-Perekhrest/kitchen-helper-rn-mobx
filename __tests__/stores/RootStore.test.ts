@@ -12,6 +12,8 @@ import {
     SETTINGS_STORAGE_KEY,
 } from "../../src/stores/SettingsStore";
 
+const TIMER_NOW = 2_000_000;
+
 // ─── shared fixtures ──────────────────────────────────────────────────────────
 
 const NOW = new Date("2026-11-16T10:00:00.000Z");
@@ -171,6 +173,58 @@ describe("createRootStore", () => {
             );
             expect(updatedDemo?.title).toBe("My Updated Borscht");
 
+            store2.dispose();
+        });
+    });
+
+    describe("timer persistence", () => {
+        it("started timer is saved and restored by a new RootStore on the same storage", () => {
+            const storage = createMemoryStorage();
+            const store1 = createRootStore(storage, {
+                deviceLanguages: ["en"],
+                now: NOW_FN,
+            });
+
+            const timerId = store1.timers.start({
+                kind: "boil",
+                minutes: 10,
+            });
+            const originalEndsAt = store1.timers.get(timerId)?.endsAt;
+            store1.dispose();
+
+            const store2 = createRootStore(storage, {
+                deviceLanguages: ["en"],
+                now: NOW_FN,
+            });
+            const restored = store2.timers.get(timerId);
+            expect(restored).toBeDefined();
+            expect(restored?.endsAt).toBe(originalEndsAt);
+            store2.dispose();
+        });
+
+        it("finished timer (endsAt in the past) is kept by design", () => {
+            const storage = createMemoryStorage();
+            const store1 = createRootStore(storage, {
+                deviceLanguages: ["en"],
+                now: NOW_FN,
+            });
+
+            const finishedTimer = {
+                id: "cccccccc-cccc-4ccc-accc-cccccccccccc",
+                kind: "boil" as const,
+                createdAt: TIMER_NOW,
+                durationMs: 60_000,
+                endsAt: TIMER_NOW - 1,
+                remainingMs: 60_000,
+            };
+            store1.timers.replaceAll([finishedTimer]);
+            store1.dispose();
+
+            const store2 = createRootStore(storage, {
+                deviceLanguages: ["en"],
+                now: NOW_FN,
+            });
+            expect(store2.timers.get(finishedTimer.id)).toBeDefined();
             store2.dispose();
         });
     });

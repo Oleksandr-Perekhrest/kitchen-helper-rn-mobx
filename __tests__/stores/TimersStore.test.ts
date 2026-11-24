@@ -3,7 +3,12 @@ import { it, expect, describe } from "@jest/globals";
 
 // local dependencies
 import { MAX_TIMER_MS } from "../../src/domain/timer";
-import { TimersStore } from "../../src/stores/TimersStore";
+import type { TimerState } from "../../src/domain/timer";
+import {
+    TimersStore,
+    parseTimers,
+    TIMERS_VERSION,
+} from "../../src/stores/TimersStore";
 
 // ─── fixtures ────────────────────────────────────────────────────────────────
 
@@ -57,8 +62,27 @@ describe("TimersStore.start", () => {
         const { store } = makeStore();
         const id1 = startTimer(store, { stepId: "step-1" });
         const id2 = startTimer(store, { stepId: "step-2" });
+        expect(id1).not.toBe(id2);
         expect(store.get(id1)).toBeDefined();
         expect(store.get(id2)).toBeDefined();
+    });
+
+    it("returns the timer id", () => {
+        const { store } = makeStore();
+        const id = startTimer(store);
+        expect(typeof id).toBe("string");
+        expect(id.length).toBeGreaterThan(0);
+        expect(store.get(id)).toBeDefined();
+    });
+
+    it("start for a step that already has a timer returns existing id and adds nothing", () => {
+        const { store, advance } = makeStore();
+        const id1 = startTimer(store);
+        const before = store.list.length;
+        advance(1000);
+        const id2 = startTimer(store); // same stepId
+        expect(id2).toBe(id1);
+        expect(store.list.length).toBe(before);
     });
 });
 
@@ -231,5 +255,107 @@ describe("TimersStore.hasRunning", () => {
         const id = startTimer(store);
         store.remove(id);
         expect(store.hasRunning).toBe(false);
+    });
+});
+
+// ─── findByStep ───────────────────────────────────────────────────────────────
+
+describe("TimersStore.findByStep", () => {
+    it("finds a timer by stepId", () => {
+        const { store } = makeStore();
+        const id = startTimer(store, { stepId: "step-abc" });
+        const found = store.findByStep("step-abc");
+        expect(found?.id).toBe(id);
+    });
+
+    it("returns undefined for an unknown stepId", () => {
+        const { store } = makeStore();
+        startTimer(store, { stepId: "step-1" });
+        expect(store.findByStep("step-nope")).toBeUndefined();
+    });
+});
+
+// ─── list (sorted by createdAt ascending) ────────────────────────────────────
+
+describe("TimersStore.list", () => {
+    it("is sorted by createdAt ascending", () => {
+        const { store, advance } = makeStore();
+        const id1 = startTimer(store, { stepId: "step-1" });
+        advance(1000);
+        const id2 = startTimer(store, { stepId: "step-2" });
+        advance(1000);
+        const id3 = startTimer(store, { stepId: "step-3" });
+        const ids = store.list.map((t) => t.id);
+        expect(ids).toEqual([id1, id2, id3]);
+    });
+});
+
+// ─── replaceAll ───────────────────────────────────────────────────────────────
+
+describe("TimersStore.replaceAll", () => {
+    it("replaces existing content with the given timers", () => {
+        const { store } = makeStore();
+        startTimer(store, { stepId: "step-old" });
+        const replacement: TimerState = {
+            id: "aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa",
+            kind: "boil",
+            createdAt: NOW,
+            durationMs: 60_000,
+            endsAt: NOW + 60_000,
+            remainingMs: 60_000,
+        };
+        store.replaceAll([replacement]);
+        expect(store.list).toHaveLength(1);
+        expect(store.list[0]?.id).toBe(replacement.id);
+    });
+
+    it("clears all timers when called with an empty array", () => {
+        const { store } = makeStore();
+        startTimer(store);
+        store.replaceAll([]);
+        expect(store.list).toHaveLength(0);
+    });
+});
+
+// ─── parseTimers ──────────────────────────────────────────────────────────────
+
+const VALID_TIMER: TimerState = {
+    id: "aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa",
+    kind: "boil",
+    createdAt: 0,
+    durationMs: 60_000,
+    endsAt: 60_000,
+    remainingMs: 60_000,
+};
+
+describe("parseTimers", () => {
+    it("returns null on version mismatch", () => {
+        expect(parseTimers([VALID_TIMER], TIMERS_VERSION + 1)).toBeNull();
+    });
+
+    it("returns null when data is not an array", () => {
+        expect(parseTimers({ timers: [] }, TIMERS_VERSION)).toBeNull();
+        expect(parseTimers(null, TIMERS_VERSION)).toBeNull();
+    });
+
+    it("drops invalid items and keeps valid ones", () => {
+        const invalid = { id: "bad", kind: "boil", createdAt: 0 };
+        const result = parseTimers([invalid, VALID_TIMER], TIMERS_VERSION);
+        expect(result).toHaveLength(1);
+        expect(result?.[0]?.id).toBe(VALID_TIMER.id);
+    });
+
+    it("returns empty array when all items are invalid", () => {
+        const result = parseTimers([{ bad: true }], TIMERS_VERSION);
+        expect(result).toEqual([]);
+    });
+
+    it("returns all valid items when data is a valid array", () => {
+        const second: TimerState = {
+            ...VALID_TIMER,
+            id: "bbbbbbbb-bbbb-4bbb-bbbb-bbbbbbbbbbbb",
+        };
+        const result = parseTimers([VALID_TIMER, second], TIMERS_VERSION);
+        expect(result).toHaveLength(2);
     });
 });
