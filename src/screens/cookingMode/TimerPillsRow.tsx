@@ -2,7 +2,7 @@
 import { observer } from "mobx-react-lite";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { View, ScrollView, StyleSheet } from "react-native";
+import { ScrollView, StyleSheet } from "react-native";
 
 // local dependencies
 import { TimerPill } from "../../ui";
@@ -88,30 +88,33 @@ export const TimerPillsRow = observer(function TimerPillsRowComponent({
     };
 
     return (
-        <View>
-            <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.row}
-            >
-                {pills.map((timer) => (
-                    <TimerPill
-                        key={timer.id}
-                        kind={timer.kind}
-                        kindLabel={t(`timerKinds.${timer.kind}`)}
-                        timeText={formatRemaining(getRemainingMs(timer, now))}
-                        finished={isDone(timer, now)}
-                        expanded={expandedId === timer.id}
-                        label={buildLabel(timer)}
-                        onPress={() => handlePress(timer)}
-                    />
-                ))}
-            </ScrollView>
-        </View>
+        <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.row}
+            style={styles.scroll}
+        >
+            {pills.map((timer) => (
+                <TimerPill
+                    key={timer.id}
+                    kind={timer.kind}
+                    kindLabel={t(`timerKinds.${timer.kind}`)}
+                    timeText={formatRemaining(getRemainingMs(timer, now))}
+                    finished={isDone(timer, now)}
+                    expanded={expandedId === timer.id}
+                    label={buildLabel(timer)}
+                    onPress={() => handlePress(timer)}
+                />
+            ))}
+        </ScrollView>
     );
 });
 
 const styles = StyleSheet.create({
+    scroll: {
+        alignSelf: "flex-start",
+        maxWidth: "100%",
+    },
     row: {
         gap: 8,
     },
