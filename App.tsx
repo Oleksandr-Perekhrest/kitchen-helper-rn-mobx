@@ -89,9 +89,15 @@ function App() {
         });
         void deleteUnreferencedPhotos(referencedPhotoFiles(s));
         // The app root never unmounts, so the dispose function is not kept.
-        subscribeToOpens((timerId) =>
-            openTarget(resolveOpenTarget(timerId, s.timers, s.recipes)),
-        );
+        subscribeToOpens((timerId) => {
+            openTarget(resolveOpenTarget(timerId, s.timers, s.recipes));
+            if (timerId === undefined) return;
+            const timer = s.timers.get(timerId);
+            if (timer === undefined) return;
+            if (timer.endsAt !== null && timer.endsAt <= Date.now()) {
+                void notifier.cancel(timerId);
+            }
+        });
         return s;
     });
     return (

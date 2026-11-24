@@ -101,6 +101,7 @@ export function createNotifyKitNotifier(): TimerNotifier {
                             channelId: sound
                                 ? TIMER_CHANNEL_ID
                                 : TIMER_SILENT_CHANNEL_ID,
+                            autoCancel: true,
                             pressAction: { id: "default" },
                         },
                         ios: {
