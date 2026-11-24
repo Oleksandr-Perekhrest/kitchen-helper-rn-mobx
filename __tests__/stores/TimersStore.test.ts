@@ -1,5 +1,5 @@
 // outsource dependencies
-import { it, expect, describe } from "@jest/globals";
+import { it, jest, expect, describe } from "@jest/globals";
 
 // local dependencies
 import { MAX_TIMER_MS } from "../../src/domain/timer";
@@ -339,15 +339,37 @@ describe("parseTimers", () => {
     });
 
     it("drops invalid items and keeps valid ones", () => {
-        const invalid = { id: "bad", kind: "boil", createdAt: 0 };
-        const result = parseTimers([invalid, VALID_TIMER], TIMERS_VERSION);
-        expect(result).toHaveLength(1);
-        expect(result?.[0]?.id).toBe(VALID_TIMER.id);
+        const warnSpy = jest
+            .spyOn(console, "warn")
+            .mockImplementation(() => {});
+        try {
+            const invalid = { id: "bad", kind: "boil", createdAt: 0 };
+            const result = parseTimers([invalid, VALID_TIMER], TIMERS_VERSION);
+            expect(result).toHaveLength(1);
+            expect(result?.[0]?.id).toBe(VALID_TIMER.id);
+            expect(warnSpy).toHaveBeenCalledTimes(1);
+            expect(warnSpy).toHaveBeenCalledWith(
+                expect.stringContaining("dropped 1"),
+            );
+        } finally {
+            warnSpy.mockRestore();
+        }
     });
 
     it("returns empty array when all items are invalid", () => {
-        const result = parseTimers([{ bad: true }], TIMERS_VERSION);
-        expect(result).toEqual([]);
+        const warnSpy = jest
+            .spyOn(console, "warn")
+            .mockImplementation(() => {});
+        try {
+            const result = parseTimers([{ bad: true }], TIMERS_VERSION);
+            expect(result).toEqual([]);
+            expect(warnSpy).toHaveBeenCalledTimes(1);
+            expect(warnSpy).toHaveBeenCalledWith(
+                expect.stringContaining("dropped 1"),
+            );
+        } finally {
+            warnSpy.mockRestore();
+        }
     });
 
     it("returns all valid items when data is a valid array", () => {

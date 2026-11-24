@@ -63,13 +63,13 @@ Entry point: `index.js` → `App.tsx`. iOS bundle target: `Cookalong` (`ios/Cook
 - `src/theme` — tokens and theme
 - `src/ui` — presentational UI components (no stores or navigation inside)
 - `src/hooks` — shared hooks
-- `src/navigation` — navigator (`RootNavigator`), route types (`types.ts`), navigation theme hook (`useNavigationTheme.ts`)
+- `src/navigation` — navigator (`RootNavigator`), route types (`types.ts`), navigation theme hook (`useNavigationTheme.ts`), `navigationRef.ts` (navigates from outside React)
 - `src/screens` — one file per screen; screens may use stores and navigation, `src/ui` may not
 - `src/domain` — data model and zod schemas (no React, no MobX); `recipe.ts` exports `RecipeSchema`, `UNITS`, `TAGS`, and inferred types
 - `src/storage` — `KeyValueStorage` interface, MMKV adapter (`mmkvStorage.ts`), in-memory adapter for tests (`memoryStorage.ts`)
 - `src/i18n` — i18next setup: `index.ts` (init + `getDeviceLanguages`), `resolveLanguage.ts`, `i18next.d.ts` (typed keys), `locales/en.json` and `locales/uk.json`
-- `src/stores` — MobX stores (`SettingsStore`, `RecipesStore`, `TimersStore`, `DraftStore`, `RootStore`), `persist` helper, `StoreProvider` context; `SettingsStore`, `RecipesStore`, `TimersStore`, and `DraftStore` are all persisted to MMKV via `persist`
-- `src/notifications` — `TimerNotifier` interface (`types.ts`) and notify-kit adapter (`notifyKitNotifier.ts`); stores must not import react-native-notify-kit directly
+- `src/stores` — MobX stores (`SettingsStore`, `RecipesStore`, `TimersStore`, `DraftStore`, `RootStore`), `persist` helper, `StoreProvider` context; `SettingsStore`, `RecipesStore`, `TimersStore`, and `DraftStore` are all persisted to MMKV via `persist`; `timerNotificationsSync.ts` keeps notifications in sync with timers
+- `src/notifications` — `TimerNotifier` interface (`types.ts`), notify-kit adapter (`notifyKitNotifier.ts`), `openTarget.ts` (pure tap → screen resolution), `openEvents.ts` (tap events; the only module besides the adapter that imports react-native-notify-kit), `exactAlarmPrompt.ts` (system-settings dialog); stores must not import react-native-notify-kit directly
 - `src/dev` — dev-only screens and tools; reachable only when `__DEV__` is true; English literals allowed, no i18n required
 - `stories/` — Storybook stories mirroring `src/`
 - `__tests__/` — tests mirroring `src/`
@@ -110,6 +110,16 @@ Within each group sort lines by length, shortest first. Side-effect imports go f
 Never add `eslint-disable` comments or loosen types to silence an error — use the solution recommended by the library documentation, or stop and report.
 
 **Components:** function components and hooks only.
+
+**Notifications:**
+
+- Timers are persisted in MMKV; finished timers are kept until the user removes them.
+- Notification id = timer id: the ongoing countdown (Android) and the "time's up" alert share it, so the alert replaces the countdown and `cancel(id)` removes both.
+- Three Android channels: `timers` (sound), `timers-silent`, `timers-ongoing` (low importance); channel sound cannot change after creation, hence the separate silent channel for the sound toggle.
+- Exact alarms: `USE_EXACT_ALARM` in the app manifest (granted at install on Android 13+; Play allows it for timer apps); if exact alarms are still not allowed, a one-time-per-session dialog opens the system setting.
+- Permission is requested on the first upcoming timer, not at launch.
+- The background press handler is registered in `index.js` at module load.
+- iOS has no ongoing countdown (needs Live Activities, in the backlog).
 
 **Accessibility props:** use the React Native ARIA props — `role`, `aria-label`, `aria-checked`, `aria-selected`, `aria-disabled`, `aria-busy`, `aria-expanded`, `aria-valuemin` / `aria-valuemax` / `aria-valuenow` / `aria-valuetext` — instead of the legacy `accessibilityRole`, `accessibilityState`, `accessibilityValue` and `accessibilityLabel`. They work on iOS and Android and react-native-web maps them 1:1 to the DOM, while the legacy props lose state on the web (e.g. no `aria-checked` on a switch). Check every story's Accessibility tab: 0 violations.
 
