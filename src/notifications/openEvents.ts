@@ -7,7 +7,8 @@ let pendingTimerId: string | undefined;
 
 function readTimerId(data: unknown): string | undefined {
     if (data === null || typeof data !== "object") return undefined;
-    const value = (data as Record<string, unknown>).timerId;
+    if (!("timerId" in data)) return undefined;
+    const value = data.timerId;
     return typeof value === "string" ? value : undefined;
 }
 

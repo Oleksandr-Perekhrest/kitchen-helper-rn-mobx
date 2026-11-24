@@ -15,6 +15,7 @@ function go(target: OpenTarget): void {
             recipeId: target.recipeId,
             servings: target.servings,
             stepId: target.stepId,
+            openedAt: Date.now(),
         });
     } else {
         navigationRef.navigate("Timers");

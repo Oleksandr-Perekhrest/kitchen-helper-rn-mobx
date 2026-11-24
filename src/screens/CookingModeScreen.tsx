@@ -50,7 +50,7 @@ export const CookingModeScreen = observer(function CookingModeScreenComponent({
     const { recipes, timers } = useStores();
     const insets = useSafeAreaInsets();
     useKeepAwakeWhileFocused("cooking-mode");
-    const { recipeId, servings, stepId } = route.params;
+    const { recipeId, servings, stepId, openedAt } = route.params;
     const now = useNow(timers.hasRunning);
 
     const recipe = recipes.byId.get(recipeId);
@@ -64,10 +64,12 @@ export const CookingModeScreen = observer(function CookingModeScreenComponent({
         scrollRef.current?.scrollTo({ y: 0, animated: false });
     }, [stepIndex]);
     useEffect(() => {
-        if (stepId === undefined || recipe === undefined) return;
-        const idx = recipe.steps.findIndex((s) => s.id === stepId);
+        if (stepId === undefined) return;
+        const r = recipes.byId.get(recipeId);
+        if (r === undefined) return;
+        const idx = r.steps.findIndex((s) => s.id === stepId);
         if (idx >= 0) setStepIndex(idx);
-    }, [stepId, recipe]);
+    }, [stepId, openedAt, recipes, recipeId]);
 
     if (recipe === undefined) {
         return (
