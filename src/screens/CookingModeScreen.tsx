@@ -50,15 +50,26 @@ export const CookingModeScreen = observer(function CookingModeScreenComponent({
     const { recipes, timers } = useStores();
     const insets = useSafeAreaInsets();
     useKeepAwakeWhileFocused("cooking-mode");
-    const { recipeId, servings } = route.params;
+    const { recipeId, servings, stepId, openedAt } = route.params;
     const now = useNow(timers.hasRunning);
 
     const recipe = recipes.byId.get(recipeId);
-    const [stepIndex, setStepIndex] = useState(0);
+    const [stepIndex, setStepIndex] = useState(() => {
+        if (recipe === undefined || stepId === undefined) return 0;
+        const idx = recipe.steps.findIndex((s) => s.id === stepId);
+        return idx >= 0 ? idx : 0;
+    });
     const scrollRef = useRef<ComponentRef<typeof ScrollView>>(null);
     useEffect(() => {
         scrollRef.current?.scrollTo({ y: 0, animated: false });
     }, [stepIndex]);
+    useEffect(() => {
+        if (stepId === undefined) return;
+        const r = recipes.byId.get(recipeId);
+        if (r === undefined) return;
+        const idx = r.steps.findIndex((s) => s.id === stepId);
+        if (idx >= 0) setStepIndex(idx);
+    }, [stepId, openedAt, recipes, recipeId]);
 
     if (recipe === undefined) {
         return (
@@ -100,7 +111,7 @@ export const CookingModeScreen = observer(function CookingModeScreenComponent({
 
     const stepTimer = currentStep.timer;
     const timer =
-        stepTimer !== undefined ? timers.get(currentStep.id) : undefined;
+        stepTimer !== undefined ? timers.findByStep(currentStep.id) : undefined;
     let timerStatus: "idle" | "running" | "paused" | "done" = "idle";
     let timerTimeText =
         stepTimer !== undefined
@@ -213,19 +224,33 @@ export const CookingModeScreen = observer(function CookingModeScreenComponent({
                             status={timerStatus}
                             onStart={() =>
                                 timers.start({
-                                    recipeId,
-                                    stepId: currentStep.id,
+                                    step: {
+                                        recipeId,
+                                        stepId: currentStep.id,
+                                    },
                                     kind: stepTimer.kind,
                                     minutes: stepTimer.minutes,
                                 })
                             }
-                            onPause={() => timers.pause(currentStep.id)}
-                            onResume={() => timers.resume(currentStep.id)}
-                            onRestart={() => timers.restart(currentStep.id)}
-                            onStop={() => timers.remove(currentStep.id)}
-                            onAdjust={(delta) =>
-                                timers.adjust(currentStep.id, delta)
-                            }
+                            onPause={() => {
+                                if (timer !== undefined) timers.pause(timer.id);
+                            }}
+                            onResume={() => {
+                                if (timer !== undefined)
+                                    timers.resume(timer.id);
+                            }}
+                            onRestart={() => {
+                                if (timer !== undefined)
+                                    timers.restart(timer.id);
+                            }}
+                            onStop={() => {
+                                if (timer !== undefined)
+                                    timers.remove(timer.id);
+                            }}
+                            onAdjust={(delta) => {
+                                if (timer !== undefined)
+                                    timers.adjust(timer.id, delta);
+                            }}
                         />
                     </View>
                 )}

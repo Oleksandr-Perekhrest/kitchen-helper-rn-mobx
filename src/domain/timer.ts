@@ -1,30 +1,49 @@
+// outsource dependencies
+import { z } from "zod";
+
 // local dependencies
+import { TIMER_KINDS } from "../theme";
 import type { TimerKind } from "../theme";
 
 export const MAX_TIMER_MS = 1440 * 60_000;
 
-export type TimerState = {
-    recipeId: string;
-    stepId: string;
-    kind: TimerKind;
-    durationMs: number;
-    endsAt: number | null;
-    remainingMs: number;
-};
+export const TimerStateSchema = z.object({
+    id: z.uuid(),
+    kind: z.enum(TIMER_KINDS),
+    label: z.string().optional(),
+    step: z
+        .object({
+            recipeId: z.uuid(),
+            stepId: z.uuid(),
+        })
+        .optional(),
+    createdAt: z.number().int().min(0),
+    durationMs: z.number().int().positive().max(MAX_TIMER_MS),
+    endsAt: z.number().int().nullable(),
+    remainingMs: z.number().int().min(0).max(MAX_TIMER_MS),
+});
+
+export type TimerState = z.infer<typeof TimerStateSchema>;
 
 type CreateTimerInput = {
-    recipeId: string;
-    stepId: string;
     kind: TimerKind;
     minutes: number;
+    label?: string;
+    step?: { recipeId: string; stepId: string };
 };
 
-export function createTimer(input: CreateTimerInput, now: number): TimerState {
+export function createTimer(
+    input: CreateTimerInput,
+    now: number,
+    id: string,
+): TimerState {
     const durationMs = input.minutes * 60_000;
     return {
-        recipeId: input.recipeId,
-        stepId: input.stepId,
+        id,
         kind: input.kind,
+        ...(input.label !== undefined && { label: input.label }),
+        ...(input.step !== undefined && { step: input.step }),
+        createdAt: now,
         durationMs,
         endsAt: now + durationMs,
         remainingMs: durationMs,

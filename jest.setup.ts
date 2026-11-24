@@ -36,6 +36,16 @@ jest.mock("react-native-file-access", () => ({
     },
 }));
 
+// react-native-notify-kit/jest-mock.js uses ESM; Babel must transform it (see transformIgnorePatterns).
+// Override getInitialNotification so a fresh render doesn't trigger a notification-tap navigation.
+jest.mock("react-native-notify-kit", () => {
+    const actual: { default: Record<string, unknown> } = jest.requireActual(
+        "react-native-notify-kit/jest-mock",
+    );
+    actual.default.getInitialNotification = jest.fn(async () => null);
+    return actual;
+});
+
 // expo-modules-core has no native module in Jest; mock keep-awake functions
 jest.mock("expo-keep-awake", () => ({
     activateKeepAwakeAsync: jest.fn(() => Promise.resolve()),

@@ -10,6 +10,7 @@ export type SettingsSnapshot = {
     themePreference: ThemePreference;
     language: LanguagePreference;
     voiceEnabled: boolean;
+    timerSoundEnabled: boolean;
 };
 
 export const SETTINGS_STORAGE_KEY = "settings";
@@ -46,13 +47,20 @@ export function parseSettings(
             ? data.voiceEnabled
             : true;
 
-    return { themePreference, language, voiceEnabled };
+    const timerSoundEnabled =
+        "timerSoundEnabled" in data &&
+        typeof data.timerSoundEnabled === "boolean"
+            ? data.timerSoundEnabled
+            : true;
+
+    return { themePreference, language, voiceEnabled, timerSoundEnabled };
 }
 
 export class SettingsStore {
     themePreference: ThemePreference = "system";
     language: LanguagePreference = "system";
     voiceEnabled = true;
+    timerSoundEnabled = true;
 
     constructor() {
         makeAutoObservable(this);
@@ -68,5 +76,9 @@ export class SettingsStore {
 
     setVoiceEnabled(value: boolean) {
         this.voiceEnabled = value;
+    }
+
+    setTimerSoundEnabled(value: boolean) {
+        this.timerSoundEnabled = value;
     }
 }

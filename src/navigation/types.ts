@@ -5,7 +5,12 @@ export type RootStackParamList = {
     RecipeList: undefined;
     Recipe: { recipeId: string };
     RecipeForm: { recipeId?: string };
-    CookingMode: { recipeId: string; servings: number };
+    CookingMode: {
+        recipeId: string;
+        servings: number;
+        stepId?: string;
+        openedAt?: number;
+    };
     Timers: undefined;
     Settings: undefined;
     UiGallery: undefined;

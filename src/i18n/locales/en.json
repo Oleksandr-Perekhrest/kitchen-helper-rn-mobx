@@ -214,6 +214,10 @@
     "voice": {
       "label": "Voice assistant",
       "description": "Voice commands in cooking mode: next, back, repeat, timer."
+    },
+    "timerSound": {
+      "label": "Timer sound and vibration",
+      "description": "Play a sound and vibrate when a timer finishes."
     }
   },
   "navigation": {
@@ -244,6 +248,21 @@
     "stew": "Stew",
     "bake": "Bake",
     "other": "Other"
+  },
+  "notifications": {
+    "channelName": "Timers",
+    "silentChannelName": "Timers (silent)",
+    "ongoingChannelName": "Running timers",
+    "timerDone": "{{kind}} — time's up",
+    "paused": "Paused · {{time}}",
+    "activeCount_one": "{{count}} timer",
+    "activeCount_other": "{{count}} timers",
+    "exactAlarm": {
+      "title": "Ring on time",
+      "message": "To make timers ring on time while the phone is locked, allow exact alarms for Cookalong.",
+      "later": "Later",
+      "open": "Open Settings"
+    }
   },
   "tags": {
     "breakfast": "Breakfast",

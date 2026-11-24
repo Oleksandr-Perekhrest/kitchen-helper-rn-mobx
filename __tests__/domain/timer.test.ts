@@ -2,7 +2,7 @@
 import { it, expect, describe } from "@jest/globals";
 
 // local dependencies
-import { MAX_TIMER_MS } from "../../src/domain/timer";
+import { MAX_TIMER_MS, TimerStateSchema } from "../../src/domain/timer";
 import {
     isDone,
     isRunning,
@@ -22,8 +22,9 @@ const MINUTES = 20;
 const DURATION_MS = MINUTES * 60_000;
 
 const RUNNING = createTimer(
-    { recipeId: "r1", stepId: "s1", kind: "boil", minutes: MINUTES },
+    { step: { recipeId: "r1", stepId: "s1" }, kind: "boil", minutes: MINUTES },
     NOW,
+    "timer-1",
 );
 
 const PAUSED = {
@@ -49,9 +50,10 @@ describe("createTimer", () => {
         expect(RUNNING.remainingMs).toBe(DURATION_MS);
     });
 
-    it("copies recipeId, stepId, kind", () => {
-        expect(RUNNING.recipeId).toBe("r1");
-        expect(RUNNING.stepId).toBe("s1");
+    it("copies id, step, kind", () => {
+        expect(RUNNING.id).toBe("timer-1");
+        expect(RUNNING.step?.recipeId).toBe("r1");
+        expect(RUNNING.step?.stepId).toBe("s1");
         expect(RUNNING.kind).toBe("boil");
     });
 });
@@ -200,6 +202,110 @@ describe("restartTimer", () => {
         const later = NOW + 30_000;
         const restarted = restartTimer(RUNNING, later);
         expect(restarted.endsAt).toBe(later + RUNNING.durationMs);
+    });
+});
+
+// ─── createTimer: id, createdAt, optional keys ───────────────────────────────
+
+describe("createTimer identity and optional keys", () => {
+    it("sets id from the parameter", () => {
+        const t = createTimer({ kind: "boil", minutes: 5 }, NOW, "my-id");
+        expect(t.id).toBe("my-id");
+    });
+
+    it("sets createdAt to now", () => {
+        const t = createTimer({ kind: "boil", minutes: 5 }, NOW, "x");
+        expect(t.createdAt).toBe(NOW);
+    });
+
+    it("label key is absent (not just undefined) when not provided", () => {
+        const t = createTimer({ kind: "boil", minutes: 5 }, NOW, "x");
+        expect(Object.prototype.hasOwnProperty.call(t, "label")).toBe(false);
+    });
+
+    it("label key is present when provided", () => {
+        const t = createTimer(
+            { kind: "boil", minutes: 5, label: "Pasta" },
+            NOW,
+            "x",
+        );
+        expect(t.label).toBe("Pasta");
+    });
+
+    it("step key is absent (not just undefined) when not provided", () => {
+        const t = createTimer({ kind: "boil", minutes: 5 }, NOW, "x");
+        expect(Object.prototype.hasOwnProperty.call(t, "step")).toBe(false);
+    });
+
+    it("step key is present when provided", () => {
+        const step = { recipeId: "r1", stepId: "s1" };
+        const t = createTimer({ kind: "boil", minutes: 5, step }, NOW, "x");
+        expect(t.step).toEqual(step);
+    });
+});
+
+// ─── TimerStateSchema ─────────────────────────────────────────────────────────
+
+const VALID_ID = "aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa";
+
+function makeValidRunning(): object {
+    return {
+        id: VALID_ID,
+        kind: "boil",
+        createdAt: 0,
+        durationMs: 60_000,
+        endsAt: 1_060_000,
+        remainingMs: 60_000,
+    };
+}
+
+describe("TimerStateSchema", () => {
+    it("accepts a valid running timer", () => {
+        expect(TimerStateSchema.safeParse(makeValidRunning()).success).toBe(
+            true,
+        );
+    });
+
+    it("accepts a valid paused timer (endsAt null, remainingMs > 0)", () => {
+        const paused = {
+            ...makeValidRunning(),
+            endsAt: null,
+            remainingMs: 30_000,
+        };
+        expect(TimerStateSchema.safeParse(paused).success).toBe(true);
+    });
+
+    it("accepts a valid finished timer (endsAt null, remainingMs 0)", () => {
+        const finished = {
+            ...makeValidRunning(),
+            endsAt: null,
+            remainingMs: 0,
+        };
+        expect(TimerStateSchema.safeParse(finished).success).toBe(true);
+    });
+
+    it("rejects a bad id (not a UUID)", () => {
+        const bad = { ...makeValidRunning(), id: "not-a-uuid" };
+        expect(TimerStateSchema.safeParse(bad).success).toBe(false);
+    });
+
+    it("rejects an unknown kind", () => {
+        const bad = { ...makeValidRunning(), kind: "steam" };
+        expect(TimerStateSchema.safeParse(bad).success).toBe(false);
+    });
+
+    it("rejects negative remainingMs", () => {
+        const bad = { ...makeValidRunning(), remainingMs: -1 };
+        expect(TimerStateSchema.safeParse(bad).success).toBe(false);
+    });
+
+    it("rejects durationMs above MAX_TIMER_MS", () => {
+        const bad = {
+            ...makeValidRunning(),
+            durationMs: MAX_TIMER_MS + 1,
+            remainingMs: MAX_TIMER_MS + 1,
+        };
+        expect(TimerStateSchema.safeParse(bad).success).toBe(false);
     });
 });
 
