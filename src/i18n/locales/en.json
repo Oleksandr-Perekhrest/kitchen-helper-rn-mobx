@@ -212,6 +212,17 @@
     "empty": {
       "title": "No timers yet",
       "description": "Start a timer from a recipe step or set your own one here."
+    },
+    "new": {
+      "title": "New timer",
+      "durationLabel": "Duration",
+      "kindLabel": "Type",
+      "nameLabel": "Timer name",
+      "namePlaceholder": "Name (optional)",
+      "minutes_one": "{{count}} min",
+      "minutes_other": "{{count}} min",
+      "start_one": "Start · {{count}} min",
+      "start_other": "Start · {{count}} min"
     }
   },
   "settings": {

@@ -222,6 +222,21 @@
     "empty": {
       "title": "Таймерів ще немає",
       "description": "Запусти таймер на кроці рецепта або задай свій тут."
+    },
+    "new": {
+      "title": "Новий таймер",
+      "durationLabel": "Тривалість",
+      "kindLabel": "Тип",
+      "nameLabel": "Назва таймера",
+      "namePlaceholder": "Назва (необов'язково)",
+      "minutes_one": "{{count}} хв",
+      "minutes_few": "{{count}} хв",
+      "minutes_many": "{{count}} хв",
+      "minutes_other": "{{count}} хв",
+      "start_one": "Старт · {{count}} хв",
+      "start_few": "Старт · {{count}} хв",
+      "start_many": "Старт · {{count}} хв",
+      "start_other": "Старт · {{count}} хв"
     }
   },
   "settings": {

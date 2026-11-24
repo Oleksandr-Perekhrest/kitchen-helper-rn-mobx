@@ -1,9 +1,18 @@
 // outsource dependencies
+import type { ElementRef } from "react";
+import { useRef, useState } from "react";
+import type { View } from "react-native";
 import { observer } from "mobx-react-lite";
 import { Timer } from "lucide-react-native";
 import { useTranslation } from "react-i18next";
-import { View, ScrollView, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+    Platform,
+    ScrollView,
+    StyleSheet,
+    View as RNView,
+    KeyboardAvoidingView,
+} from "react-native";
 
 // local dependencies
 import { useTheme } from "../theme";
@@ -11,6 +20,7 @@ import { useNow } from "../hooks/useNow";
 import type { TimerState } from "../domain/timer";
 import { useStores } from "../stores/StoreProvider";
 import { Text, TimerCard, EmptyState } from "../ui";
+import { NewTimerForm } from "./timers/NewTimerForm";
 import type { RootStackScreenProps } from "../navigation/types";
 import { resolveOpenTarget } from "../notifications/openTarget";
 import {
@@ -33,6 +43,8 @@ export const TimersScreen = observer(function TimersScreenComponent({
     const { recipes, timers } = useStores();
     const insets = useSafeAreaInsets();
     const now = useNow(timers.hasRunning);
+    const kavWrapperRef = useRef<ElementRef<typeof View>>(null);
+    const [keyboardOffset, setKeyboardOffset] = useState(0);
 
     const ordered = orderTimersForDisplay(timers.list, now);
     const activeCount = ordered.reduce(
@@ -40,21 +52,11 @@ export const TimersScreen = observer(function TimersScreenComponent({
         0,
     );
 
-    if (ordered.length === 0) {
-        return (
-            <View
-                style={[
-                    styles.container,
-                    { backgroundColor: colors.background },
-                ]}
-            >
-                <EmptyState
-                    icon={Timer}
-                    title={t("timers.empty.title")}
-                    description={t("timers.empty.description")}
-                />
-            </View>
-        );
+    function handleOuterLayout() {
+        if (Platform.OS !== "android") return;
+        kavWrapperRef.current?.measureInWindow((_x, y) => {
+            setKeyboardOffset(y);
+        });
     }
 
     const statusOf = (timer: TimerState): "running" | "paused" | "done" => {
@@ -76,66 +78,104 @@ export const TimersScreen = observer(function TimersScreenComponent({
         });
     };
 
+    const content = (
+        <ScrollView
+            keyboardShouldPersistTaps="handled"
+            automaticallyAdjustKeyboardInsets
+            contentContainerStyle={[
+                styles.content,
+                { paddingBottom: insets.bottom + 24 },
+            ]}
+        >
+            {ordered.length === 0 ? (
+                <EmptyState
+                    icon={Timer}
+                    title={t("timers.empty.title")}
+                    description={t("timers.empty.description")}
+                />
+            ) : (
+                <>
+                    {activeCount > 0 && (
+                        <Text
+                            variant="caption"
+                            tone="textMuted"
+                            style={styles.activeCount}
+                        >
+                            {t("timers.activeCount", { count: activeCount })}
+                        </Text>
+                    )}
+                    {ordered.map((timer) => {
+                        const kindLabel = t(`timerKinds.${timer.kind}`);
+                        const target = resolveOpenTarget(
+                            timer.id,
+                            timers,
+                            recipes,
+                        );
+                        const onOpen =
+                            target.screen === "CookingMode"
+                                ? () => {
+                                      navigation.navigate("CookingMode", {
+                                          recipeId: target.recipeId,
+                                          servings: target.servings,
+                                          stepId: target.stepId,
+                                          openedAt: Date.now(),
+                                      });
+                                  }
+                                : undefined;
+                        return (
+                            <TimerCard
+                                key={timer.id}
+                                kind={timer.kind}
+                                kindLabel={kindLabel}
+                                title={timer.label ?? kindLabel}
+                                subtitle={subtitleOf(timer)}
+                                timeText={formatRemaining(
+                                    getRemainingMs(timer, now),
+                                )}
+                                status={statusOf(timer)}
+                                onPause={() => timers.pause(timer.id)}
+                                onResume={() => timers.resume(timer.id)}
+                                onRestart={() => timers.restart(timer.id)}
+                                onAdjust={(delta) =>
+                                    timers.adjust(timer.id, delta)
+                                }
+                                onDelete={() => timers.remove(timer.id)}
+                                onOpen={onOpen}
+                            />
+                        );
+                    })}
+                </>
+            )}
+            <RNView style={styles.newTimerForm}>
+                <NewTimerForm />
+            </RNView>
+        </ScrollView>
+    );
+
     return (
-        <View
+        <RNView
+            ref={kavWrapperRef}
+            onLayout={handleOuterLayout}
             style={[styles.container, { backgroundColor: colors.background }]}
         >
-            <ScrollView
-                contentContainerStyle={[
-                    styles.content,
-                    { paddingBottom: insets.bottom + 24 },
-                ]}
-            >
-                {activeCount > 0 && (
-                    <Text
-                        variant="caption"
-                        tone="textMuted"
-                        style={styles.activeCount}
-                    >
-                        {t("timers.activeCount", { count: activeCount })}
-                    </Text>
-                )}
-                {ordered.map((timer) => {
-                    const kindLabel = t(`timerKinds.${timer.kind}`);
-                    const target = resolveOpenTarget(timer.id, timers, recipes);
-                    const onOpen =
-                        target.screen === "CookingMode"
-                            ? () => {
-                                  navigation.navigate("CookingMode", {
-                                      recipeId: target.recipeId,
-                                      servings: target.servings,
-                                      stepId: target.stepId,
-                                      openedAt: Date.now(),
-                                  });
-                              }
-                            : undefined;
-                    return (
-                        <TimerCard
-                            key={timer.id}
-                            kind={timer.kind}
-                            kindLabel={kindLabel}
-                            title={timer.label ?? kindLabel}
-                            subtitle={subtitleOf(timer)}
-                            timeText={formatRemaining(
-                                getRemainingMs(timer, now),
-                            )}
-                            status={statusOf(timer)}
-                            onPause={() => timers.pause(timer.id)}
-                            onResume={() => timers.resume(timer.id)}
-                            onRestart={() => timers.restart(timer.id)}
-                            onAdjust={(delta) => timers.adjust(timer.id, delta)}
-                            onDelete={() => timers.remove(timer.id)}
-                            onOpen={onOpen}
-                        />
-                    );
-                })}
-            </ScrollView>
-        </View>
+            {Platform.OS === "android" ? (
+                <KeyboardAvoidingView
+                    behavior="padding"
+                    keyboardVerticalOffset={keyboardOffset}
+                    style={styles.flex1}
+                >
+                    {content}
+                </KeyboardAvoidingView>
+            ) : (
+                content
+            )}
+        </RNView>
     );
 });
 
 const styles = StyleSheet.create({
     container: { flex: 1 },
+    flex1: { flex: 1 },
     content: {
         paddingHorizontal: HORIZONTAL_PAD,
         paddingTop: 16,
@@ -143,5 +183,8 @@ const styles = StyleSheet.create({
     },
     activeCount: {
         marginBottom: 4,
+    },
+    newTimerForm: {
+        marginTop: 12,
     },
 });
