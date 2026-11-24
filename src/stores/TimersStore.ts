@@ -2,8 +2,8 @@
 import { makeAutoObservable } from "mobx";
 
 // local dependencies
+import { createId } from "../domain/id";
 import type { TimerKind } from "../theme";
-import { createId } from "../domain/recipeForm";
 import type { TimerState } from "../domain/timer";
 import { TimerStateSchema } from "../domain/timer";
 import {

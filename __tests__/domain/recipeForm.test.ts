@@ -11,7 +11,6 @@ import type {
 } from "../../src/domain/recipeForm";
 import {
     toRecipe,
-    createId,
     emptyStep,
     fromRecipe,
     parseDecimal,
@@ -160,18 +159,6 @@ describe("parseDecimal", () => {
             expect(parseDecimal(input)).toBeNaN();
         },
     );
-});
-
-// ─── createId ────────────────────────────────────────────────────────────────
-
-describe("createId", () => {
-    it("returns a valid UUID", () => {
-        expect(z.uuid().safeParse(createId()).success).toBe(true);
-    });
-
-    it("returns a different id on every call", () => {
-        expect(createId()).not.toBe(createId());
-    });
 });
 
 // ─── toRecipe / fromRecipe ───────────────────────────────────────────────────

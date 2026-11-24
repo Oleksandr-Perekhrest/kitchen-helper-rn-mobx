@@ -5,7 +5,7 @@
 import { Dirs, FileSystem } from "react-native-file-access";
 
 // local dependencies
-import { createId } from "../domain/recipeForm";
+import { createId } from "../domain/id";
 
 const PHOTOS_DIR = `${Dirs.DocumentDir}/photos`;
 
