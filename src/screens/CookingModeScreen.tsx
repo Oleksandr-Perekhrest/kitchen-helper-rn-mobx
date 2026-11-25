@@ -53,7 +53,7 @@ export const CookingModeScreen = observer(function CookingModeScreenComponent({
 }: Props) {
     const { t, i18n } = useTranslation();
     const { colors } = useTheme();
-    const { recipes, timers } = useStores();
+    const { recipes, timers, cookingSessions } = useStores();
     const insets = useSafeAreaInsets();
     const removeTimerWithUndo = useRemoveTimerWithUndo();
     useKeepAwakeWhileFocused("cooking-mode");
@@ -99,6 +99,10 @@ export const CookingModeScreen = observer(function CookingModeScreenComponent({
             ? timers.findByStep(visibleStepId)
             : undefined;
     useWatchTimer(visibleStepTimer?.id);
+    useEffect(() => {
+        if (visibleStepId === undefined) return;
+        cookingSessions.save(recipeId, visibleStepId, servings);
+    }, [recipeId, visibleStepId, servings, cookingSessions]);
 
     if (recipe === undefined) {
         return (
@@ -163,6 +167,7 @@ export const CookingModeScreen = observer(function CookingModeScreenComponent({
     };
     const goNext = () => {
         if (isLast) {
+            cookingSessions.remove(recipeId);
             navigation.goBack();
         } else {
             setAutoStopTimerId(null);

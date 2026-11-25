@@ -178,7 +178,7 @@
   },
   "cookingMode": {
     "title": "Cooking",
-    "close": "Finish cooking",
+    "close": "Exit cooking mode",
     "progress": "Step {{current}} of {{total}}",
     "back": "Back",
     "next": "Next",
