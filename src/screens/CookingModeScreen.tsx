@@ -56,7 +56,13 @@ export const CookingModeScreen = observer(function CookingModeScreenComponent({
     const insets = useSafeAreaInsets();
     const removeTimerWithUndo = useRemoveTimerWithUndo();
     useKeepAwakeWhileFocused("cooking-mode");
-    const { recipeId, servings, stepId, openedAt } = route.params;
+    const {
+        recipeId,
+        servings,
+        stepId,
+        openedAt,
+        autoStopTimerId: paramAutoStopTimerId,
+    } = route.params;
     const now = useNow(timers.hasRunning);
 
     const recipe = recipes.byId.get(recipeId);
@@ -65,6 +71,9 @@ export const CookingModeScreen = observer(function CookingModeScreenComponent({
         const idx = recipe.steps.findIndex((s) => s.id === stepId);
         return idx >= 0 ? idx : 0;
     });
+    const [autoStopTimerId, setAutoStopTimerId] = useState<string | null>(
+        paramAutoStopTimerId ?? null,
+    );
     const [pillsHeight, setPillsHeight] = useState(0);
     const [bottomBarHeight, setBottomBarHeight] = useState(0);
     useSnackbarBottomOffset(bottomBarHeight + 12);
@@ -73,12 +82,15 @@ export const CookingModeScreen = observer(function CookingModeScreenComponent({
         scrollRef.current?.scrollTo({ y: 0, animated: false });
     }, [stepIndex]);
     useEffect(() => {
-        if (stepId === undefined) return;
-        const r = recipes.byId.get(recipeId);
-        if (r === undefined) return;
-        const idx = r.steps.findIndex((s) => s.id === stepId);
-        if (idx >= 0) setStepIndex(idx);
-    }, [stepId, openedAt, recipes, recipeId]);
+        if (stepId !== undefined) {
+            const r = recipes.byId.get(recipeId);
+            if (r !== undefined) {
+                const idx = r.steps.findIndex((s) => s.id === stepId);
+                if (idx >= 0) setStepIndex(idx);
+            }
+        }
+        setAutoStopTimerId(paramAutoStopTimerId ?? null);
+    }, [stepId, openedAt, recipes, recipeId, paramAutoStopTimerId]);
 
     if (recipe === undefined) {
         return (
@@ -137,11 +149,15 @@ export const CookingModeScreen = observer(function CookingModeScreenComponent({
         }
     }
 
-    const goBack = () => setStepIndex((i) => Math.max(0, i - 1));
+    const goBack = () => {
+        setAutoStopTimerId(null);
+        setStepIndex((i) => Math.max(0, i - 1));
+    };
     const goNext = () => {
         if (isLast) {
             navigation.goBack();
         } else {
+            setAutoStopTimerId(null);
             setStepIndex((i) => Math.min(steps.length - 1, i + 1));
         }
     };
@@ -259,9 +275,16 @@ export const CookingModeScreen = observer(function CookingModeScreenComponent({
                                     if (timer !== undefined)
                                         timers.restart(timer.id);
                                 }}
+                                autoStopMs={
+                                    timer !== undefined &&
+                                    timer.id === autoStopTimerId
+                                        ? 3000
+                                        : undefined
+                                }
                                 onStop={() => {
                                     if (timer !== undefined)
                                         removeTimerWithUndo(timer.id);
+                                    setAutoStopTimerId(null);
                                 }}
                                 onAdjust={(delta) => {
                                     if (timer !== undefined)
@@ -283,7 +306,16 @@ export const CookingModeScreen = observer(function CookingModeScreenComponent({
                         currentStepId={currentStep.id}
                         now={now}
                         horizontalPadding={HORIZONTAL_PAD}
-                        onOpenStep={(sId) => {
+                        onOpenStep={(sId, tId) => {
+                            const pillTimer = timers.get(tId);
+                            if (
+                                pillTimer !== undefined &&
+                                isDone(pillTimer, Date.now())
+                            ) {
+                                setAutoStopTimerId(tId);
+                            } else {
+                                setAutoStopTimerId(null);
+                            }
                             const idx = steps.findIndex((s) => s.id === sId);
                             if (idx >= 0) setStepIndex(idx);
                         }}
@@ -294,11 +326,18 @@ export const CookingModeScreen = observer(function CookingModeScreenComponent({
                                 recipes,
                             );
                             if (target.screen === "CookingMode") {
+                                const targetTimer = timers.get(timerId);
+                                const shouldAutoStop =
+                                    targetTimer !== undefined &&
+                                    isDone(targetTimer, Date.now());
                                 navigation.navigate("CookingMode", {
                                     recipeId: target.recipeId,
                                     servings: target.servings,
                                     stepId: target.stepId,
                                     openedAt: Date.now(),
+                                    ...(shouldAutoStop && {
+                                        autoStopTimerId: timerId,
+                                    }),
                                 });
                             } else {
                                 navigation.navigate("Timers");

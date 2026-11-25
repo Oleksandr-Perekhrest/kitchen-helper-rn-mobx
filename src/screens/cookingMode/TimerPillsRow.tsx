@@ -23,7 +23,7 @@ type Props = {
     currentStepId: string;
     now: number;
     horizontalPadding: number;
-    onOpenStep: (stepId: string) => void;
+    onOpenStep: (stepId: string, timerId: string) => void;
     onOpenTarget: (timerId: string) => void;
 };
 
@@ -103,7 +103,7 @@ export const TimerPillsRow = observer(function TimerPillsRowComponent({
                 timerRecipe !== undefined &&
                 timerRecipe.steps.some((s) => s.id === step.stepId)
             ) {
-                onOpenStep(step.stepId);
+                onOpenStep(step.stepId, timer.id);
                 return;
             }
         }

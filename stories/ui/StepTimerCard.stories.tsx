@@ -62,3 +62,22 @@ export const BakeDone: Story = {
         status: "done",
     },
 };
+
+export const DonePulsing: Story = {
+    args: {
+        kind: "boil",
+        kindLabel: "Boil",
+        timeText: "0:00",
+        status: "done",
+    },
+};
+
+export const DoneAutoStop: Story = {
+    args: {
+        kind: "fry",
+        kindLabel: "Fry",
+        timeText: "0:00",
+        status: "done",
+        autoStopMs: 3000,
+    },
+};

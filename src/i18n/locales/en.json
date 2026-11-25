@@ -193,7 +193,8 @@
       "done": "done",
       "minusMinute": "Minus one minute",
       "plusMinute": "Plus one minute",
-      "stop": "Stop and reset"
+      "stop": "Stop and reset",
+      "stopAuto": "Stop timer, stops automatically in {{seconds}} s"
     }
   },
   "timers": {
