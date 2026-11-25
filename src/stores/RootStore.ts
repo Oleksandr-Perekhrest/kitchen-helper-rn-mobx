@@ -1,5 +1,5 @@
 // outsource dependencies
-import { toJS, reaction } from "mobx";
+import { toJS, reaction, compareStructural } from "mobx";
 
 // local dependencies
 import { persist } from "./persist";
@@ -130,9 +130,9 @@ export function createRootStore(
     });
 
     const disposeSessionsPrune = reaction(
-        () => new Set(recipes.recipes.map((r) => r.id)),
-        (ids) => cookingSessions.pruneMissingRecipes(ids),
-        { fireImmediately: true },
+        () => recipes.recipes.map((r) => r.id),
+        (ids) => cookingSessions.pruneMissingRecipes(new Set(ids)),
+        { fireImmediately: true, equals: compareStructural },
     );
 
     if (isFirstLaunch) {
