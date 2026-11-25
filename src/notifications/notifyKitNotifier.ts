@@ -14,18 +14,31 @@ import {
     TIMER_GROUP_ID,
     TIMER_CHANNEL_ID,
     TIMER_SUMMARY_ID,
+    TIMER_QUIET_CHANNEL_ID,
     TIMER_SILENT_CHANNEL_ID,
     TIMER_ONGOING_CHANNEL_ID,
 } from "./types";
 
 export function createNotifyKitNotifier(): TimerNotifier {
     return {
-        async prepare({ channelName, silentChannelName, ongoingChannelName }) {
+        async prepare({
+            channelName,
+            quietChannelName,
+            silentChannelName,
+            ongoingChannelName,
+        }) {
             try {
                 await notifee.createChannel({
                     id: TIMER_CHANNEL_ID,
                     name: channelName,
                     importance: AndroidImportance.HIGH,
+                    sound: "default",
+                    vibration: true,
+                });
+                await notifee.createChannel({
+                    id: TIMER_QUIET_CHANNEL_ID,
+                    name: quietChannelName,
+                    importance: AndroidImportance.DEFAULT,
                     sound: "default",
                     vibration: true,
                 });
@@ -88,8 +101,15 @@ export function createNotifyKitNotifier(): TimerNotifier {
             }
         },
 
-        async schedule({ id, fireAt, title, body, sound }) {
+        async schedule({ id, fireAt, title, body, sound, quiet }) {
             if (fireAt <= Date.now()) return;
+            const androidChannelId = quiet
+                ? sound
+                    ? TIMER_QUIET_CHANNEL_ID
+                    : TIMER_ONGOING_CHANNEL_ID
+                : sound
+                  ? TIMER_CHANNEL_ID
+                  : TIMER_SILENT_CHANNEL_ID;
             try {
                 await notifee.createTriggerNotification(
                     {
@@ -98,19 +118,15 @@ export function createNotifyKitNotifier(): TimerNotifier {
                         body,
                         data: { timerId: id },
                         android: {
-                            channelId: sound
-                                ? TIMER_CHANNEL_ID
-                                : TIMER_SILENT_CHANNEL_ID,
+                            channelId: androidChannelId,
                             autoCancel: true,
                             pressAction: { id: "default" },
                         },
                         ios: {
                             ...(sound ? { sound: "default" } : {}),
-                            foregroundPresentationOptions: {
-                                banner: true,
-                                list: true,
-                                sound,
-                            },
+                            foregroundPresentationOptions: quiet
+                                ? { banner: false, list: false, sound }
+                                : { banner: true, list: true, sound },
                         },
                     },
                     {

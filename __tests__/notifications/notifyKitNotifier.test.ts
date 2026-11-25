@@ -19,6 +19,7 @@ import notifee, {
 import { createNotifyKitNotifier } from "../../src/notifications/notifyKitNotifier";
 import {
     TIMER_CHANNEL_ID,
+    TIMER_QUIET_CHANNEL_ID,
     TIMER_SILENT_CHANNEL_ID,
     TIMER_ONGOING_CHANNEL_ID,
 } from "../../src/notifications/types";
@@ -57,6 +58,7 @@ describe("createNotifyKitNotifier().schedule", () => {
             title: "T",
             body: "B",
             sound: true,
+            quiet: false,
         });
 
         expect(mockCreateTrigger).toHaveBeenCalledTimes(1);
@@ -75,6 +77,7 @@ describe("createNotifyKitNotifier().schedule", () => {
             title: "T",
             body: "B",
             sound: false,
+            quiet: false,
         });
 
         const [notification] = mockCreateTrigger.mock.calls[0] as Parameters<
@@ -82,6 +85,56 @@ describe("createNotifyKitNotifier().schedule", () => {
         >;
         expect(notification.android?.channelId).toBe(TIMER_SILENT_CHANNEL_ID);
         expect(notification.ios?.sound).toBeUndefined();
+    });
+
+    it("quiet + sound uses the quiet channel; iOS foreground banner/list are false", async () => {
+        const n = createNotifyKitNotifier();
+        await n.schedule({
+            id: "id1",
+            fireAt: FUTURE,
+            title: "T",
+            body: "B",
+            sound: true,
+            quiet: true,
+        });
+
+        const [notification] = mockCreateTrigger.mock.calls[0] as Parameters<
+            typeof notifee.createTriggerNotification
+        >;
+        expect(notification.android?.channelId).toBe(TIMER_QUIET_CHANNEL_ID);
+        expect(notification.ios?.sound).toBe("default");
+        expect(notification.ios?.foregroundPresentationOptions?.banner).toBe(
+            false,
+        );
+        expect(notification.ios?.foregroundPresentationOptions?.list).toBe(
+            false,
+        );
+        expect(notification.ios?.foregroundPresentationOptions?.sound).toBe(
+            true,
+        );
+    });
+
+    it("quiet + no sound uses the ongoing (low importance) channel", async () => {
+        const n = createNotifyKitNotifier();
+        await n.schedule({
+            id: "id1",
+            fireAt: FUTURE,
+            title: "T",
+            body: "B",
+            sound: false,
+            quiet: true,
+        });
+
+        const [notification] = mockCreateTrigger.mock.calls[0] as Parameters<
+            typeof notifee.createTriggerNotification
+        >;
+        expect(notification.android?.channelId).toBe(TIMER_ONGOING_CHANNEL_ID);
+        expect(notification.ios?.foregroundPresentationOptions?.banner).toBe(
+            false,
+        );
+        expect(notification.ios?.foregroundPresentationOptions?.sound).toBe(
+            false,
+        );
     });
 
     it("sets data.timerId to the notification id", async () => {
@@ -92,6 +145,7 @@ describe("createNotifyKitNotifier().schedule", () => {
             title: "T",
             body: "B",
             sound: true,
+            quiet: false,
         });
 
         const [notification] = mockCreateTrigger.mock.calls[0] as Parameters<
@@ -110,6 +164,7 @@ describe("createNotifyKitNotifier().schedule", () => {
             title: "T",
             body: "B",
             sound: true,
+            quiet: false,
         });
         expect(mockCreateTrigger).not.toHaveBeenCalled();
     });
@@ -128,6 +183,7 @@ describe("createNotifyKitNotifier().schedule", () => {
                 title: "T",
                 body: "B",
                 sound: true,
+                quiet: false,
             }),
         ).resolves.toBeUndefined();
         expect(warnSpy).toHaveBeenCalled();

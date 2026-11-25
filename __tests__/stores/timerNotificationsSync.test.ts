@@ -25,7 +25,13 @@ type NotifierCall =
     | { method: "requestPermission" }
     | { method: "canScheduleExactAlarms" }
     | { method: "openExactAlarmSettings" }
-    | { method: "schedule"; id: string; fireAt: number; sound: boolean }
+    | {
+          method: "schedule";
+          id: string;
+          fireAt: number;
+          sound: boolean;
+          quiet: boolean;
+      }
     | { method: "cancel"; id: string }
     | {
           method: "showOngoing";
@@ -54,8 +60,8 @@ function makeFakeNotifier(opts: { canSchedule?: boolean } = {}) {
         async openExactAlarmSettings() {
             calls.push({ method: "openExactAlarmSettings" });
         },
-        async schedule({ id, fireAt, sound }) {
-            calls.push({ method: "schedule", id, fireAt, sound });
+        async schedule({ id, fireAt, sound, quiet }) {
+            calls.push({ method: "schedule", id, fireAt, sound, quiet });
         },
         async cancel(id) {
             calls.push({ method: "cancel", id });
@@ -499,6 +505,33 @@ describe("startTimerNotificationsSync: timer lifecycle", () => {
         expect(methodsOf(calls, id)).not.toContain("showOngoing");
     });
 
+    it("after remove + restore of a running timer the notifier schedules it again", async () => {
+        const id = timers.start({ kind: "boil", minutes: 5 });
+        await flushPromises();
+        calls.length = 0;
+
+        const removed = timers.remove(id);
+        if (removed !== undefined) timers.restore(removed);
+        await flushPromises();
+
+        expect(methodsOf(calls, id)).toContain("schedule");
+    });
+
+    it("after remove + restore of a finished timer nothing is scheduled", async () => {
+        const id = timers.start({ kind: "boil", minutes: 5 });
+        const timer = timers.get(id);
+        if (timer === undefined) throw new Error("expected timer");
+        timers.replaceAll([{ ...timer, endsAt: time - 1 }]);
+        await flushPromises();
+        calls.length = 0;
+
+        const removed = timers.remove(id);
+        if (removed !== undefined) timers.restore(removed);
+        await flushPromises();
+
+        expect(methodsOf(calls, id)).not.toContain("schedule");
+    });
+
     it("pause then resume in same tick: last per-id call is schedule", async () => {
         const id = timers.start({ kind: "boil", minutes: 5 });
         await flushPromises();
@@ -712,6 +745,147 @@ describe("startTimerNotificationsSync: sound toggle", () => {
             scheduleCalls.some((c) => c.id === runningId && c.sound === false),
         ).toBe(true);
         expect(scheduleCalls.some((c) => c.id === pausedId)).toBe(false);
+        dispose();
+    });
+});
+
+describe("startTimerNotificationsSync: quiet (watchedTimerId)", () => {
+    it("schedule uses quiet:false when the timer is not watched", async () => {
+        const NOW = 1_000_000;
+        const timers = new TimersStore(() => NOW);
+        const id = timers.start({ kind: "boil", minutes: 10 });
+        const { notifier, calls } = makeFakeNotifier();
+
+        const dispose = startTimerNotificationsSync({
+            timers,
+            recipes: new RecipesStore(),
+            settings: new SettingsStore(),
+            notifier,
+            t,
+            now: () => NOW,
+        });
+        await flushPromises();
+
+        const sc = calls.find(
+            (c) => c.method === "schedule" && "id" in c && c.id === id,
+        ) as Extract<NotifierCall, { method: "schedule" }> | undefined;
+        expect(sc?.quiet).toBe(false);
+        dispose();
+    });
+
+    it("schedule uses quiet:true when watchedTimerId equals the timer id", async () => {
+        const NOW = 1_000_000;
+        const timers = new TimersStore(() => NOW);
+        const id = timers.start({ kind: "boil", minutes: 10 });
+        timers.setWatchedTimerId(id);
+        const { notifier, calls } = makeFakeNotifier();
+
+        const dispose = startTimerNotificationsSync({
+            timers,
+            recipes: new RecipesStore(),
+            settings: new SettingsStore(),
+            notifier,
+            t,
+            now: () => NOW,
+        });
+        await flushPromises();
+
+        const sc = calls.find(
+            (c) => c.method === "schedule" && "id" in c && c.id === id,
+        ) as Extract<NotifierCall, { method: "schedule" }> | undefined;
+        expect(sc?.quiet).toBe(true);
+        dispose();
+    });
+
+    it("changing watchedTimerId from A to B re-schedules A quiet:false and B quiet:true, without cancel or showOngoing", async () => {
+        const NOW = 1_000_000;
+        let time = NOW;
+        const timers = new TimersStore(() => time);
+        const { notifier, calls } = makeFakeNotifier();
+
+        time += 1;
+        const idA = timers.start({ kind: "boil", minutes: 10 });
+        time += 1;
+        const idB = timers.start({ kind: "fry", minutes: 15 });
+
+        const dispose = startTimerNotificationsSync({
+            timers,
+            recipes: new RecipesStore(),
+            settings: new SettingsStore(),
+            notifier,
+            t,
+            now: () => time,
+        });
+        await flushPromises();
+        timers.setWatchedTimerId(idA);
+        await flushPromises();
+        calls.length = 0;
+
+        timers.setWatchedTimerId(idB);
+        await flushPromises();
+
+        const schedForA = calls.find(
+            (c) => c.method === "schedule" && "id" in c && c.id === idA,
+        ) as Extract<NotifierCall, { method: "schedule" }> | undefined;
+        const schedForB = calls.find(
+            (c) => c.method === "schedule" && "id" in c && c.id === idB,
+        ) as Extract<NotifierCall, { method: "schedule" }> | undefined;
+        expect(schedForA?.quiet).toBe(false);
+        expect(schedForB?.quiet).toBe(true);
+        expect(calls.some((c) => c.method === "cancel")).toBe(false);
+        expect(calls.some((c) => c.method === "showOngoing")).toBe(false);
+        dispose();
+    });
+
+    it("watching a paused timer schedules nothing", async () => {
+        const NOW = 1_000_000;
+        const timers = new TimersStore(() => NOW);
+        const id = timers.start({ kind: "boil", minutes: 10 });
+        timers.pause(id);
+        const { notifier, calls } = makeFakeNotifier();
+
+        const dispose = startTimerNotificationsSync({
+            timers,
+            recipes: new RecipesStore(),
+            settings: new SettingsStore(),
+            notifier,
+            t,
+            now: () => NOW,
+        });
+        await flushPromises();
+        calls.length = 0;
+
+        timers.setWatchedTimerId(id);
+        await flushPromises();
+
+        expect(calls.some((c) => c.method === "schedule")).toBe(false);
+        dispose();
+    });
+
+    it("watching a finished timer schedules nothing", async () => {
+        const NOW = 1_000_000;
+        const timers = new TimersStore(() => NOW);
+        const id = timers.start({ kind: "boil", minutes: 10 });
+        const timer = timers.get(id);
+        if (timer === undefined) throw new Error("expected timer");
+        timers.replaceAll([{ ...timer, endsAt: NOW - 1 }]);
+        const { notifier, calls } = makeFakeNotifier();
+
+        const dispose = startTimerNotificationsSync({
+            timers,
+            recipes: new RecipesStore(),
+            settings: new SettingsStore(),
+            notifier,
+            t,
+            now: () => NOW,
+        });
+        await flushPromises();
+        calls.length = 0;
+
+        timers.setWatchedTimerId(id);
+        await flushPromises();
+
+        expect(calls.some((c) => c.method === "schedule")).toBe(false);
         dispose();
     });
 });

@@ -108,6 +108,23 @@ export function restartTimer(timer: TimerState, now: number): TimerState {
     };
 }
 
+export function orderTimersForDisplay(
+    timers: TimerState[],
+    now: number,
+): TimerState[] {
+    const finished: TimerState[] = [];
+    const rest: TimerState[] = [];
+    for (const timer of timers) {
+        if (isDone(timer, now)) {
+            finished.push(timer);
+        } else {
+            rest.push(timer);
+        }
+    }
+    finished.sort((a, b) => (a.endsAt ?? 0) - (b.endsAt ?? 0));
+    return [...finished, ...rest];
+}
+
 export function formatRemaining(ms: number): string {
     if (ms <= 0) return "0:00";
     const totalSecs = Math.ceil(ms / 1000);

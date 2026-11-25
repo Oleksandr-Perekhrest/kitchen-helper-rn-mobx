@@ -2,8 +2,8 @@
 import { makeAutoObservable } from "mobx";
 
 // local dependencies
+import { createId } from "../domain/id";
 import type { TimerKind } from "../theme";
-import { createId } from "../domain/recipeForm";
 import type { TimerState } from "../domain/timer";
 import { TimerStateSchema } from "../domain/timer";
 import {
@@ -54,11 +54,16 @@ type StartInput = {
 
 export class TimersStore {
     timers = new Map<string, TimerState>();
+    watchedTimerId: string | null = null;
     private clock: () => number;
 
     constructor(clock: () => number = Date.now) {
         this.clock = clock;
         makeAutoObservable<TimersStore, "clock">(this, { clock: false });
+    }
+
+    setWatchedTimerId(id: string | null) {
+        this.watchedTimerId = id;
     }
 
     get(id: string): TimerState | undefined {
@@ -110,8 +115,15 @@ export class TimersStore {
         this.timers.set(id, restartTimer(timer, this.clock()));
     }
 
-    remove(id: string) {
+    remove(id: string): TimerState | undefined {
+        const timer = this.timers.get(id);
         this.timers.delete(id);
+        return timer;
+    }
+
+    restore(timer: TimerState) {
+        if (this.timers.has(timer.id)) return;
+        this.timers.set(timer.id, timer);
     }
 
     get list(): TimerState[] {

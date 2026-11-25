@@ -2,6 +2,7 @@
 import { it, expect, describe } from "@jest/globals";
 
 // local dependencies
+import type { TimerState } from "../../src/domain/timer";
 import { MAX_TIMER_MS, TimerStateSchema } from "../../src/domain/timer";
 import {
     isDone,
@@ -13,6 +14,7 @@ import {
     restartTimer,
     getRemainingMs,
     formatRemaining,
+    orderTimersForDisplay,
 } from "../../src/domain/timer";
 
 // ─── fixtures ────────────────────────────────────────────────────────────────
@@ -358,5 +360,74 @@ describe("formatRemaining", () => {
 
     it('"1:00:01" for 3600001 ms (rounds up partial second)', () => {
         expect(formatRemaining(3600 * 1000 + 1)).toBe("1:00:01");
+    });
+});
+
+// ─── orderTimersForDisplay ────────────────────────────────────────────────────
+
+const NOW_ORDER = 1_000_000;
+
+function makeTimer(
+    overrides: Partial<TimerState> & { id: string },
+): TimerState {
+    return {
+        id: overrides.id,
+        kind: overrides.kind ?? "boil",
+        createdAt: overrides.createdAt ?? 0,
+        durationMs: overrides.durationMs ?? 60_000,
+        endsAt:
+            overrides.endsAt === undefined
+                ? NOW_ORDER + 60_000
+                : overrides.endsAt,
+        remainingMs: overrides.remainingMs ?? 60_000,
+    };
+}
+
+describe("orderTimersForDisplay", () => {
+    it("puts finished timers before non-finished ones", () => {
+        const running = makeTimer({ id: "a", endsAt: NOW_ORDER + 60_000 });
+        const finished = makeTimer({ id: "b", endsAt: NOW_ORDER - 1000 });
+        const result = orderTimersForDisplay([running, finished], NOW_ORDER);
+        expect(result.map((t) => t.id)).toEqual(["b", "a"]);
+    });
+
+    it("sorts finished timers by endsAt ascending", () => {
+        const f1 = makeTimer({ id: "f1", endsAt: NOW_ORDER - 100 });
+        const f2 = makeTimer({ id: "f2", endsAt: NOW_ORDER - 5000 });
+        const f3 = makeTimer({ id: "f3", endsAt: NOW_ORDER - 1000 });
+        const result = orderTimersForDisplay([f1, f2, f3], NOW_ORDER);
+        expect(result.map((t) => t.id)).toEqual(["f2", "f3", "f1"]);
+    });
+
+    it("preserves input order for non-finished timers", () => {
+        const a = makeTimer({ id: "a", endsAt: NOW_ORDER + 10_000 });
+        const b = makeTimer({ id: "b", endsAt: NOW_ORDER + 5_000 });
+        const c = makeTimer({ id: "c", endsAt: null, remainingMs: 30_000 });
+        const result = orderTimersForDisplay([a, b, c], NOW_ORDER);
+        expect(result.map((t) => t.id)).toEqual(["a", "b", "c"]);
+    });
+
+    it("places all finished before all non-finished, preserving the non-finished order", () => {
+        const r1 = makeTimer({ id: "r1", endsAt: NOW_ORDER + 30_000 });
+        const f1 = makeTimer({ id: "f1", endsAt: NOW_ORDER - 2000 });
+        const r2 = makeTimer({ id: "r2", endsAt: null, remainingMs: 10_000 });
+        const f2 = makeTimer({ id: "f2", endsAt: NOW_ORDER - 5000 });
+        const result = orderTimersForDisplay([r1, f1, r2, f2], NOW_ORDER);
+        expect(result.map((t) => t.id)).toEqual(["f2", "f1", "r1", "r2"]);
+    });
+
+    it("does not mutate the input array", () => {
+        const a = makeTimer({ id: "a", endsAt: NOW_ORDER + 10_000 });
+        const f = makeTimer({ id: "f", endsAt: NOW_ORDER - 1000 });
+        const input = [a, f];
+        const snapshot = [...input];
+        orderTimersForDisplay(input, NOW_ORDER);
+        expect(input).toEqual(snapshot);
+        expect(input[0]).toBe(a);
+        expect(input[1]).toBe(f);
+    });
+
+    it("returns an empty array for an empty input", () => {
+        expect(orderTimersForDisplay([], NOW_ORDER)).toEqual([]);
     });
 });

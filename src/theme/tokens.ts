@@ -39,7 +39,7 @@ export const lightColors = {
         fry: "#B83A2E",
         stew: "#9A6700",
         bake: "#7A4FA0",
-        other: "#2F6B4F",
+        other: "#5B6B73",
     },
 } satisfies ThemeColors;
 
@@ -63,7 +63,7 @@ export const darkColors = {
         fry: "#F08A7E",
         stew: "#E8B84A",
         bake: "#C3A0E6",
-        other: "#9BE0BA",
+        other: "#A9B8C0",
     },
 } satisfies ThemeColors;
 

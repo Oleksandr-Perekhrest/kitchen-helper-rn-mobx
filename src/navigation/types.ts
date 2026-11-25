@@ -10,6 +10,7 @@ export type RootStackParamList = {
         servings: number;
         stepId?: string;
         openedAt?: number;
+        autoStopTimerId?: string;
     };
     Timers: undefined;
     Settings: undefined;

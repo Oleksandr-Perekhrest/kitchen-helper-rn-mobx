@@ -3,6 +3,7 @@ import type { ComponentRef } from "react";
 import { observer } from "mobx-react-lite";
 import { useTranslation } from "react-i18next";
 import { useRef, useState, useEffect } from "react";
+import type { LayoutChangeEvent } from "react-native";
 import { View, ScrollView, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
@@ -18,9 +19,14 @@ import { useTheme } from "../theme";
 import { useNow } from "../hooks/useNow";
 import { useStores } from "../stores/StoreProvider";
 import { scaleIngredients } from "../domain/scaling";
+import { useWatchTimer } from "../hooks/useWatchTimer";
 import { highlightSegments } from "../domain/highlight";
+import { TimerPillsRow } from "./cookingMode/TimerPillsRow";
 import type { RootStackScreenProps } from "../navigation/types";
+import { resolveOpenTarget } from "../notifications/openTarget";
 import { formatIngredientAmount } from "../i18n/formatIngredientAmount";
+import { useRemoveTimerWithUndo } from "../hooks/useRemoveTimerWithUndo";
+import { useSnackbarBottomOffset } from "../hooks/useSnackbarBottomOffset";
 import { useKeepAwakeWhileFocused } from "../hooks/useKeepAwakeWhileFocused";
 import {
     isDone,
@@ -49,8 +55,15 @@ export const CookingModeScreen = observer(function CookingModeScreenComponent({
     const { colors } = useTheme();
     const { recipes, timers } = useStores();
     const insets = useSafeAreaInsets();
+    const removeTimerWithUndo = useRemoveTimerWithUndo();
     useKeepAwakeWhileFocused("cooking-mode");
-    const { recipeId, servings, stepId, openedAt } = route.params;
+    const {
+        recipeId,
+        servings,
+        stepId,
+        openedAt,
+        autoStopTimerId: paramAutoStopTimerId,
+    } = route.params;
     const now = useNow(timers.hasRunning);
 
     const recipe = recipes.byId.get(recipeId);
@@ -59,17 +72,33 @@ export const CookingModeScreen = observer(function CookingModeScreenComponent({
         const idx = recipe.steps.findIndex((s) => s.id === stepId);
         return idx >= 0 ? idx : 0;
     });
+    const [autoStopTimerId, setAutoStopTimerId] = useState<string | null>(
+        paramAutoStopTimerId ?? null,
+    );
+    const [pillsHeight, setPillsHeight] = useState(0);
+    const [bottomBarHeight, setBottomBarHeight] = useState(0);
+    useSnackbarBottomOffset(bottomBarHeight + 12);
     const scrollRef = useRef<ComponentRef<typeof ScrollView>>(null);
     useEffect(() => {
         scrollRef.current?.scrollTo({ y: 0, animated: false });
     }, [stepIndex]);
     useEffect(() => {
-        if (stepId === undefined) return;
-        const r = recipes.byId.get(recipeId);
-        if (r === undefined) return;
-        const idx = r.steps.findIndex((s) => s.id === stepId);
-        if (idx >= 0) setStepIndex(idx);
-    }, [stepId, openedAt, recipes, recipeId]);
+        if (stepId !== undefined) {
+            const r = recipes.byId.get(recipeId);
+            if (r !== undefined) {
+                const idx = r.steps.findIndex((s) => s.id === stepId);
+                if (idx >= 0) setStepIndex(idx);
+            }
+        }
+        setAutoStopTimerId(paramAutoStopTimerId ?? null);
+    }, [stepId, openedAt, recipes, recipeId, paramAutoStopTimerId]);
+
+    const visibleStepId = recipe?.steps[stepIndex]?.id;
+    const visibleStepTimer =
+        visibleStepId !== undefined
+            ? timers.findByStep(visibleStepId)
+            : undefined;
+    useWatchTimer(visibleStepTimer?.id);
 
     if (recipe === undefined) {
         return (
@@ -128,11 +157,15 @@ export const CookingModeScreen = observer(function CookingModeScreenComponent({
         }
     }
 
-    const goBack = () => setStepIndex((i) => Math.max(0, i - 1));
+    const goBack = () => {
+        setAutoStopTimerId(null);
+        setStepIndex((i) => Math.max(0, i - 1));
+    };
     const goNext = () => {
         if (isLast) {
             navigation.goBack();
         } else {
+            setAutoStopTimerId(null);
             setStepIndex((i) => Math.min(steps.length - 1, i + 1));
         }
     };
@@ -175,88 +208,157 @@ export const CookingModeScreen = observer(function CookingModeScreenComponent({
                 </View>
             </View>
 
-            <ScrollView
-                ref={scrollRef}
-                style={styles.scrollView}
-                contentContainerStyle={styles.scrollContent}
-            >
-                <Text variant="step">
-                    {segments.map((seg, si) =>
-                        seg.highlighted ? (
-                            <Text
-                                key={si}
-                                variant="step"
-                                style={[
-                                    styles.highlight,
-                                    {
-                                        backgroundColor: colors.primarySoft,
-                                    },
-                                ]}
-                            >
-                                {seg.text}
-                            </Text>
-                        ) : (
-                            seg.text
-                        ),
+            <View style={styles.scrollArea}>
+                <ScrollView
+                    ref={scrollRef}
+                    style={styles.scrollView}
+                    contentContainerStyle={[
+                        styles.scrollContent,
+                        pillsHeight > 0 && {
+                            paddingBottom: 24 + pillsHeight + 4,
+                        },
+                    ]}
+                >
+                    <Text variant="step">
+                        {segments.map((seg, si) =>
+                            seg.highlighted ? (
+                                <Text
+                                    key={si}
+                                    variant="step"
+                                    style={[
+                                        styles.highlight,
+                                        {
+                                            backgroundColor: colors.primarySoft,
+                                        },
+                                    ]}
+                                >
+                                    {seg.text}
+                                </Text>
+                            ) : (
+                                seg.text
+                            ),
+                        )}
+                    </Text>
+                    {stepIngredients.length > 0 && (
+                        <View style={styles.chipRow}>
+                            {stepIngredients.map((ing) => (
+                                <IngredientChip
+                                    key={ing.id}
+                                    amount={formatIngredientAmount(
+                                        t,
+                                        i18n.language,
+                                        ing,
+                                    )}
+                                    name={ing.name}
+                                />
+                            ))}
+                        </View>
                     )}
-                </Text>
-                {stepIngredients.length > 0 && (
-                    <View style={styles.chipRow}>
-                        {stepIngredients.map((ing) => (
-                            <IngredientChip
-                                key={ing.id}
-                                amount={formatIngredientAmount(
-                                    t,
-                                    i18n.language,
-                                    ing,
-                                )}
-                                name={ing.name}
+                    {stepTimer !== undefined && (
+                        <View style={styles.timerCardWrapper}>
+                            <StepTimerCard
+                                kind={stepTimer.kind}
+                                kindLabel={t(`timerKinds.${stepTimer.kind}`)}
+                                timeText={timerTimeText}
+                                status={timerStatus}
+                                onStart={() =>
+                                    timers.start({
+                                        step: {
+                                            recipeId,
+                                            stepId: currentStep.id,
+                                        },
+                                        kind: stepTimer.kind,
+                                        minutes: stepTimer.minutes,
+                                    })
+                                }
+                                onPause={() => {
+                                    if (timer !== undefined)
+                                        timers.pause(timer.id);
+                                }}
+                                onResume={() => {
+                                    if (timer !== undefined)
+                                        timers.resume(timer.id);
+                                }}
+                                onRestart={() => {
+                                    if (timer !== undefined)
+                                        timers.restart(timer.id);
+                                }}
+                                autoStopMs={
+                                    timer !== undefined &&
+                                    timer.id === autoStopTimerId
+                                        ? 3000
+                                        : undefined
+                                }
+                                onStop={() => {
+                                    if (timer !== undefined)
+                                        removeTimerWithUndo(timer.id);
+                                    setAutoStopTimerId(null);
+                                }}
+                                onAdjust={(delta) => {
+                                    if (timer !== undefined)
+                                        timers.adjust(timer.id, delta);
+                                }}
                             />
-                        ))}
-                    </View>
-                )}
-                {stepTimer !== undefined && (
-                    <View style={styles.timerCardWrapper}>
-                        <StepTimerCard
-                            kind={stepTimer.kind}
-                            kindLabel={t(`timerKinds.${stepTimer.kind}`)}
-                            timeText={timerTimeText}
-                            status={timerStatus}
-                            onStart={() =>
-                                timers.start({
-                                    step: {
-                                        recipeId,
-                                        stepId: currentStep.id,
-                                    },
-                                    kind: stepTimer.kind,
-                                    minutes: stepTimer.minutes,
-                                })
+                        </View>
+                    )}
+                </ScrollView>
+
+                <View
+                    style={styles.pillsWrapper}
+                    onLayout={(e: LayoutChangeEvent) =>
+                        setPillsHeight(e.nativeEvent.layout.height)
+                    }
+                >
+                    <TimerPillsRow
+                        recipeId={recipeId}
+                        currentStepId={currentStep.id}
+                        now={now}
+                        horizontalPadding={HORIZONTAL_PAD}
+                        onOpenStep={(sId, tId) => {
+                            const pillTimer = timers.get(tId);
+                            if (
+                                pillTimer !== undefined &&
+                                isDone(pillTimer, Date.now())
+                            ) {
+                                setAutoStopTimerId(tId);
+                            } else {
+                                setAutoStopTimerId(null);
                             }
-                            onPause={() => {
-                                if (timer !== undefined) timers.pause(timer.id);
-                            }}
-                            onResume={() => {
-                                if (timer !== undefined)
-                                    timers.resume(timer.id);
-                            }}
-                            onRestart={() => {
-                                if (timer !== undefined)
-                                    timers.restart(timer.id);
-                            }}
-                            onStop={() => {
-                                if (timer !== undefined)
-                                    timers.remove(timer.id);
-                            }}
-                            onAdjust={(delta) => {
-                                if (timer !== undefined)
-                                    timers.adjust(timer.id, delta);
-                            }}
-                        />
-                    </View>
-                )}
-            </ScrollView>
+                            const idx = steps.findIndex((s) => s.id === sId);
+                            if (idx >= 0) setStepIndex(idx);
+                        }}
+                        onOpenTarget={(timerId) => {
+                            const target = resolveOpenTarget(
+                                timerId,
+                                timers,
+                                recipes,
+                            );
+                            if (target.screen === "CookingMode") {
+                                const targetTimer = timers.get(timerId);
+                                const shouldAutoStop =
+                                    targetTimer !== undefined &&
+                                    isDone(targetTimer, Date.now());
+                                navigation.navigate("CookingMode", {
+                                    recipeId: target.recipeId,
+                                    servings: target.servings,
+                                    stepId: target.stepId,
+                                    openedAt: Date.now(),
+                                    ...(shouldAutoStop && {
+                                        autoStopTimerId: timerId,
+                                    }),
+                                });
+                            } else {
+                                navigation.navigate("Timers");
+                            }
+                        }}
+                    />
+                </View>
+            </View>
 
             <View
+                onLayout={(e: LayoutChangeEvent) =>
+                    setBottomBarHeight(e.nativeEvent.layout.height)
+                }
                 style={[
                     styles.bottomBar,
                     { paddingBottom: insets.bottom + 28 },
@@ -309,6 +411,9 @@ const styles = StyleSheet.create({
         height: 6,
         borderRadius: 3,
     },
+    scrollArea: {
+        flex: 1,
+    },
     scrollView: {
         flex: 1,
     },
@@ -316,6 +421,13 @@ const styles = StyleSheet.create({
         paddingTop: 24,
         paddingBottom: 24,
         paddingHorizontal: HORIZONTAL_PAD,
+    },
+    pillsWrapper: {
+        position: "absolute",
+        left: 0,
+        right: 0,
+        bottom: 4,
+        pointerEvents: "box-none",
     },
     bottomBar: {
         flexDirection: "row",
