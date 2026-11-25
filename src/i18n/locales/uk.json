@@ -237,6 +237,10 @@
       "start_few": "Старт · {{count}} хв",
       "start_many": "Старт · {{count}} хв",
       "start_other": "Старт · {{count}} хв"
+    },
+    "undo": {
+      "deleted": "Таймер видалено",
+      "action": "Скасувати"
     }
   },
   "settings": {

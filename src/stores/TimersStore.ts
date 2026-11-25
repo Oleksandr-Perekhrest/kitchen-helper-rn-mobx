@@ -110,8 +110,15 @@ export class TimersStore {
         this.timers.set(id, restartTimer(timer, this.clock()));
     }
 
-    remove(id: string) {
+    remove(id: string): TimerState | undefined {
+        const timer = this.timers.get(id);
         this.timers.delete(id);
+        return timer;
+    }
+
+    restore(timer: TimerState) {
+        if (this.timers.has(timer.id)) return;
+        this.timers.set(timer.id, timer);
     }
 
     get list(): TimerState[] {

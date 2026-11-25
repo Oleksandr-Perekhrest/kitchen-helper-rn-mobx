@@ -219,6 +219,58 @@ describe("TimersStore.remove", () => {
         const { store } = makeStore();
         expect(() => store.remove("unknown")).not.toThrow();
     });
+
+    it("returns the removed timer", () => {
+        const { store } = makeStore();
+        const id = startTimer(store);
+        const removed = store.remove(id);
+        expect(removed?.id).toBe(id);
+    });
+
+    it("returns undefined for an unknown id", () => {
+        const { store } = makeStore();
+        const removed = store.remove("unknown");
+        expect(removed).toBeUndefined();
+    });
+});
+
+// ─── restore ─────────────────────────────────────────────────────────────────
+
+describe("TimersStore.restore", () => {
+    it("puts back a running timer with the same endsAt", () => {
+        const { store } = makeStore();
+        const id = startTimer(store, { minutes: 20 });
+        const original = store.get(id);
+        if (original === undefined) throw new Error("timer not found");
+        store.remove(id);
+        store.restore(original);
+        expect(store.get(id)?.endsAt).toBe(original.endsAt);
+    });
+
+    it("puts back a paused timer with the same remainingMs", () => {
+        const { store, advance } = makeStore();
+        const id = startTimer(store, { minutes: 20 });
+        advance(60_000);
+        store.pause(id);
+        const original = store.get(id);
+        if (original === undefined) throw new Error("timer not found");
+        store.remove(id);
+        store.restore(original);
+        expect(store.get(id)?.endsAt).toBeNull();
+        expect(store.get(id)?.remainingMs).toBe(original.remainingMs);
+    });
+
+    it("is a no-op when the id already exists", () => {
+        const { store, advance } = makeStore();
+        const id = startTimer(store, { minutes: 20 });
+        const original = store.get(id);
+        if (original === undefined) throw new Error("timer not found");
+        advance(60_000);
+        store.pause(id); // timer now has different state
+        store.restore(original); // id exists, so no-op
+        expect(store.get(id)?.endsAt).toBeNull(); // still paused
+        expect(store.get(id)?.remainingMs).toBe(19 * 60_000); // still 19 min
+    });
 });
 
 // ─── hasRunning ──────────────────────────────────────────────────────────────

@@ -23,6 +23,7 @@ import { Text, TimerCard, EmptyState } from "../ui";
 import { NewTimerForm } from "./timers/NewTimerForm";
 import type { RootStackScreenProps } from "../navigation/types";
 import { resolveOpenTarget } from "../notifications/openTarget";
+import { useRemoveTimerWithUndo } from "../hooks/useRemoveTimerWithUndo";
 import {
     isDone,
     isRunning,
@@ -43,6 +44,7 @@ export const TimersScreen = observer(function TimersScreenComponent({
     const { recipes, timers } = useStores();
     const insets = useSafeAreaInsets();
     const now = useNow(timers.hasRunning);
+    const removeTimerWithUndo = useRemoveTimerWithUndo();
     const kavWrapperRef = useRef<ElementRef<typeof View>>(null);
     const [keyboardOffset, setKeyboardOffset] = useState(0);
 
@@ -139,7 +141,7 @@ export const TimersScreen = observer(function TimersScreenComponent({
                                 onAdjust={(delta) =>
                                     timers.adjust(timer.id, delta)
                                 }
-                                onDelete={() => timers.remove(timer.id)}
+                                onDelete={() => removeTimerWithUndo(timer.id)}
                                 onOpen={onOpen}
                             />
                         );

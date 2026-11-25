@@ -24,6 +24,7 @@ import { TimerPillsRow } from "./cookingMode/TimerPillsRow";
 import type { RootStackScreenProps } from "../navigation/types";
 import { resolveOpenTarget } from "../notifications/openTarget";
 import { formatIngredientAmount } from "../i18n/formatIngredientAmount";
+import { useRemoveTimerWithUndo } from "../hooks/useRemoveTimerWithUndo";
 import { useSnackbarBottomOffset } from "../hooks/useSnackbarBottomOffset";
 import { useKeepAwakeWhileFocused } from "../hooks/useKeepAwakeWhileFocused";
 import {
@@ -53,6 +54,7 @@ export const CookingModeScreen = observer(function CookingModeScreenComponent({
     const { colors } = useTheme();
     const { recipes, timers } = useStores();
     const insets = useSafeAreaInsets();
+    const removeTimerWithUndo = useRemoveTimerWithUndo();
     useKeepAwakeWhileFocused("cooking-mode");
     const { recipeId, servings, stepId, openedAt } = route.params;
     const now = useNow(timers.hasRunning);
@@ -259,7 +261,7 @@ export const CookingModeScreen = observer(function CookingModeScreenComponent({
                                 }}
                                 onStop={() => {
                                     if (timer !== undefined)
-                                        timers.remove(timer.id);
+                                        removeTimerWithUndo(timer.id);
                                 }}
                                 onAdjust={(delta) => {
                                     if (timer !== undefined)

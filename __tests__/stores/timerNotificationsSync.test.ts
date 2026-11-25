@@ -499,6 +499,33 @@ describe("startTimerNotificationsSync: timer lifecycle", () => {
         expect(methodsOf(calls, id)).not.toContain("showOngoing");
     });
 
+    it("after remove + restore of a running timer the notifier schedules it again", async () => {
+        const id = timers.start({ kind: "boil", minutes: 5 });
+        await flushPromises();
+        calls.length = 0;
+
+        const removed = timers.remove(id);
+        if (removed !== undefined) timers.restore(removed);
+        await flushPromises();
+
+        expect(methodsOf(calls, id)).toContain("schedule");
+    });
+
+    it("after remove + restore of a finished timer nothing is scheduled", async () => {
+        const id = timers.start({ kind: "boil", minutes: 5 });
+        const timer = timers.get(id);
+        if (timer === undefined) throw new Error("expected timer");
+        timers.replaceAll([{ ...timer, endsAt: time - 1 }]);
+        await flushPromises();
+        calls.length = 0;
+
+        const removed = timers.remove(id);
+        if (removed !== undefined) timers.restore(removed);
+        await flushPromises();
+
+        expect(methodsOf(calls, id)).not.toContain("schedule");
+    });
+
     it("pause then resume in same tick: last per-id call is schedule", async () => {
         const id = timers.start({ kind: "boil", minutes: 5 });
         await flushPromises();
