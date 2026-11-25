@@ -80,6 +80,7 @@ function App() {
         const notifier = createNotifyKitNotifier();
         void notifier.prepare({
             channelName: i18n.t("notifications.channelName"),
+            quietChannelName: i18n.t("notifications.quietChannelName"),
             silentChannelName: i18n.t("notifications.silentChannelName"),
             ongoingChannelName: i18n.t("notifications.ongoingChannelName"),
         });

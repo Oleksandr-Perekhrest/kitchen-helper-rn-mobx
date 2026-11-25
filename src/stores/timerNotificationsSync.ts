@@ -90,6 +90,28 @@ export function startTimerNotificationsSync(options: Options): () => void {
         return { title, body, kindLabel };
     };
 
+    const buildScheduleInput = (
+        timer: TimerState,
+        fireAt: number,
+    ): {
+        id: string;
+        fireAt: number;
+        title: string;
+        body: string;
+        sound: boolean;
+        quiet: boolean;
+    } => {
+        const { title, body } = buildContent(timer);
+        return {
+            id: timer.id,
+            fireAt,
+            title,
+            body,
+            sound: settings.timerSoundEnabled,
+            quiet: timer.id === timers.watchedTimerId,
+        };
+    };
+
     const dispose = reaction(
         () => {
             const map = new Map<string, Snapshot>();
@@ -174,7 +196,8 @@ export function startTimerNotificationsSync(options: Options): () => void {
                 const endsAt = timer.endsAt;
                 if (endsAt === null) continue;
 
-                const { title, body, kindLabel } = buildContent(timer);
+                const { title, kindLabel } = buildContent(timer);
+                const scheduleInput = buildScheduleInput(timer, endsAt);
                 const pending = permissionPromise;
 
                 chain(id, async () => {
@@ -185,13 +208,7 @@ export function startTimerNotificationsSync(options: Options): () => void {
                         body: kindLabel,
                         endsAt,
                     });
-                    await notifier.schedule({
-                        id,
-                        fireAt: endsAt,
-                        title,
-                        body,
-                        sound: settings.timerSoundEnabled,
-                    });
+                    await notifier.schedule(scheduleInput);
                 });
             }
         },
@@ -225,22 +242,38 @@ export function startTimerNotificationsSync(options: Options): () => void {
 
     const disposeSound = reaction(
         () => settings.timerSoundEnabled,
-        (sound) => {
+        () => {
             const nowMs = now();
             for (const timer of timers.list) {
                 const { id, endsAt } = timer;
                 if (endsAt === null || endsAt <= nowMs) continue;
-                const { title, body } = buildContent(timer);
+                const scheduleInput = buildScheduleInput(timer, endsAt);
                 const pending = permissionPromise;
                 chain(id, async () => {
                     if (pending !== null) await pending;
-                    await notifier.schedule({
-                        id,
-                        fireAt: endsAt,
-                        title,
-                        body,
-                        sound,
-                    });
+                    await notifier.schedule(scheduleInput);
+                });
+            }
+        },
+    );
+
+    const disposeWatched = reaction(
+        () => timers.watchedTimerId,
+        (nextId, prevId) => {
+            const nowMs = now();
+            const ids = [prevId, nextId].filter(
+                (id): id is string => id !== null && id !== undefined,
+            );
+            for (const id of ids) {
+                const timer = timers.get(id);
+                if (timer === undefined) continue;
+                const endsAt = timer.endsAt;
+                if (endsAt === null || endsAt <= nowMs) continue;
+                const scheduleInput = buildScheduleInput(timer, endsAt);
+                const pending = permissionPromise;
+                chain(id, async () => {
+                    if (pending !== null) await pending;
+                    await notifier.schedule(scheduleInput);
                 });
             }
         },
@@ -250,5 +283,6 @@ export function startTimerNotificationsSync(options: Options): () => void {
         dispose();
         disposeSummary();
         disposeSound();
+        disposeWatched();
     };
 }

@@ -308,6 +308,7 @@
   },
   "notifications": {
     "channelName": "Таймери",
+    "quietChannelName": "Таймери на поточному кроці",
     "silentChannelName": "Таймери (без звуку)",
     "ongoingChannelName": "Активні таймери",
     "timerDone": "{{kind}} — час вийшов",

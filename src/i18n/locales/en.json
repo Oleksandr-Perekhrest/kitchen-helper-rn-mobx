@@ -284,6 +284,7 @@
   },
   "notifications": {
     "channelName": "Timers",
+    "quietChannelName": "Timers on the current step",
     "silentChannelName": "Timers (silent)",
     "ongoingChannelName": "Running timers",
     "timerDone": "{{kind}} — time's up",

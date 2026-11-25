@@ -202,6 +202,27 @@ describe("createRootStore", () => {
             store2.dispose();
         });
 
+        it("watchedTimerId is not persisted across restart", () => {
+            const storage = createMemoryStorage();
+            const store1 = createRootStore(storage, {
+                deviceLanguages: ["en"],
+                now: NOW_FN,
+            });
+            const timerId = store1.timers.start({
+                kind: "boil",
+                minutes: 10,
+            });
+            store1.timers.setWatchedTimerId(timerId);
+            store1.dispose();
+
+            const store2 = createRootStore(storage, {
+                deviceLanguages: ["en"],
+                now: NOW_FN,
+            });
+            expect(store2.timers.watchedTimerId).toBeNull();
+            store2.dispose();
+        });
+
         it("finished timer (endsAt in the past) is kept by design", () => {
             const storage = createMemoryStorage();
             const store1 = createRootStore(storage, {

@@ -54,11 +54,16 @@ type StartInput = {
 
 export class TimersStore {
     timers = new Map<string, TimerState>();
+    watchedTimerId: string | null = null;
     private clock: () => number;
 
     constructor(clock: () => number = Date.now) {
         this.clock = clock;
         makeAutoObservable<TimersStore, "clock">(this, { clock: false });
+    }
+
+    setWatchedTimerId(id: string | null) {
+        this.watchedTimerId = id;
     }
 
     get(id: string): TimerState | undefined {

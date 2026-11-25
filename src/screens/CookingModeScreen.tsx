@@ -19,6 +19,7 @@ import { useTheme } from "../theme";
 import { useNow } from "../hooks/useNow";
 import { useStores } from "../stores/StoreProvider";
 import { scaleIngredients } from "../domain/scaling";
+import { useWatchTimer } from "../hooks/useWatchTimer";
 import { highlightSegments } from "../domain/highlight";
 import { TimerPillsRow } from "./cookingMode/TimerPillsRow";
 import type { RootStackScreenProps } from "../navigation/types";
@@ -91,6 +92,13 @@ export const CookingModeScreen = observer(function CookingModeScreenComponent({
         }
         setAutoStopTimerId(paramAutoStopTimerId ?? null);
     }, [stepId, openedAt, recipes, recipeId, paramAutoStopTimerId]);
+
+    const visibleStepId = recipe?.steps[stepIndex]?.id;
+    const visibleStepTimer =
+        visibleStepId !== undefined
+            ? timers.findByStep(visibleStepId)
+            : undefined;
+    useWatchTimer(visibleStepTimer?.id);
 
     if (recipe === undefined) {
         return (
