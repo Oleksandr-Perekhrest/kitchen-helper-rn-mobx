@@ -24,6 +24,7 @@ import { SettingsStore } from "../../src/stores/SettingsStore";
 import { SnackbarStore } from "../../src/stores/SnackbarStore";
 import { StoreProvider } from "../../src/stores/StoreProvider";
 import { SnackbarHost } from "../../src/components/SnackbarHost";
+import { CookingSessionsStore } from "../../src/stores/CookingSessionsStore";
 
 type Props = ComponentProps<typeof TimersScreen>;
 
@@ -33,12 +34,14 @@ function makeStore(): RootStore {
     const draft = new DraftStore();
     const timers = new TimersStore();
     const snackbar = new SnackbarStore();
+    const cookingSessions = new CookingSessionsStore();
     return {
         settings,
         recipes,
         draft,
         timers,
         snackbar,
+        cookingSessions,
         dispose: () => snackbar.dispose(),
     };
 }

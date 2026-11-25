@@ -65,10 +65,10 @@ Entry point: `index.js` → `App.tsx`. iOS bundle target: `Cookalong` (`ios/Cook
 - `src/hooks` — shared hooks
 - `src/navigation` — navigator (`RootNavigator`), route types (`types.ts`), navigation theme hook (`useNavigationTheme.ts`), `navigationRef.ts` (navigates from outside React)
 - `src/screens` — one file per screen; screens may use stores and navigation, `src/ui` may not
-- `src/domain` — data model and zod schemas (no React, no MobX); `recipe.ts` exports `RecipeSchema`, `UNITS`, `TAGS`, and inferred types
+- `src/domain` — data model and zod schemas (no React, no MobX); `recipe.ts` exports `RecipeSchema`, `UNITS`, `TAGS`, and inferred types; `cookingSession.ts` exports `CookingSessionSchema` and `CookingSession`
 - `src/storage` — `KeyValueStorage` interface, MMKV adapter (`mmkvStorage.ts`), in-memory adapter for tests (`memoryStorage.ts`)
 - `src/i18n` — i18next setup: `index.ts` (init + `getDeviceLanguages`), `resolveLanguage.ts`, `i18next.d.ts` (typed keys), `locales/en.json` and `locales/uk.json`
-- `src/stores` — MobX stores (`SettingsStore`, `RecipesStore`, `TimersStore`, `DraftStore`, `RootStore`), `persist` helper, `StoreProvider` context; `SettingsStore`, `RecipesStore`, `TimersStore`, and `DraftStore` are all persisted to MMKV via `persist`; `timerNotificationsSync.ts` keeps notifications in sync with timers
+- `src/stores` — MobX stores (`SettingsStore`, `RecipesStore`, `TimersStore`, `DraftStore`, `CookingSessionsStore`, `RootStore`), `persist` helper, `StoreProvider` context; `SettingsStore`, `RecipesStore`, `TimersStore`, `DraftStore`, and `CookingSessionsStore` are all persisted to MMKV via `persist`; `CookingSessionsStore` keeps one session per recipe keyed by recipeId and is pruned when its recipe is deleted; `timerNotificationsSync.ts` keeps notifications in sync with timers
 - `src/notifications` — `TimerNotifier` interface (`types.ts`), notify-kit adapter (`notifyKitNotifier.ts`), `openTarget.ts` (pure tap → screen resolution), `openEvents.ts` (tap events; the only module besides the adapter that imports react-native-notify-kit), `exactAlarmPrompt.ts` (system-settings dialog); stores must not import react-native-notify-kit directly
 - `src/dev` — dev-only screens and tools; reachable only when `__DEV__` is true; English literals allowed, no i18n required
 - `stories/` — Storybook stories mirroring `src/`

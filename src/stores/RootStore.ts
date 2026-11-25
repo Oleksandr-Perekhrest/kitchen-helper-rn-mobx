@@ -1,5 +1,5 @@
 // outsource dependencies
-import { toJS } from "mobx";
+import { toJS, reaction } from "mobx";
 
 // local dependencies
 import { persist } from "./persist";
@@ -32,6 +32,12 @@ import {
     SETTINGS_VERSION,
     SETTINGS_STORAGE_KEY,
 } from "./SettingsStore";
+import {
+    parseCookingSessions,
+    CookingSessionsStore,
+    COOKING_SESSIONS_VERSION,
+    COOKING_SESSIONS_STORAGE_KEY,
+} from "./CookingSessionsStore";
 
 export type RootStore = {
     settings: SettingsStore;
@@ -39,6 +45,7 @@ export type RootStore = {
     draft: DraftStore;
     timers: TimersStore;
     snackbar: SnackbarStore;
+    cookingSessions: CookingSessionsStore;
     dispose: () => void;
 };
 
@@ -56,6 +63,7 @@ export function createRootStore(
     const draft = new DraftStore();
     const timers = new TimersStore();
     const snackbar = new SnackbarStore();
+    const cookingSessions = new CookingSessionsStore();
 
     // Key absent means the app has never written recipe data (true first launch).
     // Once persist() writes the key (even as an empty array after user deletes all),
@@ -112,6 +120,21 @@ export function createRootStore(
         parse: parseTimers,
     });
 
+    const disposeCookingSessions = persist({
+        storage,
+        key: COOKING_SESSIONS_STORAGE_KEY,
+        version: COOKING_SESSIONS_VERSION,
+        snapshot: () => toJS(cookingSessions.list),
+        apply: (data) => cookingSessions.replaceAll(data),
+        parse: parseCookingSessions,
+    });
+
+    const disposeSessionsPrune = reaction(
+        () => new Set(recipes.recipes.map((r) => r.id)),
+        (ids) => cookingSessions.pruneMissingRecipes(ids),
+        { fireImmediately: true },
+    );
+
     if (isFirstLaunch) {
         const now = (options.now ?? (() => new Date()))();
         const language = resolveLanguage(
@@ -142,11 +165,14 @@ export function createRootStore(
         draft,
         timers,
         snackbar,
+        cookingSessions,
         dispose: () => {
             disposeSettings();
             disposeRecipes();
             disposeDraft();
             disposeTimers();
+            disposeCookingSessions();
+            disposeSessionsPrune();
             snackbar.dispose();
         },
     };

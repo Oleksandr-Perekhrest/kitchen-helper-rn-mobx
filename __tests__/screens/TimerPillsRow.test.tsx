@@ -23,6 +23,7 @@ import { SettingsStore } from "../../src/stores/SettingsStore";
 import { SnackbarStore } from "../../src/stores/SnackbarStore";
 import { StoreProvider } from "../../src/stores/StoreProvider";
 import { TimerPillsRow } from "../../src/screens/cookingMode/TimerPillsRow";
+import { CookingSessionsStore } from "../../src/stores/CookingSessionsStore";
 
 const NOW = 1_700_000_000_000;
 
@@ -50,12 +51,14 @@ function makeStore(): RootStore {
     const draft = new DraftStore();
     const timers = new TimersStore();
     const snackbar = new SnackbarStore();
+    const cookingSessions = new CookingSessionsStore();
     return {
         settings,
         recipes,
         draft,
         timers,
         snackbar,
+        cookingSessions,
         dispose: () => snackbar.dispose(),
     };
 }
