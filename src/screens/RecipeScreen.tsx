@@ -53,7 +53,7 @@ export const RecipeScreen = observer(function RecipeScreenComponent({
 }: Props) {
     const { t, i18n } = useTranslation();
     const { colors } = useTheme();
-    const { recipes, cookingSessions } = useStores();
+    const { recipes, timers, cookingSessions } = useStores();
     const insets = useSafeAreaInsets();
     const { recipeId } = route.params;
 
@@ -427,15 +427,44 @@ export const RecipeScreen = observer(function RecipeScreenComponent({
                             onPress={() => {
                                 const firstStep = recipe.steps[0];
                                 if (firstStep === undefined) return;
-                                cookingSessions.save(
-                                    recipe.id,
-                                    firstStep.id,
-                                    servings,
+                                const startOver = () => {
+                                    timers.removeByRecipe(recipe.id);
+                                    cookingSessions.save(
+                                        recipe.id,
+                                        firstStep.id,
+                                        servings,
+                                    );
+                                    navigation.navigate("CookingMode", {
+                                        recipeId: recipe.id,
+                                        servings,
+                                    });
+                                };
+                                const count = timers.countByRecipe(recipe.id);
+                                if (count === 0) {
+                                    startOver();
+                                    return;
+                                }
+                                Alert.alert(
+                                    t("recipe.startOverConfirm.title"),
+                                    t("recipe.startOverConfirm.message", {
+                                        count,
+                                    }),
+                                    [
+                                        {
+                                            text: t(
+                                                "recipe.startOverConfirm.cancel",
+                                            ),
+                                            style: "cancel",
+                                        },
+                                        {
+                                            text: t(
+                                                "recipe.startOverConfirm.confirm",
+                                            ),
+                                            style: "destructive",
+                                            onPress: startOver,
+                                        },
+                                    ],
                                 );
-                                navigation.navigate("CookingMode", {
-                                    recipeId: recipe.id,
-                                    servings,
-                                });
                             }}
                             style={styles.cookButton}
                         />

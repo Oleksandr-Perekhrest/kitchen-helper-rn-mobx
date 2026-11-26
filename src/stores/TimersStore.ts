@@ -121,6 +121,25 @@ export class TimersStore {
         return timer;
     }
 
+    removeByRecipe(recipeId: string): TimerState[] {
+        const removed: TimerState[] = [];
+        for (const timer of this.timers.values()) {
+            if (timer.step?.recipeId === recipeId) {
+                removed.push(timer);
+                this.timers.delete(timer.id);
+            }
+        }
+        return removed;
+    }
+
+    countByRecipe(recipeId: string): number {
+        let count = 0;
+        for (const timer of this.timers.values()) {
+            if (timer.step?.recipeId === recipeId) count += 1;
+        }
+        return count;
+    }
+
     restore(timer: TimerState) {
         if (this.timers.has(timer.id)) return;
         this.timers.set(timer.id, timer);

@@ -33,6 +33,13 @@
     "startCooking": "Start cooking",
     "continueCooking": "Continue · step {{n}}",
     "startOver": "Start over",
+    "startOverConfirm": {
+      "title": "Start over?",
+      "message_one": "{{count}} timer of this recipe will be reset.",
+      "message_other": "{{count}} timers of this recipe will be reset.",
+      "cancel": "Cancel",
+      "confirm": "Start over"
+    },
     "servings_one": "{{count}} serving",
     "servings_other": "{{count}} servings",
     "notFound": {
