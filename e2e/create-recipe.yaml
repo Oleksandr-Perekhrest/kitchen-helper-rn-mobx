@@ -1,0 +1,106 @@
+appId: com.operekhrest.cookalong
+name: Create recipe - 4-step wizard creates recipe in list
+---
+- launchApp:
+    clearState: true
+
+# Ensure list is loaded before tapping the FAB
+- assertVisible: "All · 5"
+# Open wizard; point avoids the iOS home-indicator zone at the button's bottom edge
+- tapOn:
+    text: "New recipe"
+    point: "50%,30%"
+
+# Basics: wait for the form then enter recipe title
+- assertVisible: "Basics"
+# "Title" appears three times in the iOS accessibility tree:
+#   index 0 & 1 → the visible Text label; index 2 → the TextInput with aria-label="Title"
+- tapOn:
+    text: "Title"
+    index: 1
+- inputText: "E2E Tomato Soup"
+- hideKeyboard
+# point 25% from top keeps the tap above the RN dev-mode banner (y≈787) which
+# otherwise overlaps the button when it scrolls to the bottom of the viewport
+- scrollUntilVisible:
+    element:
+      text: "Next"
+    direction: DOWN
+- tapOn:
+    text: "Next"
+    point: "50%,25%"
+
+# Ingredients: form opens with one empty row already present
+- tapOn: "Name, row 1"
+- inputText: "Tomatoes"
+- tapOn: "Amount, row 1"
+- inputText: "500"
+# unit is already g — no change needed
+
+# Add second ingredient
+- tapOn: "Add ingredient"
+- tapOn: "Name, row 2"
+- inputText: "Garlic"
+- tapOn: "Amount, row 2"
+- inputText: "2"
+# decimal-pad has no Done key so hideKeyboard fails; tap the static header text
+# instead — a non-interactive node dismisses the keyboard via keyboardShouldPersistTaps
+- tapOn: "Ingredients for"
+# Change unit from g to pcs
+- tapOn: "Unit, row 2: g"
+- tapOn: "pcs"
+- scrollUntilVisible:
+    element:
+      text: "Next"
+    direction: DOWN
+- tapOn:
+    text: "Next"
+    point: "50%,25%"
+
+# Steps: form opens with one empty step; insert Tomatoes from ingredient cloud
+- tapOn: "Tomatoes, not used. Insert into step text"
+# "in this step" matches the Tomatoes chip after insertion — use the legend item
+# "not used yet" instead (no chip label contains that exact phrase)
+- tapOn: "not used yet"
+- scrollUntilVisible:
+    element:
+      text: "Next"
+    direction: DOWN
+- tapOn:
+    text: "Next"
+    point: "50%,25%"
+# Garlic is unused — dismiss the warning and continue
+- scrollUntilVisible:
+    element:
+      text: "Continue anyway"
+    direction: DOWN
+- tapOn:
+    text: "Continue anyway"
+    point: "50%,25%"
+
+# Review: assert title and both ingredients are visible
+- assertVisible: "E2E Tomato Soup"
+- assertVisible: "Tomatoes"
+- assertVisible: "Garlic"
+- scrollUntilVisible:
+    element:
+      text: "Save recipe"
+    direction: DOWN
+- tapOn:
+    text: "Save recipe"
+    point: "50%,25%"
+
+# Back on list via iOS native back button (shows previous screen title "Recipes")
+- tapOn: "Recipes"
+- assertVisible: "All · 6"
+- assertVisible: "E2E Tomato Soup.*"
+
+# Scroll the new card into full view (it lands at the bottom of the list,
+# partially obscured by the FAB) then open it
+- scrollUntilVisible:
+    element:
+      text: "E2E Tomato Soup.*"
+    direction: DOWN
+- tapOn: "E2E Tomato Soup.*"
+- assertVisible: "Tomatoes"
+- assertVisible: "Garlic"
