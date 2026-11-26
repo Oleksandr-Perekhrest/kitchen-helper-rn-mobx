@@ -11,6 +11,10 @@ import {
     SETTINGS_VERSION,
     SETTINGS_STORAGE_KEY,
 } from "../../src/stores/SettingsStore";
+import {
+    COOKING_SESSIONS_VERSION,
+    COOKING_SESSIONS_STORAGE_KEY,
+} from "../../src/stores/CookingSessionsStore";
 
 const TIMER_NOW = 2_000_000;
 
@@ -247,6 +251,82 @@ describe("createRootStore", () => {
             });
             expect(store2.timers.get(finishedTimer.id)).toBeDefined();
             store2.dispose();
+        });
+    });
+
+    describe("cooking session persistence", () => {
+        it("session persists and loads across createRootStore instances", () => {
+            const storage = createMemoryStorage();
+            const store1 = createRootStore(storage, {
+                deviceLanguages: ["en"],
+                now: NOW_FN,
+            });
+
+            const recipe = store1.recipes.recipes[0];
+            if (recipe === undefined) throw new Error("no demo recipes seeded");
+            const stepId = recipe.steps[0]?.id;
+            if (stepId === undefined) throw new Error("recipe has no steps");
+
+            store1.cookingSessions.save(recipe.id, stepId, 2);
+            store1.dispose();
+
+            const store2 = createRootStore(storage, {
+                deviceLanguages: ["en"],
+                now: NOW_FN,
+            });
+            const session = store2.cookingSessions.get(recipe.id);
+            expect(session).toBeDefined();
+            expect(session?.stepId).toBe(stepId);
+            store2.dispose();
+        });
+
+        it("deleting a recipe removes its session via the pruning reaction", () => {
+            const storage = createMemoryStorage();
+            const store = createRootStore(storage, {
+                deviceLanguages: ["en"],
+                now: NOW_FN,
+            });
+
+            const recipe = store.recipes.recipes[0];
+            if (recipe === undefined) throw new Error("no demo recipes seeded");
+            const stepId = recipe.steps[0]?.id;
+            if (stepId === undefined) throw new Error("recipe has no steps");
+
+            store.cookingSessions.save(recipe.id, stepId, 2);
+            expect(store.cookingSessions.get(recipe.id)).toBeDefined();
+
+            store.recipes.remove(recipe.id);
+            expect(store.cookingSessions.get(recipe.id)).toBeUndefined();
+
+            store.dispose();
+        });
+
+        it("a session for a non-existent recipe is pruned at startup", () => {
+            const orphanSession = {
+                recipeId: "ghost-recipe-id",
+                stepId: "ghost-step-id",
+                servings: 2,
+                updatedAt: "2026-01-01T00:00:00.000Z",
+            };
+            const storage = createMemoryStorage({
+                [RECIPES_STORAGE_KEY]: JSON.stringify({
+                    version: RECIPE_SCHEMA_VERSION,
+                    data: [],
+                }),
+                [COOKING_SESSIONS_STORAGE_KEY]: JSON.stringify({
+                    version: COOKING_SESSIONS_VERSION,
+                    data: [orphanSession],
+                }),
+            });
+
+            const store = createRootStore(storage, {
+                deviceLanguages: ["en"],
+                now: NOW_FN,
+            });
+            expect(
+                store.cookingSessions.get("ghost-recipe-id"),
+            ).toBeUndefined();
+            store.dispose();
         });
     });
 });

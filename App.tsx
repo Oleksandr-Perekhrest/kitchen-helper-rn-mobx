@@ -107,6 +107,7 @@ function App() {
         });
         return s;
     });
+    useEffect(() => () => store.dispose(), [store]);
     return (
         <StoreProvider store={store}>
             <ThemedApp />

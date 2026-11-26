@@ -11,6 +11,8 @@
     "filterLabel": "Recipe filter",
     "tagGroupLabel": "Filter by tag",
     "favoriteBadge": "Favorite",
+    "cookingBadge": "Cooking · {{current}}/{{total}}",
+    "cookingA11y": "cooking, step {{current}} of {{total}}",
     "empty": {
       "noRecipes": {
         "title": "No recipes yet",
@@ -31,6 +33,15 @@
   "recipe": {
     "title": "Recipe",
     "startCooking": "Start cooking",
+    "continueCooking": "Continue · step {{n}}",
+    "startOver": "Start over",
+    "startOverConfirm": {
+      "title": "Start over?",
+      "message_one": "{{count}} timer of this recipe will be reset.",
+      "message_other": "{{count}} timers of this recipe will be reset.",
+      "cancel": "Cancel",
+      "confirm": "Start over"
+    },
     "servings_one": "{{count}} serving",
     "servings_other": "{{count}} servings",
     "notFound": {
@@ -178,7 +189,7 @@
   },
   "cookingMode": {
     "title": "Cooking",
-    "close": "Finish cooking",
+    "close": "Exit cooking mode",
     "progress": "Step {{current}} of {{total}}",
     "back": "Back",
     "next": "Next",

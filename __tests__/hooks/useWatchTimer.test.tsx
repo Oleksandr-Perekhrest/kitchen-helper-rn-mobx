@@ -20,6 +20,7 @@ import { useWatchTimer } from "../../src/hooks/useWatchTimer";
 import { SettingsStore } from "../../src/stores/SettingsStore";
 import { SnackbarStore } from "../../src/stores/SnackbarStore";
 import { StoreProvider } from "../../src/stores/StoreProvider";
+import { CookingSessionsStore } from "../../src/stores/CookingSessionsStore";
 
 // Replace useFocusEffect with a plain useEffect so we can drive focus/blur
 // through mount/unmount. The hook under test only cares about the effect
@@ -71,12 +72,14 @@ function makeStore(): RootStore {
     const draft = new DraftStore();
     const timers = new TimersStore();
     const snackbar = new SnackbarStore();
+    const cookingSessions = new CookingSessionsStore();
     return {
         settings,
         recipes,
         draft,
         timers,
         snackbar,
+        cookingSessions,
         dispose: () => snackbar.dispose(),
     };
 }
@@ -150,7 +153,7 @@ describe("useWatchTimer", () => {
         const { unmount } = await renderWith(store, "T1");
         expect(store.timers.watchedTimerId).toBe("T1");
 
-        act(() => {
+        await act(() => {
             store.timers.setWatchedTimerId("T2");
         });
         expect(store.timers.watchedTimerId).toBe("T2");

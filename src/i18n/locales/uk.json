@@ -11,6 +11,8 @@
     "filterLabel": "Фільтр рецептів",
     "tagGroupLabel": "Фільтр за тегом",
     "favoriteBadge": "В обраному",
+    "cookingBadge": "Готується · {{current}}/{{total}}",
+    "cookingA11y": "готується, крок {{current}} з {{total}}",
     "empty": {
       "noRecipes": {
         "title": "Поки що немає рецептів",
@@ -31,6 +33,17 @@
   "recipe": {
     "title": "Рецепт",
     "startCooking": "Почати готувати",
+    "continueCooking": "Продовжити · крок {{n}}",
+    "startOver": "Почати спочатку",
+    "startOverConfirm": {
+      "title": "Почати спочатку?",
+      "message_one": "{{count}} таймер цього рецепта буде скинуто.",
+      "message_few": "{{count}} таймери цього рецепта буде скинуто.",
+      "message_many": "{{count}} таймерів цього рецепта буде скинуто.",
+      "message_other": "{{count}} таймера цього рецепта буде скинуто.",
+      "cancel": "Скасувати",
+      "confirm": "Почати спочатку"
+    },
     "servings_one": "{{count}} порція",
     "servings_few": "{{count}} порції",
     "servings_many": "{{count}} порцій",
@@ -186,7 +199,7 @@
   },
   "cookingMode": {
     "title": "Готування",
-    "close": "Завершити готування",
+    "close": "Вийти з режиму готування",
     "progress": "Крок {{current}} з {{total}}",
     "back": "Назад",
     "next": "Далі",

@@ -18,6 +18,7 @@ import {
     Trash2,
     Pencil,
     SearchX,
+    RotateCcw,
     UtensilsCrossed,
 } from "lucide-react-native";
 
@@ -28,6 +29,7 @@ import { useStores } from "../stores/StoreProvider";
 import { scaleIngredients } from "../domain/scaling";
 import { formatDuration } from "../i18n/formatDuration";
 import { highlightSegments } from "../domain/highlight";
+import { getSessionProgress } from "../domain/cookingSession";
 import type { RootStackScreenProps } from "../navigation/types";
 import { formatIngredientAmount } from "../i18n/formatIngredientAmount";
 import {
@@ -52,13 +54,20 @@ export const RecipeScreen = observer(function RecipeScreenComponent({
 }: Props) {
     const { t, i18n } = useTranslation();
     const { colors } = useTheme();
-    const { recipes } = useStores();
+    const { recipes, timers, cookingSessions } = useStores();
     const insets = useSafeAreaInsets();
     const { recipeId } = route.params;
 
     const recipe = recipes.byId.get(recipeId);
 
-    const [servings, setServings] = useState(() => recipe?.servings ?? 1);
+    const [servings, setServings] = useState(() => {
+        if (recipe === undefined) return 1;
+        const sess = cookingSessions.get(recipeId);
+        if (sess === undefined) return recipe.servings;
+        return getSessionProgress(recipe, sess) !== undefined
+            ? sess.servings
+            : recipe.servings;
+    });
 
     useLayoutEffect(() => {
         if (recipe === undefined) return;
@@ -118,6 +127,9 @@ export const RecipeScreen = observer(function RecipeScreenComponent({
         );
     }
 
+    const session = cookingSessions.get(recipeId);
+    const sessionProgress = getSessionProgress(recipe, session);
+
     const scaledIngredients = scaleIngredients(
         recipe.ingredients,
         recipe.servings,
@@ -131,13 +143,7 @@ export const RecipeScreen = observer(function RecipeScreenComponent({
             <ScrollView
                 contentContainerStyle={[
                     styles.scrollContent,
-                    {
-                        paddingBottom:
-                            insets.bottom +
-                            56 +
-                            HORIZONTAL_PAD +
-                            HORIZONTAL_PAD,
-                    },
+                    { paddingBottom: HORIZONTAL_PAD },
                 ]}
             >
                 {/* Photo area — full width, no horizontal padding */}
@@ -393,17 +399,87 @@ export const RecipeScreen = observer(function RecipeScreenComponent({
                     },
                 ]}
             >
-                <Button
-                    label={t("recipe.startCooking")}
-                    icon={Play}
-                    onPress={() =>
-                        navigation.navigate("CookingMode", {
-                            recipeId: recipe.id,
-                            servings,
-                        })
-                    }
-                    style={styles.cookButton}
-                />
+                {sessionProgress !== undefined ? (
+                    <View style={styles.sessionButtons}>
+                        <Button
+                            label={t("recipe.continueCooking", {
+                                n: sessionProgress.stepNumber,
+                            })}
+                            variant="primary"
+                            size="lg"
+                            icon={Play}
+                            onPress={() =>
+                                navigation.navigate("CookingMode", {
+                                    recipeId: recipe.id,
+                                    servings,
+                                    stepId: sessionProgress.stepId,
+                                })
+                            }
+                            style={styles.cookButton}
+                        />
+                        <Button
+                            label={t("recipe.startOver")}
+                            variant="neutral"
+                            size="md"
+                            icon={RotateCcw}
+                            onPress={() => {
+                                const firstStep = recipe.steps[0];
+                                if (firstStep === undefined) return;
+                                const startOver = () => {
+                                    timers.removeByRecipe(recipe.id);
+                                    cookingSessions.save(
+                                        recipe.id,
+                                        firstStep.id,
+                                        servings,
+                                    );
+                                    navigation.navigate("CookingMode", {
+                                        recipeId: recipe.id,
+                                        servings,
+                                    });
+                                };
+                                const count = timers.countByRecipe(recipe.id);
+                                if (count === 0) {
+                                    startOver();
+                                    return;
+                                }
+                                Alert.alert(
+                                    t("recipe.startOverConfirm.title"),
+                                    t("recipe.startOverConfirm.message", {
+                                        count,
+                                    }),
+                                    [
+                                        {
+                                            text: t(
+                                                "recipe.startOverConfirm.cancel",
+                                            ),
+                                            style: "cancel",
+                                        },
+                                        {
+                                            text: t(
+                                                "recipe.startOverConfirm.confirm",
+                                            ),
+                                            style: "destructive",
+                                            onPress: startOver,
+                                        },
+                                    ],
+                                );
+                            }}
+                            style={styles.cookButton}
+                        />
+                    </View>
+                ) : (
+                    <Button
+                        label={t("recipe.startCooking")}
+                        icon={Play}
+                        onPress={() =>
+                            navigation.navigate("CookingMode", {
+                                recipeId: recipe.id,
+                                servings,
+                            })
+                        }
+                        style={styles.cookButton}
+                    />
+                )}
             </View>
         </View>
     );
@@ -520,6 +596,9 @@ const styles = StyleSheet.create({
     },
     cookButton: {
         width: "100%",
+    },
+    sessionButtons: {
+        gap: 8,
     },
     headerButtons: {
         flexDirection: "row",

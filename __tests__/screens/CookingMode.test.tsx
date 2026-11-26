@@ -70,7 +70,7 @@ describe("CookingMode", () => {
         await openCookingMode(user);
 
         await user.press(
-            screen.getByRole("button", { name: "Finish cooking" }),
+            screen.getByRole("button", { name: "Exit cooking mode" }),
         );
         expect(
             await screen.findByRole("heading", {
