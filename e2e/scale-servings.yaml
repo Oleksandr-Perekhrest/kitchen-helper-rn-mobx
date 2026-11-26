@@ -1,0 +1,14 @@
+appId: com.operekhrest.cookalong
+name: Scale servings - amounts are not rounded
+---
+- launchApp:
+    clearState: true
+- tapOn: "Greek Salad.*"
+- assertVisible: "2 servings"
+- assertVisible: "0.5 pcs"
+- tapOn:
+    text: "Servings"
+    point: "90%,50%"
+- assertVisible: "3 servings"
+- assertVisible: "1.5 pcs"
+- assertVisible: "0.75 pcs"
