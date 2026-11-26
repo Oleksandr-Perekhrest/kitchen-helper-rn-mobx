@@ -890,6 +890,89 @@ describe("startTimerNotificationsSync: quiet (watchedTimerId)", () => {
     });
 });
 
+describe("startTimerNotificationsSync: startupCancelIds", () => {
+    it("cancels notification for an orphaned ID not in the timer store on first run", async () => {
+        const NOW = 1_000_000;
+        const timers = new TimersStore(() => NOW);
+        const { notifier, calls } = makeFakeNotifier();
+        const orphanId = "orphan-aaaa-4aaa-aaaa-aaaaaaaaaaaa";
+
+        const dispose = startTimerNotificationsSync({
+            timers,
+            recipes: new RecipesStore(),
+            settings: new SettingsStore(),
+            notifier,
+            t,
+            now: () => NOW,
+            startupCancelIds: [orphanId],
+        });
+        await flushPromises();
+
+        expect(methodsOf(calls, orphanId)).toContain("cancel");
+        dispose();
+    });
+
+    it("does not cancel a startup ID that is still present in the store", async () => {
+        const NOW = 1_000_000;
+        const timers = new TimersStore(() => NOW);
+        const id = timers.start({ kind: "boil", minutes: 10 });
+        const { notifier, calls } = makeFakeNotifier();
+
+        const dispose = startTimerNotificationsSync({
+            timers,
+            recipes: new RecipesStore(),
+            settings: new SettingsStore(),
+            notifier,
+            t,
+            now: () => NOW,
+            startupCancelIds: [id],
+        });
+        await flushPromises();
+
+        const cancelCalls = calls.filter(
+            (c) => c.method === "cancel" && "id" in c && c.id === id,
+        );
+        expect(cancelCalls).toHaveLength(0);
+        dispose();
+    });
+
+    it("only cancels orphaned startup IDs on the first run, not subsequent ones", async () => {
+        const NOW = 1_000_000;
+        let time = NOW;
+        const timers = new TimersStore(() => time);
+        const { notifier, calls } = makeFakeNotifier();
+        const orphanId = "orphan-bbbb-4bbb-bbbb-bbbbbbbbbbbb";
+
+        const dispose = startTimerNotificationsSync({
+            timers,
+            recipes: new RecipesStore(),
+            settings: new SettingsStore(),
+            notifier,
+            t,
+            now: () => time,
+            startupCancelIds: [orphanId],
+        });
+        await flushPromises();
+
+        const countAfterFirst = calls.filter(
+            (c) => c.method === "cancel" && "id" in c && c.id === orphanId,
+        ).length;
+
+        // Trigger a second reaction run by starting a timer
+        time += 1;
+        timers.start({ kind: "boil", minutes: 5 });
+        await flushPromises();
+
+        const countAfterSecond = calls.filter(
+            (c) => c.method === "cancel" && "id" in c && c.id === orphanId,
+        ).length;
+
+        expect(countAfterFirst).toBe(1);
+        expect(countAfterSecond).toBe(1);
+        dispose();
+    });
+});
+
 describe("startTimerNotificationsSync: dispose", () => {
     it("after dispose, timer changes cause no calls", async () => {
         const NOW = 1_000_000;

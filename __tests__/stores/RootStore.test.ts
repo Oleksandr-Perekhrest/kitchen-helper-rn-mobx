@@ -8,6 +8,10 @@ import { RECIPE_SCHEMA_VERSION } from "../../src/domain/recipe";
 import { RECIPES_STORAGE_KEY } from "../../src/stores/RecipesStore";
 import { createMemoryStorage } from "../../src/storage/memoryStorage";
 import {
+    TIMERS_VERSION,
+    TIMERS_STORAGE_KEY,
+} from "../../src/stores/TimersStore";
+import {
     SETTINGS_VERSION,
     SETTINGS_STORAGE_KEY,
 } from "../../src/stores/SettingsStore";
@@ -326,6 +330,130 @@ describe("createRootStore", () => {
             expect(
                 store.cookingSessions.get("ghost-recipe-id"),
             ).toBeUndefined();
+            store.dispose();
+        });
+    });
+
+    describe("timer pruning", () => {
+        const ORPHAN_TIMER = {
+            id: "dddddddd-dddd-4ddd-addd-dddddddddddd",
+            kind: "boil",
+            createdAt: TIMER_NOW,
+            durationMs: 60_000,
+            endsAt: TIMER_NOW + 60_000,
+            remainingMs: 60_000,
+            step: {
+                recipeId: "99999999-9999-4999-b999-999999999999",
+                stepId: "88888888-8888-4888-a888-888888888888",
+            },
+        };
+
+        const FREE_TIMER = {
+            id: "eeeeeeee-eeee-4eee-aeee-eeeeeeeeeeee",
+            kind: "other",
+            createdAt: TIMER_NOW,
+            durationMs: 60_000,
+            endsAt: TIMER_NOW + 60_000,
+            remainingMs: 60_000,
+        };
+
+        it("deleting a recipe removes its step timers via the pruning reaction", () => {
+            const storage = createMemoryStorage();
+            const store = createRootStore(storage, {
+                deviceLanguages: ["en"],
+                now: NOW_FN,
+            });
+
+            const recipe = store.recipes.recipes[0];
+            if (recipe === undefined) throw new Error("no demo recipes seeded");
+
+            const timerId = store.timers.start({
+                kind: "boil",
+                minutes: 5,
+                step: { recipeId: recipe.id, stepId: "step-1" },
+            });
+            expect(store.timers.get(timerId)).toBeDefined();
+
+            store.recipes.remove(recipe.id);
+            expect(store.timers.get(timerId)).toBeUndefined();
+
+            store.dispose();
+        });
+
+        it("a persisted step timer for a non-existent recipe is pruned at startup", () => {
+            const storage = createMemoryStorage({
+                [RECIPES_STORAGE_KEY]: JSON.stringify({
+                    version: RECIPE_SCHEMA_VERSION,
+                    data: [],
+                }),
+                [TIMERS_STORAGE_KEY]: JSON.stringify({
+                    version: TIMERS_VERSION,
+                    data: [ORPHAN_TIMER],
+                }),
+            });
+
+            const store = createRootStore(storage, {
+                deviceLanguages: ["en"],
+                now: NOW_FN,
+            });
+            expect(store.timers.get(ORPHAN_TIMER.id)).toBeUndefined();
+            store.dispose();
+        });
+
+        it("free timers survive recipe deletion", () => {
+            const storage = createMemoryStorage();
+            const store = createRootStore(storage, {
+                deviceLanguages: ["en"],
+                now: NOW_FN,
+            });
+
+            const recipe = store.recipes.recipes[0];
+            if (recipe === undefined) throw new Error("no demo recipes seeded");
+
+            const freeId = store.timers.start({ kind: "other", minutes: 5 });
+            store.recipes.remove(recipe.id);
+            expect(store.timers.get(freeId)).toBeDefined();
+
+            store.dispose();
+        });
+
+        it("free timers survive startup even when no recipes exist", () => {
+            const storage = createMemoryStorage({
+                [RECIPES_STORAGE_KEY]: JSON.stringify({
+                    version: RECIPE_SCHEMA_VERSION,
+                    data: [],
+                }),
+                [TIMERS_STORAGE_KEY]: JSON.stringify({
+                    version: TIMERS_VERSION,
+                    data: [FREE_TIMER],
+                }),
+            });
+
+            const store = createRootStore(storage, {
+                deviceLanguages: ["en"],
+                now: NOW_FN,
+            });
+            expect(store.timers.get(FREE_TIMER.id)).toBeDefined();
+            store.dispose();
+        });
+
+        it("startupCancelIds contains the IDs of timers pruned at startup", () => {
+            const storage = createMemoryStorage({
+                [RECIPES_STORAGE_KEY]: JSON.stringify({
+                    version: RECIPE_SCHEMA_VERSION,
+                    data: [],
+                }),
+                [TIMERS_STORAGE_KEY]: JSON.stringify({
+                    version: TIMERS_VERSION,
+                    data: [ORPHAN_TIMER],
+                }),
+            });
+
+            const store = createRootStore(storage, {
+                deviceLanguages: ["en"],
+                now: NOW_FN,
+            });
+            expect(store.startupCancelIds).toContain(ORPHAN_TIMER.id);
             store.dispose();
         });
     });

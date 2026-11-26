@@ -46,6 +46,7 @@ export type RootStore = {
     timers: TimersStore;
     snackbar: SnackbarStore;
     cookingSessions: CookingSessionsStore;
+    startupCancelIds: readonly string[];
     dispose: () => void;
 };
 
@@ -129,9 +130,20 @@ export function createRootStore(
         parse: parseCookingSessions,
     });
 
+    let startupCancelIds: readonly string[] = [];
+    let isFirstPrune = true;
+
     const disposeSessionsPrune = reaction(
         () => recipes.recipes.map((r) => r.id),
-        (ids) => cookingSessions.pruneMissingRecipes(new Set(ids)),
+        (ids) => {
+            const set = new Set(ids);
+            cookingSessions.pruneMissingRecipes(set);
+            const pruned = timers.pruneMissingRecipes(set);
+            if (isFirstPrune) {
+                startupCancelIds = pruned.map((t) => t.id);
+                isFirstPrune = false;
+            }
+        },
         { fireImmediately: true, equals: compareStructural },
     );
 
@@ -166,6 +178,7 @@ export function createRootStore(
         timers,
         snackbar,
         cookingSessions,
+        startupCancelIds,
         dispose: () => {
             disposeSettings();
             disposeRecipes();

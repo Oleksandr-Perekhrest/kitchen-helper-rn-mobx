@@ -132,6 +132,18 @@ export class TimersStore {
         return removed;
     }
 
+    pruneMissingRecipes(existingIds: ReadonlySet<string>): TimerState[] {
+        const removed: TimerState[] = [];
+        for (const timer of this.timers.values()) {
+            if (timer.step === undefined) continue;
+            if (!existingIds.has(timer.step.recipeId)) {
+                removed.push(timer);
+                this.timers.delete(timer.id);
+            }
+        }
+        return removed;
+    }
+
     countByRecipe(recipeId: string): number {
         let count = 0;
         for (const timer of this.timers.values()) {

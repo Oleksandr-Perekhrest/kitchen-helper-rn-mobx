@@ -91,6 +91,7 @@ function App() {
             timers: s.timers,
             recipes: s.recipes,
             settings: s.settings,
+            startupCancelIds: s.startupCancelIds,
             onExactAlarmsDenied: () =>
                 showExactAlarmPrompt({ notifier, t: i18n.t }),
         });

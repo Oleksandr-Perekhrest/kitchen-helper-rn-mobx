@@ -59,6 +59,7 @@ function makeStore(): RootStore {
         timers,
         snackbar,
         cookingSessions,
+        startupCancelIds: [],
         dispose: () => snackbar.dispose(),
     };
 }
