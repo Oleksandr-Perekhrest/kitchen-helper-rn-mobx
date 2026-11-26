@@ -1,0 +1,23 @@
+appId: com.operekhrest.cookalong
+name: Cooking mode - step timer runs, progress survives restart
+---
+- launchApp:
+    clearState: true
+- tapOn: "Borscht.*"
+- scrollUntilVisible:
+    element:
+      text: "Start cooking"
+    direction: DOWN
+- tapOn: "Start cooking"
+- assertVisible: "Step 1 of 5"
+- assertVisible: "Boil, 1:30:00"
+- tapOn: "Start"
+# the timer counts down: within a few seconds the label leaves 1:30:00
+- assertVisible: "Pause"
+- extendedWaitUntil:
+    visible: "Boil, running, 1:29:.*"
+    timeout: 5000
+- tapOn: "Next"
+- assertVisible: "Step 2 of 5"
+- launchApp
+- assertVisible: "Borscht.*cooking, step 2 of 5"
