@@ -46,7 +46,7 @@ export function subscribeToOpens(
     (async () => {
         try {
             const initial = await notifee.getInitialNotification();
-            if (cancelled || initial === null) return;
+            if (cancelled || initial == null) return;
             onOpen(readTimerId(initial.notification.data));
         } catch (e) {
             console.warn("[notifications] getInitialNotification failed", e);
