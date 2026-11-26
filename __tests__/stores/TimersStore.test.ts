@@ -443,6 +443,55 @@ describe("TimersStore.countByRecipe", () => {
     });
 });
 
+// ─── pruneMissingRecipes ──────────────────────────────────────────────────────
+
+describe("TimersStore.pruneMissingRecipes", () => {
+    it("removes step timers whose recipeId is not in the existing set and returns them", () => {
+        const { store } = makeStore();
+        const id1 = startTimer(store, { stepId: "step-1" }); // recipe-1
+        const id2 = startTimer(store, { stepId: "step-2" }); // recipe-1
+        const removed = store.pruneMissingRecipes(new Set());
+        expect(removed.map((t) => t.id).sort()).toEqual([id1, id2].sort());
+        expect(store.list).toHaveLength(0);
+    });
+
+    it("keeps timers of recipes that exist in the set", () => {
+        const { store } = makeStore();
+        const id = startTimer(store, { stepId: "step-1" }); // recipe-1
+        const removed = store.pruneMissingRecipes(new Set(["recipe-1"]));
+        expect(removed).toHaveLength(0);
+        expect(store.get(id)).toBeDefined();
+    });
+
+    it("only removes orphaned recipes, keeps recipes still present", () => {
+        const { store } = makeStore();
+        const keepId = startTimer(store, { stepId: "step-1" }); // recipe-1 (kept)
+        const dropId = store.start({
+            step: { recipeId: "recipe-2", stepId: "step-other" },
+            kind: "boil",
+            minutes: 10,
+        });
+        const removed = store.pruneMissingRecipes(new Set(["recipe-1"]));
+        expect(removed.map((t) => t.id)).toEqual([dropId]);
+        expect(store.get(keepId)).toBeDefined();
+        expect(store.get(dropId)).toBeUndefined();
+    });
+
+    it("never touches free timers (no step)", () => {
+        const { store } = makeStore();
+        const freeId = store.start({ kind: "other", minutes: 5 });
+        store.pruneMissingRecipes(new Set());
+        expect(store.get(freeId)).toBeDefined();
+    });
+
+    it("returns an empty array when nothing is pruned", () => {
+        const { store } = makeStore();
+        startTimer(store, { stepId: "step-1" }); // recipe-1
+        const removed = store.pruneMissingRecipes(new Set(["recipe-1"]));
+        expect(removed).toEqual([]);
+    });
+});
+
 // ─── parseTimers ──────────────────────────────────────────────────────────────
 
 const VALID_TIMER: TimerState = {

@@ -44,6 +44,7 @@ type Options = {
     t: TFunction;
     now?: () => number;
     onExactAlarmsDenied?: () => void;
+    startupCancelIds?: readonly string[];
 };
 
 type Snapshot = { endsAt: number | null; remainingMs: number };
@@ -57,11 +58,13 @@ export function startTimerNotificationsSync(options: Options): () => void {
         settings,
         now = Date.now,
         onExactAlarmsDenied,
+        startupCancelIds,
     } = options;
 
     let prevSnapshots: ReadonlyMap<string, Snapshot> = new Map();
     let permissionPromise: Promise<unknown> | null = null;
     const chains = new Map<string, Promise<void>>();
+    let isFirstRun = true;
 
     const chain = (id: string, work: () => Promise<void>) => {
         const previous = chains.get(id) ?? Promise.resolve();
@@ -124,6 +127,15 @@ export function startTimerNotificationsSync(options: Options): () => void {
             return map;
         },
         (next) => {
+            if (isFirstRun) {
+                isFirstRun = false;
+                for (const id of startupCancelIds ?? []) {
+                    if (!next.has(id)) {
+                        chain(id, () => notifier.cancel(id));
+                    }
+                }
+            }
+
             const prevMap = prevSnapshots;
             prevSnapshots = next;
 
