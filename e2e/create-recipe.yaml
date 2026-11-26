@@ -90,8 +90,9 @@ name: Create recipe - 4-step wizard creates recipe in list
     text: "Save recipe"
     point: "50%,25%"
 
-# Back on list via iOS native back button (shows previous screen title "Recipes")
-- tapOn: "Recipes"
+# Relaunch instead of the native back button: its label differs on iOS and Android.
+# The relaunch also checks that the new recipe was persisted.
+- launchApp
 - assertVisible: "All · 6"
 - assertVisible: "E2E Tomato Soup.*"
 
@@ -104,3 +105,5 @@ name: Create recipe - 4-step wizard creates recipe in list
 - tapOn: "E2E Tomato Soup.*"
 - assertVisible: "Tomatoes"
 - assertVisible: "Garlic"
+- assertVisible: "500 g"
+- assertVisible: "2 pcs"
