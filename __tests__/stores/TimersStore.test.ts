@@ -369,6 +369,80 @@ describe("TimersStore.replaceAll", () => {
     });
 });
 
+// ─── removeByRecipe ───────────────────────────────────────────────────────────
+
+describe("TimersStore.removeByRecipe", () => {
+    it("removes all step timers for the given recipe and returns them", () => {
+        const { store } = makeStore();
+        const id1 = startTimer(store, { stepId: "step-1" });
+        const id2 = startTimer(store, { stepId: "step-2" });
+        const removed = store.removeByRecipe("recipe-1");
+        expect(removed.map((t) => t.id).sort()).toEqual([id1, id2].sort());
+        expect(store.get(id1)).toBeUndefined();
+        expect(store.get(id2)).toBeUndefined();
+    });
+
+    it("leaves timers belonging to other recipes", () => {
+        const { store } = makeStore();
+        startTimer(store, { stepId: "step-1" }); // recipe-1
+        const otherId = store.start({
+            step: { recipeId: "recipe-2", stepId: "step-other" },
+            kind: "boil",
+            minutes: 10,
+        });
+        store.removeByRecipe("recipe-1");
+        expect(store.get(otherId)).toBeDefined();
+    });
+
+    it("leaves free timers that have no step", () => {
+        const { store } = makeStore();
+        startTimer(store, { stepId: "step-1" }); // recipe-1
+        const freeId = store.start({ kind: "other", minutes: 5 });
+        store.removeByRecipe("recipe-1");
+        expect(store.get(freeId)).toBeDefined();
+    });
+
+    it("returns an empty array when the recipe has no timers", () => {
+        const { store } = makeStore();
+        startTimer(store, { stepId: "step-1" }); // recipe-1
+        const removed = store.removeByRecipe("recipe-99");
+        expect(removed).toEqual([]);
+        expect(store.list).toHaveLength(1);
+    });
+});
+
+// ─── countByRecipe ────────────────────────────────────────────────────────────
+
+describe("TimersStore.countByRecipe", () => {
+    it("counts only timers for the given recipe", () => {
+        const { store } = makeStore();
+        startTimer(store, { stepId: "step-1" }); // recipe-1
+        startTimer(store, { stepId: "step-2" }); // recipe-1
+        store.start({
+            step: { recipeId: "recipe-2", stepId: "step-other" },
+            kind: "boil",
+            minutes: 10,
+        });
+        expect(store.countByRecipe("recipe-1")).toBe(2);
+    });
+
+    it("excludes free timers and timers for other recipes", () => {
+        const { store } = makeStore();
+        store.start({ kind: "other", minutes: 5 }); // free timer
+        store.start({
+            step: { recipeId: "recipe-2", stepId: "step-x" },
+            kind: "boil",
+            minutes: 10,
+        });
+        expect(store.countByRecipe("recipe-1")).toBe(0);
+    });
+
+    it("returns 0 when no timers exist for the recipe", () => {
+        const { store } = makeStore();
+        expect(store.countByRecipe("recipe-1")).toBe(0);
+    });
+});
+
 // ─── parseTimers ──────────────────────────────────────────────────────────────
 
 const VALID_TIMER: TimerState = {
