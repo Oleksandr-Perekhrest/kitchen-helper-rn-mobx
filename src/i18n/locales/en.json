@@ -31,6 +31,8 @@
   "recipe": {
     "title": "Recipe",
     "startCooking": "Start cooking",
+    "continueCooking": "Continue · step {{n}}",
+    "startOver": "Start over",
     "servings_one": "{{count}} serving",
     "servings_other": "{{count}} servings",
     "notFound": {

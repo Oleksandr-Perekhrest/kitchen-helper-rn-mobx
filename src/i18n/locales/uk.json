@@ -31,6 +31,8 @@
   "recipe": {
     "title": "Рецепт",
     "startCooking": "Почати готувати",
+    "continueCooking": "Продовжити · крок {{n}}",
+    "startOver": "Почати спочатку",
     "servings_one": "{{count}} порція",
     "servings_few": "{{count}} порції",
     "servings_many": "{{count}} порцій",
