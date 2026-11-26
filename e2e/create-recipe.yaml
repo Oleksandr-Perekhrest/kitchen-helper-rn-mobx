@@ -6,10 +6,8 @@ name: Create recipe - 4-step wizard creates recipe in list
 
 # Ensure list is loaded before tapping the FAB
 - assertVisible: "All · 5"
-# Open wizard; point avoids the iOS home-indicator zone at the button's bottom edge
-- tapOn:
-    text: "New recipe"
-    point: "50%,30%"
+# Open wizard
+- tapOn: "New recipe"
 
 # Basics: wait for the form then enter recipe title
 - assertVisible: "Basics"
@@ -20,15 +18,11 @@ name: Create recipe - 4-step wizard creates recipe in list
     index: 1
 - inputText: "E2E Tomato Soup"
 - hideKeyboard
-# point 25% from top keeps the tap above the RN dev-mode banner (y≈787) which
-# otherwise overlaps the button when it scrolls to the bottom of the viewport
 - scrollUntilVisible:
     element:
       text: "Next"
     direction: DOWN
-- tapOn:
-    text: "Next"
-    point: "50%,25%"
+- tapOn: "Next"
 
 # Ingredients: form opens with one empty row already present
 - tapOn: "Name, row 1"
@@ -53,9 +47,7 @@ name: Create recipe - 4-step wizard creates recipe in list
     element:
       text: "Next"
     direction: DOWN
-- tapOn:
-    text: "Next"
-    point: "50%,25%"
+- tapOn: "Next"
 
 # Steps: form opens with one empty step; insert Tomatoes from ingredient cloud
 - tapOn: "Tomatoes, not used. Insert into step text"
@@ -66,17 +58,13 @@ name: Create recipe - 4-step wizard creates recipe in list
     element:
       text: "Next"
     direction: DOWN
-- tapOn:
-    text: "Next"
-    point: "50%,25%"
+- tapOn: "Next"
 # Garlic is unused — dismiss the warning and continue
 - scrollUntilVisible:
     element:
       text: "Continue anyway"
     direction: DOWN
-- tapOn:
-    text: "Continue anyway"
-    point: "50%,25%"
+- tapOn: "Continue anyway"
 
 # Review: assert title and both ingredients are visible
 - assertVisible: "E2E Tomato Soup"
@@ -86,9 +74,7 @@ name: Create recipe - 4-step wizard creates recipe in list
     element:
       text: "Save recipe"
     direction: DOWN
-- tapOn:
-    text: "Save recipe"
-    point: "50%,25%"
+- tapOn: "Save recipe"
 
 # Relaunch instead of the native back button: its label differs on iOS and Android.
 # The relaunch also checks that the new recipe was persisted.
