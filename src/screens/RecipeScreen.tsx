@@ -66,7 +66,6 @@ export const RecipeScreen = observer(function RecipeScreenComponent({
         const idx = recipe.steps.findIndex((s) => s.id === sess.stepId);
         return idx >= 0 ? sess.servings : recipe.servings;
     });
-    const [bottomBarHeight, setBottomBarHeight] = useState(0);
 
     useLayoutEffect(() => {
         if (recipe === undefined) return;
@@ -146,13 +145,7 @@ export const RecipeScreen = observer(function RecipeScreenComponent({
             <ScrollView
                 contentContainerStyle={[
                     styles.scrollContent,
-                    {
-                        paddingBottom:
-                            insets.bottom +
-                            bottomBarHeight +
-                            HORIZONTAL_PAD +
-                            HORIZONTAL_PAD,
-                    },
+                    { paddingBottom: HORIZONTAL_PAD },
                 ]}
             >
                 {/* Photo area — full width, no horizontal padding */}
@@ -399,9 +392,6 @@ export const RecipeScreen = observer(function RecipeScreenComponent({
 
             {/* Bottom bar */}
             <View
-                onLayout={(e) =>
-                    setBottomBarHeight(e.nativeEvent.layout.height)
-                }
                 style={[
                     styles.bottomBar,
                     {
