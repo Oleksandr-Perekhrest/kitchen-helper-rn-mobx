@@ -1,0 +1,13 @@
+appId: com.operekhrest.cookalong
+name: Browse - open recipe, favorite survives restart
+---
+- launchApp:
+    clearState: true
+- tapOn: "Greek Salad.*"
+- assertVisible: "Ingredients"
+- assertVisible: "Cucumber"
+- assertVisible: "Start cooking"
+- tapOn: "Add to favorites"
+- launchApp
+- assertVisible: "Favorites · 2"
+- assertVisible: "Greek Salad, 2 servings, Favorite"
