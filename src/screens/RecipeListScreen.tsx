@@ -1,8 +1,9 @@
 // outsource dependencies
-import React, { useState } from "react";
 import { observer } from "mobx-react-lite";
 import { useTranslation } from "react-i18next";
 import { useWindowDimensions } from "react-native";
+import React, { useState, useCallback } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { View, FlatList, ScrollView, StyleSheet } from "react-native";
 import { Star, Plus, Search, SearchX, BookOpen } from "lucide-react-native";
@@ -16,6 +17,7 @@ import { photoFileUri } from "../storage/photos";
 import { useStores } from "../stores/StoreProvider";
 import { filterRecipes } from "../domain/recipeFilter";
 import { formatDuration } from "../i18n/formatDuration";
+import { getSessionProgress } from "../domain/cookingSession";
 import type { RootStackScreenProps } from "../navigation/types";
 import { Chip, Button, TextField, RecipeCard, EmptyState } from "../ui";
 
@@ -35,13 +37,20 @@ export const RecipeListScreen = observer(function RecipeListScreenComponent({
 }: Props) {
     const { t } = useTranslation();
     const { colors } = useTheme();
-    const { recipes } = useStores();
+    const { recipes, cookingSessions } = useStores();
     const insets = useSafeAreaInsets();
     const { width: screenWidth } = useWindowDimensions();
 
     const [query, setQuery] = useState("");
     const [tag, setTag] = useState<Tag | null>(null);
     const [favoritesOnly, setFavoritesOnly] = useState(false);
+    const [focusCount, setFocusCount] = useState(0);
+
+    useFocusEffect(
+        useCallback(() => {
+            setFocusCount((c) => c + 1);
+        }, []),
+    );
 
     const totalCount = recipes.recipes.length;
     const favoritesCount = recipes.favorites.length;
@@ -53,6 +62,13 @@ export const RecipeListScreen = observer(function RecipeListScreenComponent({
 
     const cardWidth = (screenWidth - HORIZONTAL_PAD * 2 - CARD_GAP) / 2;
 
+    const sessionProgressMap = new Map(
+        recipes.recipes.flatMap((r) => {
+            const prog = getSessionProgress(r, cookingSessions.get(r.id));
+            return prog !== undefined ? [[r.id, prog] as const] : [];
+        }),
+    );
+
     function renderItem({ item }: { item: Recipe }) {
         const duration =
             item.totalMinutes !== undefined
@@ -63,6 +79,22 @@ export const RecipeListScreen = observer(function RecipeListScreenComponent({
         const a11yParts = [item.title, servings];
         if (duration !== undefined) a11yParts.push(duration);
         if (item.favorite) a11yParts.push(favLabel);
+        const prog = sessionProgressMap.get(item.id);
+        const cookingLabel =
+            prog !== undefined
+                ? t("recipeList.cookingBadge", {
+                      current: prog.stepNumber,
+                      total: prog.total,
+                  })
+                : undefined;
+        if (prog !== undefined) {
+            a11yParts.push(
+                t("recipeList.cookingA11y", {
+                    current: prog.stepNumber,
+                    total: prog.total,
+                }),
+            );
+        }
         return (
             <View style={{ width: cardWidth }}>
                 <RecipeCard
@@ -76,6 +108,10 @@ export const RecipeListScreen = observer(function RecipeListScreenComponent({
                     }
                     favorite={item.favorite}
                     accessibilityLabel={a11yParts.join(", ")}
+                    cookingLabel={cookingLabel}
+                    pulseKey={
+                        cookingLabel !== undefined ? focusCount : undefined
+                    }
                     onPress={() =>
                         navigation.navigate("Recipe", { recipeId: item.id })
                     }
@@ -199,6 +235,7 @@ export const RecipeListScreen = observer(function RecipeListScreenComponent({
                 numColumns={2}
                 keyExtractor={(item) => item.id}
                 renderItem={renderItem}
+                extraData={{ sessionProgressMap, focusCount }}
                 ListHeaderComponent={listHeader}
                 ListEmptyComponent={listEmpty}
                 columnWrapperStyle={styles.columnWrapper}

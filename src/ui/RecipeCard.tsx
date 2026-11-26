@@ -1,11 +1,19 @@
 // outsource dependencies
-import { View, Image, Pressable, StyleSheet } from "react-native";
-import { Star, Clock, Users, UtensilsCrossed } from "lucide-react-native";
+import { useRef, useEffect } from "react";
+import { View, Image, Animated, Pressable, StyleSheet } from "react-native";
+import {
+    Star,
+    Clock,
+    Users,
+    ChefHat,
+    UtensilsCrossed,
+} from "lucide-react-native";
 
 // local dependencies
 import { Icon } from "./Icon";
 import { Text } from "./Text";
 import { radii, useTheme, typography } from "../theme";
+import { useReduceMotion } from "../hooks/useReduceMotion";
 
 export type RecipeCardProps = {
     title: string;
@@ -15,6 +23,8 @@ export type RecipeCardProps = {
     favorite: boolean;
     onPress: () => void;
     accessibilityLabel: string;
+    cookingLabel?: string;
+    pulseKey?: number;
 };
 
 export function RecipeCard({
@@ -25,109 +35,157 @@ export function RecipeCard({
     favorite,
     onPress,
     accessibilityLabel,
+    cookingLabel,
+    pulseKey,
 }: RecipeCardProps) {
     const { colors } = useTheme();
+    const reduceMotion = useReduceMotion();
+    const scaleAnim = useRef(new Animated.Value(1));
+
+    useEffect(() => {
+        if (cookingLabel === undefined || reduceMotion) return;
+        Animated.sequence([
+            Animated.timing(scaleAnim.current, {
+                toValue: 1.04,
+                duration: 180,
+                useNativeDriver: true,
+            }),
+            Animated.timing(scaleAnim.current, {
+                toValue: 1,
+                duration: 180,
+                useNativeDriver: true,
+            }),
+        ]).start();
+    }, [pulseKey, cookingLabel, reduceMotion]);
 
     return (
-        <Pressable
-            onPress={onPress}
-            role="button"
-            aria-label={accessibilityLabel}
-            style={({ pressed }) => [
-                styles.card,
-                { backgroundColor: colors.surface, borderColor: colors.border },
-                pressed && styles.pressed,
-            ]}
-        >
-            <View
-                style={[
-                    styles.imageContainer,
-                    { backgroundColor: colors.primarySoft },
+        <Animated.View style={{ transform: [{ scale: scaleAnim.current }] }}>
+            <Pressable
+                onPress={onPress}
+                role="button"
+                aria-label={accessibilityLabel}
+                style={({ pressed }) => [
+                    styles.card,
+                    {
+                        backgroundColor: colors.surface,
+                        borderColor:
+                            cookingLabel !== undefined
+                                ? colors.primary
+                                : colors.border,
+                    },
+                    pressed && styles.pressed,
                 ]}
             >
-                {photoUri !== undefined && (
-                    <Image
-                        source={{ uri: photoUri }}
-                        style={styles.image}
-                        resizeMode="cover"
-                        accessible={false}
-                    />
-                )}
-                {photoUri === undefined && (
-                    <Icon
-                        icon={UtensilsCrossed}
-                        size={32}
-                        tone="primary"
-                        strokeWidth={2}
-                    />
-                )}
-                {duration !== undefined && (
-                    <View
-                        style={[
-                            styles.durationPill,
-                            { backgroundColor: colors.surface },
-                        ]}
-                        accessible={false}
-                        importantForAccessibility="no-hide-descendants"
-                    >
+                <View
+                    style={[
+                        styles.imageContainer,
+                        { backgroundColor: colors.primarySoft },
+                    ]}
+                >
+                    {photoUri !== undefined && (
+                        <Image
+                            source={{ uri: photoUri }}
+                            style={styles.image}
+                            resizeMode="cover"
+                            accessible={false}
+                        />
+                    )}
+                    {photoUri === undefined && (
                         <Icon
-                            icon={Clock}
-                            size={14}
+                            icon={UtensilsCrossed}
+                            size={32}
+                            tone="primary"
+                            strokeWidth={2}
+                        />
+                    )}
+                    {cookingLabel !== undefined && (
+                        <View
+                            style={[
+                                styles.cookingBadge,
+                                { backgroundColor: colors.primary },
+                            ]}
+                            accessible={false}
+                            importantForAccessibility="no-hide-descendants"
+                        >
+                            <Icon
+                                icon={ChefHat}
+                                size={14}
+                                tone="onPrimary"
+                                strokeWidth={2}
+                            />
+                            <Text variant="caption" tone="onPrimary">
+                                {cookingLabel}
+                            </Text>
+                        </View>
+                    )}
+                    {duration !== undefined && (
+                        <View
+                            style={[
+                                styles.durationPill,
+                                { backgroundColor: colors.surface },
+                            ]}
+                            accessible={false}
+                            importantForAccessibility="no-hide-descendants"
+                        >
+                            <Icon
+                                icon={Clock}
+                                size={14}
+                                tone="textMuted"
+                                strokeWidth={2}
+                            />
+                            <Text variant="caption" tone="textMuted">
+                                {duration}
+                            </Text>
+                        </View>
+                    )}
+                    {favorite && (
+                        <View
+                            style={[
+                                styles.favBadge,
+                                { backgroundColor: colors.surface },
+                            ]}
+                            accessible={false}
+                            importantForAccessibility="no-hide-descendants"
+                        >
+                            <Star
+                                size={16}
+                                color={colors.primary}
+                                fill={colors.primary}
+                                strokeWidth={2}
+                                accessible={false}
+                                importantForAccessibility="no-hide-descendants"
+                            />
+                        </View>
+                    )}
+                </View>
+                <View style={styles.info}>
+                    <Text
+                        variant="buttonSm"
+                        numberOfLines={2}
+                        ellipsizeMode="tail"
+                        style={styles.titleText}
+                    >
+                        {title}
+                    </Text>
+                    <View style={styles.metaRow}>
+                        <Icon
+                            icon={Users}
+                            size={13}
                             tone="textMuted"
                             strokeWidth={2}
                         />
-                        <Text variant="caption" tone="textMuted">
-                            {duration}
+                        <Text
+                            variant="caption"
+                            tone="textMuted"
+                            numberOfLines={1}
+                            ellipsizeMode="tail"
+                        >
+                            {servings}
                         </Text>
                     </View>
-                )}
-                {favorite && (
-                    <View
-                        style={[
-                            styles.favBadge,
-                            { backgroundColor: colors.surface },
-                        ]}
-                        accessible={false}
-                        importantForAccessibility="no-hide-descendants"
-                    >
-                        <Star
-                            size={16}
-                            color={colors.primary}
-                            fill={colors.primary}
-                            strokeWidth={2}
-                            accessible={false}
-                            importantForAccessibility="no-hide-descendants"
-                        />
-                    </View>
-                )}
-            </View>
-            <View style={styles.info}>
-                <Text
-                    variant="buttonSm"
-                    numberOfLines={2}
-                    ellipsizeMode="tail"
-                    style={styles.titleText}
-                >
-                    {title}
-                </Text>
-                <View style={styles.metaRow}>
-                    <Icon
-                        icon={Users}
-                        size={13}
-                        tone="textMuted"
-                        strokeWidth={2}
-                    />
-                    <Text
-                        variant="caption"
-                        tone="textMuted"
-                        numberOfLines={1}
-                        ellipsizeMode="tail"
-                    >
-                        {servings}
-                    </Text>
                 </View>
-            </View>
-        </Pressable>
+            </Pressable>
+        </Animated.View>
     );
 }
 
@@ -151,6 +209,17 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
         bottom: 0,
+    },
+    cookingBadge: {
+        position: "absolute",
+        top: 8,
+        left: 8,
+        height: 28,
+        paddingHorizontal: 8,
+        borderRadius: radii.full,
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 4,
     },
     durationPill: {
         position: "absolute",

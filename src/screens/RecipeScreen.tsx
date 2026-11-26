@@ -29,6 +29,7 @@ import { useStores } from "../stores/StoreProvider";
 import { scaleIngredients } from "../domain/scaling";
 import { formatDuration } from "../i18n/formatDuration";
 import { highlightSegments } from "../domain/highlight";
+import { getSessionProgress } from "../domain/cookingSession";
 import type { RootStackScreenProps } from "../navigation/types";
 import { formatIngredientAmount } from "../i18n/formatIngredientAmount";
 import {
@@ -63,8 +64,9 @@ export const RecipeScreen = observer(function RecipeScreenComponent({
         if (recipe === undefined) return 1;
         const sess = cookingSessions.get(recipeId);
         if (sess === undefined) return recipe.servings;
-        const idx = recipe.steps.findIndex((s) => s.id === sess.stepId);
-        return idx >= 0 ? sess.servings : recipe.servings;
+        return getSessionProgress(recipe, sess) !== undefined
+            ? sess.servings
+            : recipe.servings;
     });
 
     useLayoutEffect(() => {
@@ -126,11 +128,7 @@ export const RecipeScreen = observer(function RecipeScreenComponent({
     }
 
     const session = cookingSessions.get(recipeId);
-    const sessionStepIndex =
-        session !== undefined
-            ? recipe.steps.findIndex((s) => s.id === session.stepId)
-            : -1;
-    const validSession = sessionStepIndex >= 0 ? session : undefined;
+    const sessionProgress = getSessionProgress(recipe, session);
 
     const scaledIngredients = scaleIngredients(
         recipe.ingredients,
@@ -401,11 +399,11 @@ export const RecipeScreen = observer(function RecipeScreenComponent({
                     },
                 ]}
             >
-                {validSession !== undefined ? (
+                {sessionProgress !== undefined ? (
                     <View style={styles.sessionButtons}>
                         <Button
                             label={t("recipe.continueCooking", {
-                                n: sessionStepIndex + 1,
+                                n: sessionProgress.stepNumber,
                             })}
                             variant="primary"
                             size="lg"
@@ -414,7 +412,7 @@ export const RecipeScreen = observer(function RecipeScreenComponent({
                                 navigation.navigate("CookingMode", {
                                     recipeId: recipe.id,
                                     servings,
-                                    stepId: validSession.stepId,
+                                    stepId: sessionProgress.stepId,
                                 })
                             }
                             style={styles.cookButton}

@@ -11,6 +11,8 @@
     "filterLabel": "Recipe filter",
     "tagGroupLabel": "Filter by tag",
     "favoriteBadge": "Favorite",
+    "cookingBadge": "Cooking · {{current}}/{{total}}",
+    "cookingA11y": "cooking, step {{current}} of {{total}}",
     "empty": {
       "noRecipes": {
         "title": "No recipes yet",

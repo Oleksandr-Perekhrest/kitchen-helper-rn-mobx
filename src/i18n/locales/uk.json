@@ -11,6 +11,8 @@
     "filterLabel": "Фільтр рецептів",
     "tagGroupLabel": "Фільтр за тегом",
     "favoriteBadge": "В обраному",
+    "cookingBadge": "Готується · {{current}}/{{total}}",
+    "cookingA11y": "готується, крок {{current}} з {{total}}",
     "empty": {
       "noRecipes": {
         "title": "Поки що немає рецептів",

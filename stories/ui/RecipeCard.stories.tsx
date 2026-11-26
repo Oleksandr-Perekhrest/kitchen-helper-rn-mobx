@@ -36,6 +36,10 @@ export const NoDuration: Story = {
     args: { duration: undefined },
 };
 
+export const Cooking: Story = {
+    args: { cookingLabel: "Cooking · 3/5" },
+};
+
 export const LongTitle: Story = {
     args: {
         title: "Традиційний польський бігос із квашеною капустою та копченостями",
