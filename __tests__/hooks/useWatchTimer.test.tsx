@@ -153,7 +153,7 @@ describe("useWatchTimer", () => {
         const { unmount } = await renderWith(store, "T1");
         expect(store.timers.watchedTimerId).toBe("T1");
 
-        act(() => {
+        await act(() => {
             store.timers.setWatchedTimerId("T2");
         });
         expect(store.timers.watchedTimerId).toBe("T2");
