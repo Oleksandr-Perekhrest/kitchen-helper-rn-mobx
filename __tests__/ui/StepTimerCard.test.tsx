@@ -1,6 +1,6 @@
 // outsource dependencies
 import type { ComponentProps } from "react";
-import { render, fireEvent } from "@testing-library/react-native";
+import { act, render, fireEvent } from "@testing-library/react-native";
 import {
     it,
     jest,
@@ -63,9 +63,10 @@ function renderCard(props: CardProps) {
 }
 
 async function advance(ms: number) {
-    await jest.advanceTimersByTimeAsync(ms);
+    await act(async () => {
+        await jest.advanceTimersByTimeAsync(ms);
+    });
 }
-
 const STOP_AUTO_LABEL = "Stop timer, stops automatically in 3 s";
 const STOP_LABEL = "Stop and reset";
 
@@ -89,7 +90,9 @@ describe("StepTimerCard auto-stop", () => {
         const view = await renderCard(makeProps({ onStop }));
 
         await advance(1000);
-        fireEvent.press(view.getByRole("button", { name: STOP_AUTO_LABEL }));
+        await fireEvent.press(
+            view.getByRole("button", { name: STOP_AUTO_LABEL }),
+        );
         expect(onStop).toHaveBeenCalledTimes(1);
 
         await advance(5000);
