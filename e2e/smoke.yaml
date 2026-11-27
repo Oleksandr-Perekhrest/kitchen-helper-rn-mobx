@@ -1,0 +1,9 @@
+appId: com.operekhrest.cookalong
+name: Smoke - recipe list on clean launch
+---
+- launchApp:
+    clearState: true
+- assertVisible: "Recipes"
+- assertVisible: "All · 5"
+- assertVisible: "Greek Salad.*"
+- assertNotVisible: ".*cooking, step.*"

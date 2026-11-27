@@ -1,0 +1,95 @@
+appId: com.operekhrest.cookalong
+name: Create recipe - 4-step wizard creates recipe in list
+---
+- launchApp:
+    clearState: true
+
+# Ensure list is loaded before tapping the FAB
+- assertVisible: "All · 5"
+# Open wizard
+- tapOn: "New recipe"
+
+# Basics: wait for the form then enter recipe title
+- assertVisible: "Basics"
+# "Title" appears three times in the iOS accessibility tree:
+#   index 0 & 1 → the visible Text label; index 2 → the TextInput with aria-label="Title"
+- tapOn:
+    text: "Title"
+    index: 1
+- inputText: "E2E Tomato Soup"
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: "Next"
+    direction: DOWN
+- tapOn: "Next"
+
+# Ingredients: form opens with one empty row already present
+- tapOn: "Name, row 1"
+- inputText: "Tomatoes"
+- tapOn: "Amount, row 1"
+- inputText: "500"
+# unit is already g — no change needed
+
+# Add second ingredient
+- tapOn: "Add ingredient"
+- tapOn: "Name, row 2"
+- inputText: "Garlic"
+- tapOn: "Amount, row 2"
+- inputText: "2"
+# decimal-pad has no Done key so hideKeyboard fails; tap the static header text
+# instead — a non-interactive node dismisses the keyboard via keyboardShouldPersistTaps
+- tapOn: "Ingredients for"
+# Change unit from g to pcs
+- tapOn: "Unit, row 2: g"
+- tapOn: "pcs"
+- scrollUntilVisible:
+    element:
+      text: "Next"
+    direction: DOWN
+- tapOn: "Next"
+
+# Steps: form opens with one empty step; insert Tomatoes from ingredient cloud
+- tapOn: "Tomatoes, not used. Insert into step text"
+# "in this step" matches the Tomatoes chip after insertion — use the legend item
+# "not used yet" instead (no chip label contains that exact phrase)
+- tapOn: "not used yet"
+- scrollUntilVisible:
+    element:
+      text: "Next"
+    direction: DOWN
+- tapOn: "Next"
+# Garlic is unused — dismiss the warning and continue
+- scrollUntilVisible:
+    element:
+      text: "Continue anyway"
+    direction: DOWN
+- tapOn: "Continue anyway"
+
+# Review: assert title and both ingredients are visible
+- assertVisible: "E2E Tomato Soup"
+- assertVisible: "Tomatoes"
+- assertVisible: "Garlic"
+- scrollUntilVisible:
+    element:
+      text: "Save recipe"
+    direction: DOWN
+- tapOn: "Save recipe"
+
+# Relaunch instead of the native back button: its label differs on iOS and Android.
+# The relaunch also checks that the new recipe was persisted.
+- launchApp
+- assertVisible: "All · 6"
+- assertVisible: "E2E Tomato Soup.*"
+
+# Scroll the new card into full view (it lands at the bottom of the list,
+# partially obscured by the FAB) then open it
+- scrollUntilVisible:
+    element:
+      text: "E2E Tomato Soup.*"
+    direction: DOWN
+- tapOn: "E2E Tomato Soup.*"
+- assertVisible: "Tomatoes"
+- assertVisible: "Garlic"
+- assertVisible: "500 g"
+- assertVisible: "2 pcs"
